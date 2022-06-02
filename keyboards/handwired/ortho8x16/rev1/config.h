@@ -22,29 +22,34 @@
 #define DEVICE_VER 0x6071
 
 #define MATRIX_ROW_PINS \
-    { B7, B6, B5, B4, B3, A15, A10, A8 }
+    { B15, B14, B13, B13, A8, A10, A15, B3}
 #define MATRIX_COL_PINS \
-    { B10, B1, B0, A3, A2, A1, A0, C15, C14, C13, B9, B8, B12, B13, B14, B15 }
+    { B10, B1, B0, A3, A2, A1, A0, C15, C14, C13, B9, B8, B7, B6, B5, B4 }
 
-/* This Shift Register expands available hardware output lines to control additional peripherals */
-/* It uses four lines from the MCU to provide 16 output lines */
-/* Shift Register Clock configuration (MCU to ShiftRegister.RCLK) */
-//#define SR_EXP_RCLK_PIN          B14
-#define SR_EXP_RCLK_PIN          A6
-/* Shift Register Output Enable configuration (MCU to ShiftRegister.OE_N) */
-//#define SR_EXP_OE_PIN            B15
-#define SR_EXP_OE_PIN            A7
-/* SERCOM port to use for Shift Register SPI */
-/* DATAOUT and SCLK must be configured to use hardware pins of this port */
-#define SPI_SERCOM               SERCOM2
-/* Shift Register SPI Data Out configuration (MCU.SERCOMx.PAD[0] to ShiftRegister.SER) */
-//#define SPI_DATAOUT_PIN          A12
-#define SPI_DATAOUT_PIN          A4
-#define SPI_DATAOUT_MUX          2
-/* Shift Register SPI Serial Clock configuration (MCU.SERCOMx.PAD[1] to ShiftRegister.SRCLK) */
-//#define SPI_SCLK_PIN             A13
-#define SPI_SCLK_PIN             A5
-#define SPI_SCLK_MUX             2
+/*
+ShiftRegister SN74HC595N
+
+QB |1    16| VCC
+QC |2    15| QA
+QD |3    14| SER
+QE |4    13| OE
+QF |5    12| CLK
+QG |6    11| SRCLK
+QH |7    10| SRCLR
+ G |8    9 | QH*
+
+SRCLR to VCC
+
+It uses four lines from the MCU to provide 8 output lines */
+
+/* Shift Register Clock/Latch configuration (MCU to ShiftRegister.CLK) */
+#define SR_LATCH_PIN         A6
+/* Shift Register Output Enable configuration (MCU to ShiftRegister.OE) */
+#define SR_OE_PIN            A7
+/* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER) */
+#define SR_DATA_PIN          A4
+/* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK) */
+#define SR_CLOCK_PIN         A5
 
 
 #define UNUSED_PINS

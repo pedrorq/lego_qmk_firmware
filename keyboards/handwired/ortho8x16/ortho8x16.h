@@ -38,3 +38,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     {K600, K601, K602, K603, K604, K605, K606, K607, K608, K609, K610, K611, K612, K613, K614, K615},  \
     {K700, K701, K702, K703, K704, K705, K706, K707, K708, K709, K710, K711, K712, K713, K714, K715}  \
 }
+
+
+void shiftOutShort(pin_t, pin_t, uint8_t);
+void leds_off(void);
+void leds_on(uint8_t);
