@@ -57,7 +57,3 @@ It uses four pins from the MCU to provide 8 output pins */
 
 /* COL2ROW, ROW2COL*/
 #define DIODE_DIRECTION COL2ROW
-
-#define MATRIX_IO_DELAY 5
-
-
