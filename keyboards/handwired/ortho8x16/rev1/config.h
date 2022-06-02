@@ -19,7 +19,7 @@
 
 /* USB Device descriptor parameter */
 #define PRODUCT_ID 0x0001
-#define DEVICE_VER 0x6071
+#define DEVICE_VER 0x6461
 
 #define MATRIX_ROW_PINS \
     { B15, B14, B13, B13, A8, A10, A15, B3}
@@ -33,22 +33,23 @@ QB |1    16| VCC
 QC |2    15| QA
 QD |3    14| SER
 QE |4    13| OE
-QF |5    12| CLK
+QF |5    12| RCLK
 QG |6    11| SRCLK
 QH |7    10| SRCLR
  G |8    9 | QH*
 
-SRCLR to VCC
-
-It uses four lines from the MCU to provide 8 output lines */
-
-/* Shift Register Clock/Latch configuration (MCU to ShiftRegister.CLK) */
+SRCLR - 10 to VCC - 16
+It uses four pins from the MCU to provide 8 output pins */
+/* Shift Register Clock/Latch configuration (MCU to ShiftRegister.RCLK - 12) */
 #define SR_LATCH_PIN         A6
-/* Shift Register Output Enable configuration (MCU to ShiftRegister.OE) */
+
+/* Shift Register Output Enable configuration (MCU to ShiftRegister.OE - 13) */
 #define SR_OE_PIN            A7
-/* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER) */
+
+/* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER - 14) */
 #define SR_DATA_PIN          A4
-/* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK) */
+
+/* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK - 11) */
 #define SR_CLOCK_PIN         A5
 
 

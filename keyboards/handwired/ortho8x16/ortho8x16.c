@@ -16,23 +16,20 @@
 #include "ortho8x16.h"
 
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define LED_DELAY 500
 
 void pulseHighLow(pin_t pin){
-    writePinHigh(pin);
-    matrix_io_delay();
-    writePinLow(pin);
+  writePinHigh(pin);
+  wait_ms(LED_DELAY);
+  writePinLow(pin);
 
 }
 
 void shiftOutShort(pin_t dataPin, pin_t clockPin, uint8_t val){
-  uint8_t i;
 
-  for (i = 0; i < 7; i++)  {
-    if( !!(val & (1 << i))  == 0 ){
-      writePinLow(dataPin);
-    } else {
-      writePinHigh(dataPin);
-    }
+  for (uint8_t i = 0; i < 7; i++)  {
+    writePin(dataPin,!!(val & (1 << i)));
+    wait_ms(LED_DELAY);
     pulseHighLow(clockPin);
   }
 }
@@ -52,9 +49,11 @@ void leds_on(uint8_t leds) {
 
 }
 
-void keyboard_pre_init_kb(void) {
-  uint8_t leds = 0;
-  uint8_t i;
+void matrix_init_kb(void) {
+  setup_leds();
+}
+
+void setup_leds(void) {
 
   writePinLow(SR_LATCH_PIN);
   setPinOutput(SR_LATCH_PIN);
@@ -68,12 +67,17 @@ void keyboard_pre_init_kb(void) {
   writePinLow(SR_CLOCK_PIN);
   setPinOutput(SR_CLOCK_PIN);
 
+  //writePinLow(SR_OE_PIN);
   writePinHigh(SR_OE_PIN);
 
-  for (i=0; i<7; i++ ) {
-      bitSet(leds,i);
-      leds_on(leds);
-      matrix_io_delay();
+  uint8_t leds = 0;
+  for (uint8_t i=0; i<7; i++ ) {
+    bitSet(leds,i);
+    leds_on(leds);
+    wait_ms(LED_DELAY);
   }
+  leds = 1;
+  leds_on(leds);
+  wait_ms(LED_DELAY);
 
 }

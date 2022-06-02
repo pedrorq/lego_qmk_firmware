@@ -42,4 +42,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void shiftOutShort(pin_t, pin_t, uint8_t);
 void leds_off(void);
+void setup_leds(void);
 void leds_on(uint8_t);
