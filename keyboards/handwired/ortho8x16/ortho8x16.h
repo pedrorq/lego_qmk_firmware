@@ -40,7 +40,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 
+#define LED_SL 1
+#define LED_CL 2
+#define LED_NL 4
+#define LED_L4 8
+#define LED_L3 16
+#define LED_L2 32
+#define LED_L1 64
+
+
 void shiftOutShort(pin_t, pin_t, uint8_t);
 void leds_off(void);
+void count_leds(void);
 void setup_leds(void);
-void leds_on(uint8_t);
+void led_on(uint8_t);
+void led_toggle(uint8_t);

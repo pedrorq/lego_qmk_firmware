@@ -21,16 +21,18 @@ enum layer_names {
     _QW = 0,
     _LWR,
     _RSE,
-    _ADJ
+    _ADJ,
+    _TST
 };
 
 #define LOWER TT(_LWR)
 #define RAISE TT(_RSE)
+#define TEST TT(_TST)
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_QW] = LAYOUT_ortho_8x16(
-    QK_BOOT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    QK_BOOT, LOWER, RAISE, TEST, KC_CAPS, KC_NUM, KC_SCRL, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,_______, _______, _______, _______,
     KC_ESC,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL, _______, _______, _______, _______,
     KC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, _______, _______, _______, _______,
@@ -75,15 +77,66 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 // clang-format on
+static inline void led_caps(const bool on) {
+
+   if (on) {
+     led_toggle(LED_CL);
+   }
+}
+
+
+void matrix_scan_user(void) {
+    led_t led_state = host_keyboard_led_state();
+    led_caps(led_state.caps_lock);
+}
+
+bool led_update_user(led_t led_state) {
+    // Disable the default LED update code, so that lock LEDs could be reused to show layer status.
+    return false;
+}
+
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     switch (keycode) {
-        case (KC_A):
+        case (KC_CAPS):
+            led_toggle(LED_CL);
             return true;
             break;
-        case (KC_B):
+        case (KC_NUM):
+            led_toggle(LED_NL);
+            return true;
+            break;
+        case (KC_SCRL):
+            led_toggle(LED_SL);
+            return true;
+            break;
+        case (TT(_LWR)):
+            if (!record->event.pressed && record->tap.count == TAPPING_TOGGLE) {
+                // This runs before the TT() handler toggles the layer state, so the current layer state is the opposite of the final one after toggle.
+//                toggle_lwr = !layer_state_is(_LWR);
+             led_toggle(LED_L1);
+            }
+            return true;
+            break;
+        case (TT(_RSE)):
+            if (record->event.pressed && record->tap.count == TAPPING_TOGGLE) {
+//                toggle_rse = !layer_state_is(_RSE);
+             led_toggle(LED_L2);
+            }
+            return true;
+            break;
+        case (TT(_TST)):
+            if (record->event.pressed && record->tap.count == TAPPING_TOGGLE) {
+//                toggle_rse = !layer_state_is(_RSE);
+             led_toggle(LED_L3);
+            }
+            return true;
+            break;
         default:
             return true;
     }
 }
 
+layer_state_t layer_state_set_user(layer_state_t state) {
+    return update_tri_layer_state(state, _LWR, _RSE, _ADJ);
+}

@@ -39,12 +39,10 @@ QH |7    10| SRCLR
  G |8    9 | QH*
 
 SRCLR - 10 to VCC - 16
+OE - G
 It uses four pins from the MCU to provide 8 output pins */
 /* Shift Register Clock/Latch configuration (MCU to ShiftRegister.RCLK - 12) */
 #define SR_LATCH_PIN         A6
-
-/* Shift Register Output Enable configuration (MCU to ShiftRegister.OE - 13) */
-#define SR_OE_PIN            A7
 
 /* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER - 14) */
 #define SR_DATA_PIN          A4

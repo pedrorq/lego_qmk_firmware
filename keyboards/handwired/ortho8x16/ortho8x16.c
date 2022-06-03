@@ -16,7 +16,9 @@
 #include "ortho8x16.h"
 
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
-#define LED_DELAY 500
+#define LED_DELAY 100
+
+uint8_t PROGMEM led_s = 0;
 
 void pulseHighLow(pin_t pin){
   writePinHigh(pin);
@@ -26,31 +28,42 @@ void pulseHighLow(pin_t pin){
 }
 
 void shiftOutShort(pin_t dataPin, pin_t clockPin, uint8_t val){
-
-  for (uint8_t i = 0; i < 7; i++)  {
-    writePin(dataPin,!!(val & (1 << i)));
-    wait_ms(LED_DELAY);
+  for (uint8_t i = 0; i < 8; i++)  {
+    writePin(dataPin,!!(led_s & (1 << i)));
     pulseHighLow(clockPin);
   }
 }
 
 void leds_off(void) {
 
-  uint8_t l = 0;
-
-  leds_on(l);
+  led_s = 0;
+  writePinLow(SR_LATCH_PIN);
+  shiftOutShort(SR_DATA_PIN, SR_CLOCK_PIN, led_s);
+  writePinHigh(SR_LATCH_PIN);
 }
 
-void leds_on(uint8_t leds) {
+void led_on(uint8_t led) {
 
+  led_s |= led;
   writePinLow(SR_LATCH_PIN);
-  shiftOutShort(SR_DATA_PIN, SR_CLOCK_PIN, leds);
+  shiftOutShort(SR_DATA_PIN, SR_CLOCK_PIN, led_s);
+  writePinHigh(SR_LATCH_PIN);
+
+}
+
+void led_toggle(uint8_t led) {
+
+  led_s ^= led;
+  writePinLow(SR_LATCH_PIN);
+  shiftOutShort(SR_DATA_PIN, SR_CLOCK_PIN, led_s);
   writePinHigh(SR_LATCH_PIN);
 
 }
 
 void matrix_init_kb(void) {
   setup_leds();
+  leds_off();
+  count_leds();
 }
 
 void setup_leds(void) {
@@ -58,26 +71,19 @@ void setup_leds(void) {
   writePinLow(SR_LATCH_PIN);
   setPinOutput(SR_LATCH_PIN);
 
-  writePinLow(SR_OE_PIN);
-  setPinOutput(SR_OE_PIN);
-
   writePinLow(SR_DATA_PIN);
   setPinOutput(SR_DATA_PIN);
 
   writePinLow(SR_CLOCK_PIN);
   setPinOutput(SR_CLOCK_PIN);
+}
 
-  //writePinLow(SR_OE_PIN);
-  writePinHigh(SR_OE_PIN);
-
+void count_leds(void){
   uint8_t leds = 0;
-  for (uint8_t i=0; i<7; i++ ) {
+  for (uint8_t i=0; i<8; i++ ) {
     bitSet(leds,i);
-    leds_on(leds);
+    led_on(leds);
     wait_ms(LED_DELAY);
   }
-  leds = 1;
-  leds_on(leds);
-  wait_ms(LED_DELAY);
-
+  leds_off();
 }
