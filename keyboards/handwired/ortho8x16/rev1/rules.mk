@@ -5,6 +5,8 @@ MCU = STM32F401
 # BOOTLOADER = stm32-dfu
 
 BOOTLOADER = tinyuf2
+MCU_LDSCRIPT = STM32F401xE
+EEPROM_DRIVER = vendor
 # Build Options
 #   change yes to no to disable
 #
@@ -19,3 +21,4 @@ BACKLIGHT_ENABLE = no  # Enable keyboard backlight functionality
 RGBLIGHT_ENABLE = no  # Enable keyboard RGB underglow
 AUDIO_ENABLE = no      # Audio output
 ENCODER_ENABLE = no   # Enable encoder
+
