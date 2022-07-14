@@ -16,18 +16,3 @@
 #pragma once
 
 #include "config_common.h"
-
-/* USB Device descriptor parameter */
-#define VENDOR_ID 0xBABA
-#define MANUFACTURER alin elena
-#define PRODUCT m128
-
-#define MATRIX_ROWS 8
-#define MATRIX_COLS 16
-
-#define DEBOUNCE 5
-
-/* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
-#define LOCKING_SUPPORT_ENABLE
-/* Locking resynchronize hack */
-#define LOCKING_RESYNC_ENABLE

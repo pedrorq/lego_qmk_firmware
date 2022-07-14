@@ -17,15 +17,6 @@
 
 #include "config_common.h"
 
-/* USB Device descriptor parameter */
-#define PRODUCT_ID 0x0001
-#define DEVICE_VER 0x6461
-
-#define MATRIX_ROW_PINS \
-    { B15, B14, B13, B13, A8, A10, A15, B3}
-#define MATRIX_COL_PINS \
-    { B10, B1, B0, A3, A2, A1, A0, C15, C14, C13, B9, B8, B7, B6, B5, B4 }
-
 /*
 ShiftRegister SN74HC595N
 
@@ -49,9 +40,3 @@ It uses four pins from the MCU to provide 8 output pins */
 
 /* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK - 11) */
 #define SR_CLOCK_PIN         A5
-
-
-#define UNUSED_PINS
-
-/* COL2ROW, ROW2COL*/
-#define DIODE_DIRECTION COL2ROW
