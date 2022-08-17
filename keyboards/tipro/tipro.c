@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "ortho8x16.h"
+#include "tipro.h"
 
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
 #define LED_DELAY 100
