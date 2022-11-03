@@ -1,6 +1,6 @@
 {
     "manufacturer": "Alin Elena",
-    "keyboard_name": "mlego/m65 rev8",
+    "keyboard_name": "mlego/m65 rev7",
     "maintainer": "alin elena",
     "processor": "RP2040",
     "bootloader": "rp2040",
@@ -52,7 +52,7 @@
         },
         "led_count": 1,
         "pin": "GP12",
-        "max_brightness": 128
+        "max_brightness": 64
 
     },
     "url": "mlego.elena.space/m65",
