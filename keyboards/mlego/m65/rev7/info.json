@@ -1,16 +1,18 @@
 {
     "manufacturer": "Alin Elena",
-    "keyboard_name": "mlego/m65 rev1",
+    "keyboard_name": "mlego/m65 rev7",
     "maintainer": "alin elena",
-    "bootloader": "stm32duino",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
+    "board":"GENERIC_RP_RP2040",
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "encoder": {
         "enabled": true,
         "rotary": [
             {
-                "pin_a": "A8",
-                "pin_b": "A9",
+                "pin_a": "GP7",
+                "pin_b": "GP0",
                 "resolution": 4
             }
         ]
@@ -18,7 +20,7 @@
     "features": {
         "audio": false,
         "backlight": false,
-        "bootmagic": true,
+        "bootmagic": false,
         "command": false,
         "console": false,
         "encoder": true,
@@ -26,47 +28,41 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "rgblight": true
+        "oled": false,
+        "rgblight": true,
+        "wpm": false
     },
     "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
-    },
-    "matrix_pins": {
-        "cols": ["A10", "A15", "B3", "B4", "B5", "B9", "B8", "B7", "B6", "C15", "A0", "A7", "B10"],
-        "rows": ["B11", "B0", "B1", "A2", "A3"]
-    },
-    "processor": "STM32F103",
-    "rgblight": {
-        "animations": {
-            "alternating": true,
-            "breathing": true,
-            "christmas": true,
-            "knight": true,
-            "rainbow_mood": true,
-            "rainbow_swirl": true,
-            "rgb_test": true,
-            "snake": true,
-            "static_gradient": true,
-            "twinkle": true
-        },
-        "hue_steps": 8,
-        "layers": {
-            "enabled": true
-        },
-        "led_count": 20,
-        "pin": "B15",
-        "saturation_steps": 8
+        "caps_lock": "GP25",
+        "num_lock": "GP17",
+        "scroll_lock": "GP16"
     },
     "tapping": {
         "toggle": 2
     },
-    "url": "https://gitlab.com/m-lego/m65",
+    "rgblight": {
+        "hue_steps": 10,
+        "saturation_steps": 17,
+        "brightness_steps": 17,
+        "animations": {
+            "all": true
+        },
+        "layers": {
+            "enabled": true
+        },
+        "led_count": 1,
+        "pin": "GP12",
+        "max_brightness": 64
+
+    },
+    "url": "mlego.elena.space/m65",
     "usb": {
         "device_version": "0.0.1",
-        "pid": "0x6061",
+        "pid": "0x6064",
         "vid": "0xBABA"
+    },
+    "tapping": {
+        "toggle": 2
     },
     "layouts": {
         "LAYOUT_ortho_5x13": {
