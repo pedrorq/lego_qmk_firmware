@@ -51,6 +51,7 @@ struct painter_comms_with_command_vtable_t {
     struct painter_comms_vtable_t              base; // must be first, so this object can be cast from the painter_comms_vtable_t* type
     painter_driver_comms_send_command_func     send_command;
     painter_driver_comms_bulk_command_sequence bulk_command_sequence;
+    painter_driver_comms_send_func             send_parameters;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

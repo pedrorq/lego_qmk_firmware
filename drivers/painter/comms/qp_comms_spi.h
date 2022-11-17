@@ -44,6 +44,15 @@ void     qp_comms_spi_dc_reset_bulk_command_sequence(painter_device_t device, co
 
 extern const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable;
 
+#        ifdef QUANTUM_PAINTER_SPI_DC_RESET_SHIFTREG_ENABLE
+
+void     qp_comms_spi_dc_reset_shiftreg_send_command(painter_device_t device, uint8_t cmd);
+uint32_t qp_comms_spi_dc_reset_shiftreg_send_data(painter_device_t device, const void *data, uint32_t byte_count);
+uint32_t qp_comms_spi_dc_reset_shiftreg_send_parameters(painter_device_t device, const void *data, uint32_t byte_count);
+
+extern const struct painter_comms_with_command_vtable_t spi_comms_with_dc_shiftreg_vtable;
+
+#        endif // QUANTUM_PAINTER_SPI_DC_RESET_SHIFTREG_ENABLE
 #    endif // QUANTUM_PAINTER_SPI_DC_RESET_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

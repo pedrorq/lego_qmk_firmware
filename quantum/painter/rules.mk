@@ -4,14 +4,16 @@ QUANTUM_PAINTER_ANIMATIONS_ENABLE ?= yes
 
 # The list of permissible drivers that can be listed in QUANTUM_PAINTER_DRIVERS
 VALID_QUANTUM_PAINTER_DRIVERS := \
-	rgb565_surface \
-	ili9163_spi \
-	ili9341_spi \
-	ili9488_spi \
-	st7735_spi \
-	st7789_spi \
-	gc9a01_spi \
-	ssd1351_spi
+    rgb565_surface \
+    ili9163_spi \
+    ili9341_spi \
+    ili9486_spi \
+    ili9486_shiftreg_spi \
+    ili9488_spi \
+    st7735_spi \
+    st7789_spi \
+    gc9a01_spi \
+    ssd1351_spi
 
 #-------------------------------------------------------------------------------
 
@@ -76,6 +78,29 @@ define handle_quantum_painter_driver
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
             $(DRIVER_PATH)/painter/ili9xxx/qp_ili9341.c \
+
+    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9486_spi)
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
+        OPT_DEFS += -DQUANTUM_PAINTER_ILI9486_ENABLE -DQUANTUM_PAINTER_ILI9486_SPI_ENABLE
+        COMMON_VPATH += \
+            $(DRIVER_PATH)/painter/tft_panel \
+            $(DRIVER_PATH)/painter/ili9xxx
+        SRC += \
+            $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486.c \
+
+    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9486_shiftreg_spi)
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG := yes
+        OPT_DEFS += -DQUANTUM_PAINTER_ILI9486_SHIFTREG_ENABLE -DQUANTUM_PAINTER_ILI9486_SHIFTREG_SPI_ENABLE
+        COMMON_VPATH += \
+            $(DRIVER_PATH)/painter/tft_panel \
+            $(DRIVER_PATH)/painter/ili9xxx
+        SRC += \
+            $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486_shiftreg.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9488_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -150,5 +175,10 @@ ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_SPI)), yes)
     ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET)), yes)
         OPT_DEFS += -DQUANTUM_PAINTER_SPI_DC_RESET_ENABLE
     endif
+
+    ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG)), yes)
+        OPT_DEFS += -DQUANTUM_PAINTER_SPI_DC_RESET_SHIFTREG_ENABLE
+    endif
+
 endif
 

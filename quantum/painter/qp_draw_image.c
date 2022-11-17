@@ -81,8 +81,24 @@ static inline bool image_mem_stream_factory(qgf_image_handle_t *image, void *arg
     return true;
 }
 
+#if defined(XAP_ENABLE)
+painter_image_handle_t qp_xap_images[QUANTUM_PAINTER_NUM_IMAGES] = {};
+#endif // XAP_ENABLE
+
 painter_image_handle_t qp_load_image_mem(const void *buffer) {
-    return qp_load_image_internal(image_mem_stream_factory, (void *)buffer);
+    painter_image_handle_t temp = qp_load_image_internal(image_mem_stream_factory, (void *)buffer);
+
+#if defined(XAP_ENABLE)
+    static uint8_t i = 0;
+    if (i < QUANTUM_PAINTER_NUM_IMAGES) {
+        qp_xap_images[i] = temp;
+        i++;
+    } else {
+        qp_dprintf("Couldn't load image into XAP array as it is already full, you might want to increase QUANTUM_PAINTER_NUM_IMAGES\n");
+    }
+#endif // XAP_ENABLE
+
+    return temp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

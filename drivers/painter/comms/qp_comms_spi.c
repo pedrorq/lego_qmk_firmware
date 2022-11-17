@@ -128,10 +128,90 @@ const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
         },
     .send_command          = qp_comms_spi_dc_reset_send_command,
     .bulk_command_sequence = qp_comms_spi_dc_reset_bulk_command_sequence,
+    .send_parameters       = qp_comms_spi_dc_reset_send_data
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SPI with D/C and RST pins with SPI->Parallel converter (Waveshare)
+#        ifdef QUANTUM_PAINTER_SPI_DC_RESET_SHIFTREG_ENABLE
+
+void qp_comms_spi_dc_reset_shiftreg_send_command(painter_device_t device, uint8_t cmd) {
+    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
+    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+
+    writePinLow(comms_config->dc_pin);
+    writePinLow(comms_config->spi_config.chip_select_pin);
+    spi_write(cmd);
+    writePinHigh(comms_config->spi_config.chip_select_pin);
+}
+
+uint32_t qp_comms_spi_dc_reset_shiftreg_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
+    struct painter_driver_t *              driver         = (struct painter_driver_t *)device;
+    struct qp_comms_spi_dc_reset_config_t *comms_config   = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    const uint8_t                         *p              = (const uint8_t *)data;
+    uint32_t                              bytes_remaining = byte_count;
+
+    writePinHigh(comms_config->dc_pin);
+    while (bytes_remaining > 0) {
+        uint32_t bytes_this_loop = bytes_remaining < 1024 ? bytes_remaining : 1024;
+        writePinLow(comms_config->spi_config.chip_select_pin);
+        spi_transmit(p, bytes_this_loop);
+        writePinHigh(comms_config->spi_config.chip_select_pin);
+        p += bytes_this_loop;
+        bytes_remaining -= bytes_this_loop;
+    }
+
+    return byte_count - bytes_remaining;
+}
+
+uint32_t qp_comms_spi_dc_reset_shiftreg_send_parameters(painter_device_t device, const void *data, uint32_t byte_count) {
+    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
+    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    const uint8_t *                        p            = (const uint8_t *)data;
+
+    writePinHigh(comms_config->dc_pin);
+
+    uint32_t i;
+    for (i=0; i<byte_count; i++) {
+        writePinLow(comms_config->spi_config.chip_select_pin);
+        spi_write(*(p+i));
+        writePinHigh(comms_config->spi_config.chip_select_pin);
+    }
+
+    return byte_count - i;
+}
+
+void qp_comms_spi_dc_reset_shiftreg_bulk_command_sequence(painter_device_t device, const uint8_t *sequence, size_t sequence_len) {
+    for (size_t i = 0; i < sequence_len;) {
+        uint8_t command   = sequence[i];
+        uint8_t delay     = sequence[i + 1];
+        uint8_t num_bytes = sequence[i + 2];
+
+        qp_comms_spi_dc_reset_shiftreg_send_command(device, command);
+        if (num_bytes > 0) {
+            qp_comms_spi_dc_reset_shiftreg_send_parameters(device, &sequence[i + 3], num_bytes);
+        }
+        if (delay > 0) {
+            wait_ms(delay);
+        }
+        i += (3 + num_bytes);
+    }
+}
+
+const struct painter_comms_with_command_vtable_t spi_comms_with_dc_shiftreg_vtable = {
+    .base =
+        {
+            .comms_init  = qp_comms_spi_dc_reset_init,
+            .comms_start = qp_comms_spi_start,
+            .comms_send  = qp_comms_spi_dc_reset_shiftreg_send_data,
+            .comms_stop  = qp_comms_spi_stop,
+        },
+    .send_command          = qp_comms_spi_dc_reset_shiftreg_send_command,
+    .bulk_command_sequence = qp_comms_spi_dc_reset_shiftreg_bulk_command_sequence,
+    .send_parameters       = qp_comms_spi_dc_reset_shiftreg_send_parameters
+};
+#        endif // QUANTUM_PAINTER_SPI_DC_RESET_SHIFTREG_ENABLE
 #    endif // QUANTUM_PAINTER_SPI_DC_RESET_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #endif // QUANTUM_PAINTER_SPI_ENABLE

@@ -20,6 +20,7 @@ uint32_t qp_comms_send(painter_device_t device, const void* data, uint32_t byte_
 // Comms APIs that use a D/C pin
 
 void     qp_comms_command(painter_device_t device, uint8_t cmd);
+uint32_t qp_comms_parameters(painter_device_t device, const void* data, uint32_t byte_count);
 void     qp_comms_command_databyte(painter_device_t device, uint8_t cmd, uint8_t data);
 uint32_t qp_comms_command_databuf(painter_device_t device, uint8_t cmd, const void* data, uint32_t byte_count);
 void     qp_comms_bulk_command_sequence(painter_device_t device, const uint8_t* sequence, size_t sequence_len);
