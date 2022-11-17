@@ -42,8 +42,6 @@
 #define WS2812_PIO_USE_PIO1
 
 
-#define DEBUG_MATRIX_SCAN_RATE
-
 
 // =======
 // SOME MAGIC DOWN HERE

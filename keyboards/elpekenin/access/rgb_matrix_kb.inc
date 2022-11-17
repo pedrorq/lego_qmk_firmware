@@ -45,7 +45,7 @@ static bool key_selector_mode(effect_params_t *params) {
 
         //nothing to be done
         default:
-            return true;
+            return false;
     }
 
     // -- Edge cases
@@ -61,6 +61,6 @@ static bool key_selector_mode(effect_params_t *params) {
     key_selector_direction = DIRECTION_NONE;
     rgb_matrix_set_color(key_selector_mode_last_key, SELECTOR_SELECT_COLOR);
 
-    return true;
+    return false;
 }
 #endif // RGB_MATRIX_CUSTOM_EFFECT_IMPLS
