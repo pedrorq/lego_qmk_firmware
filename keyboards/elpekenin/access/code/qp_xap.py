@@ -33,6 +33,7 @@ def check_dependencies():
 
     import importlib
     import subprocess
+    global sys
     import sys
 
     for dep in ["hid", "inquirer"]:
@@ -74,7 +75,6 @@ def get_device():
     devices = [i for i in hid.enumerate() if i["usage_page"] == USAGE_PAGE and i["usage"] == USAGE]
 
     if not devices:
-        import sys
         print("No devices found, quitting")
         sys.exit(0)
 
@@ -145,8 +145,12 @@ class QP_XAP:
         for i, byte in enumerate(payload, 3):
             self._payload[i] = byte
 
+        # Windows needs an extra heading 0 byte
+        if sys.platform == "win32":
+            self._payload = [0, *self._payload]
+
         # Send
-        self._hid.write(bytes(self._payload))
+        self._hid.write(bytes(self._payload[:65])) #make sure we only send 64B
         response = self._hid.read(64, timeout=1000)
 
     def _close(self):
@@ -430,5 +434,6 @@ if __name__ == "__main__":
             print("------------------------\n\n")
         # ==================================================================
 
-    except:
+    except Exception as e:
+        print(f"Quitting due to [{e.__class__.__name__}]: {e}")
         qp_xap._close()

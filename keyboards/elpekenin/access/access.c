@@ -104,12 +104,6 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
         else
             key_selector_direction = DIRECTION_DOWN;
     }
-        case KC_SPC:
-
-            return false;
-
-        default:
-            return true;
 
     return empty_mouse_report();
 }
