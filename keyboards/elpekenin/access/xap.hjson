@@ -403,7 +403,7 @@
                     name: drawtext
                     define: DRAWTEXT
                     description: Expose `qp_drawtext`
-                    request_struct_length: 15
+                    request_struct_length: 61
                     request_struct_members: [
                         {
                             type: u8
@@ -418,11 +418,69 @@
                             name: y
                         },
                         {
-                            type: u8[10]
-                            name: image_id
+                            type: u8
+                            name: font_id
+                        }
+                        {
+                            type: u8[55]
+                            name: text
                         },
                     ]
                     return_execute: qp_drawtext
+                }
+                0x0C: {
+                    type: command
+                    name: drawtext_recolor
+                    define: DRAWTEXT_RECOLOR
+                    description: Expose `qp_drawtext_recolor`
+                    request_struct_length: 61
+                    request_struct_members: [
+                        {
+                            type: u8
+                            name: device_id
+                        },
+                        {
+                            type: u16
+                            name: x
+                        },
+                        {
+                            type: u16
+                            name: y
+                        },
+                        {
+                            type: u8
+                            name: font_id
+                        },
+                        {
+                            type: u8
+                            name: hue_fg
+                        },
+                        {
+                            type: u8
+                            name: sat_fg
+                        },
+                        {
+                            type: u8
+                            name: val_fg
+                        },
+                        {
+                            type: u8
+                            name: hue_bg
+                        },
+                        {
+                            type: u8
+                            name: sat_bg
+                        },
+                        {
+                            type: u8
+                            name: val_bg
+                        },
+                        {
+                            type: u8[49]
+                            name: text
+                        },
+                    ]
+                    return_execute: qp_drawtext_recolor
                 }
             }
         }

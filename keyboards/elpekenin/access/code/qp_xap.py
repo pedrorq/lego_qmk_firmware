@@ -125,12 +125,9 @@ class QP_XAP:
         # Empty buffer
         self._payload = [0x00] * 64
 
-        # Set token
+        # Set arbitrary token
         self._payload[0] = 0x42
         self._payload[1] = 0x42
-
-        # Clear screen
-        self.clear(log=False)
 
     def _send(self, payload):
         if len(payload) > 61:
@@ -156,10 +153,7 @@ class QP_XAP:
     def _close(self):
         self._hid.close()
 
-    def clear(self, display=0, log=True):
-        if log:
-            print("Clearing screen")
-
+    def clear(self, display):
         #dooesn't seem to do anything
         self._send([
             2, 2, 1,
@@ -175,14 +169,9 @@ class QP_XAP:
             bottom=SCREEN_HEIGHT,
             color="0, 0, 0",
             filled=True,
-            log=False
         )
 
-        return self
-
-    def setpixel(self, *, display=0, x, y, color):
-        print(f"Drawing a pixel at ({int(x)}, {int(y)})")
-
+    def setpixel(self, *, display, x, y, color):
         self._send([
             2, 2, 2,
             to_u8(display),
@@ -191,11 +180,7 @@ class QP_XAP:
             *parse_color(color),
         ])
 
-        return self
-
-    def line(self, *, display=0, x0, y0, x1, y1, color):
-        print(f"Drawing a line from ({int(x0)}, {int(y0)}) to ({int(x1)}, {int(y1)})")
-
+    def line(self, *, display, x0, y0, x1, y1, color):
         self._send([
             2, 2, 3,
             to_u8(display),
@@ -206,12 +191,8 @@ class QP_XAP:
             *parse_color(color),
         ])
 
-        return self
-
-    def rect(self, *, display=0, left, top, right, bottom, color, filled, log=True):
+    def rect(self, *, display, left, top, right, bottom, color, filled):
         filled = parse_bool(filled)
-        if log:
-            print(f"Drawing a{' filled' if filled else 'n empty'} rect from ({int(left)}, {int(top)}) to ({int(right)}, {int(bottom)})")
 
         self._send([
             2, 2, 4,
@@ -224,11 +205,8 @@ class QP_XAP:
             to_u8(filled),
         ])
 
-        return self
-
-    def circle(self, *, display=0, x, y, radius, color, filled):
+    def circle(self, *, display, x, y, radius, color, filled):
         filled = parse_bool(filled)
-        print(f"Drawing a{' filled' if filled else 'n empty'} circle at ({int(x)}, {int(y)}) with radius {int(radius)}")
 
         self._send([
             2, 2, 5,
@@ -240,11 +218,8 @@ class QP_XAP:
             to_u8(filled),
         ])
 
-        return self
-
-    def ellipse(self, *, display=0, x, y, sizex, sizey, color, filled):
+    def ellipse(self, *, display, x, y, sizex, sizey, color, filled):
         filled = parse_bool(filled)
-        print(f"Drawing a{' filled' if filled else 'n empty'} ellipse at ({int(x)}, {int(y)}) with sizes ({int(sizex)}, {int(sizey)})")
 
         self._send([
             2, 2, 6,
@@ -257,11 +232,7 @@ class QP_XAP:
             to_u8(filled),
         ])
 
-        return self
-
-    def drawimage(self, *, display=0, x, y, img=0):
-        print(f"Drawing image with id {img} at ({int(x)}, {int(y)})")
-
+    def drawimage(self, *, display, x, y, img):
         self._send([
             2, 2, 7,
             to_u8(display),
@@ -270,11 +241,38 @@ class QP_XAP:
             to_u8(img),
         ])
 
-        return self
+    def drawimage_recolor(self, *, display, x, y, img, fg_color, bg_color):
+        self._send([
+            2, 2, 8,
+            to_u8(display),
+            *to16(x),
+            *to16(y),
+            to_u8(img),
+            *parse_color(fg_color),
+            *parse_color(bg_color),
+        ])
 
-    def drawtext(self, *, display=0, x, y, font=0, text):
-        print(f"Writing '{text}', using font with id {font} at ({int(x)}, {int(y)})")
+    def animate(self, *, display, x, y, image):
+        self._send([
+            2, 2, 9,
+            to_u8(display),
+            *to16(x),
+            *to16(y),
+            to_u8(img),
+        ])
 
+    def animate_recolor(self, *, display, x, y, image, fg_color, bg_color):
+        self._send([
+            2, 2, 0xA,
+            to_u8(display),
+            *to16(x),
+            *to16(y),
+            to_u8(img),
+            *parse_color(fg_color),
+            *parse_color(bg_color),
+        ])
+
+    def drawtext(self, *, display, x, y, font, text):
         self._send([
             2, 2, 0xB,
             to_u8(display),
@@ -284,7 +282,17 @@ class QP_XAP:
             *[ord(i) for i in text],
         ])
 
-        return self
+    def drawtext_recolor(self, *, display, x, y, font, fg_color, bg_color, text):
+        self._send([
+            2, 2, 0xC,
+            to_u8(display),
+            *to16(x),
+            *to16(y),
+            to_u8(font),
+            *parse_color(fg_color),
+            *parse_color(bg_color),
+            *[ord(i) for i in text],
+        ])
 # ===========================================================================================
 
 
@@ -359,7 +367,7 @@ if __name__ == "__main__":
 
 
         # ================== Prepare variables for the mainloop ==================
-        methods = list(filter(lambda x: not x.startswith("_"),  dir(qp_xap)))
+        methods = list(filter(lambda x: not x.startswith("_"), vars(QP_XAP).keys()))
         arguments = {
             method: [i for i in getattr(QP_XAP, method).__code__.co_varnames
                 if i not in ["self", "log"]]
@@ -376,7 +384,7 @@ if __name__ == "__main__":
                     default  = "0"
 
                 elif "color" in arg:
-                    message  = "Input a color"
+                    message  = f"Input {'a ' if arg =='color' else ''} {arg}"
                     validate = validate_color
                     default  = lambda _: f"[{random.randint(0, 255)}, 255, 255]"
 
@@ -428,10 +436,8 @@ if __name__ == "__main__":
 
             method = method["method"]
             args = inquirer.prompt(prompts[method], theme=BlueComposure())
-            print("------------------------")
             # Call the function
             getattr(qp_xap, method)(**args)
-            print("------------------------\n\n")
         # ==================================================================
 
     except Exception as e:

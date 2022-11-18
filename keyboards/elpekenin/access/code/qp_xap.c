@@ -226,3 +226,23 @@ bool xap_respond_qp_drawtext(xap_token_t token, const uint8_t *data, size_t data
     qp_drawtext(dev, x, y, font,  (char *) &data[counter]);
     return true; //TODO check this
 }
+
+bool xap_respond_qp_drawtext_recolor(xap_token_t token, const uint8_t *data, size_t data_len) {
+    CHECK_DATA_LEN_IS_AT_LEAST(12)
+
+    uint8_t counter = 0; uint8_t *i = &counter;
+
+    painter_device_t       dev    = qp_xap_displays[get_u8(data, i)];
+    uint16_t               x      = get_u16(data, i);
+    uint16_t               y      = get_u16(data, i);
+    painter_font_handle_t  font   = qp_xap_fonts[get_u8(data, i)];
+    uint8_t                hue_fg = get_u8(data, i);
+    uint8_t                sat_fg = get_u8(data, i);
+    uint8_t                val_fg = get_u8(data, i);
+    uint8_t                hue_bg = get_u8(data, i);
+    uint8_t                sat_bg = get_u8(data, i);
+    uint8_t                val_bg = get_u8(data, i);
+
+    qp_drawtext_recolor(dev, x, y, font, (char *) &data[counter], hue_fg, sat_fg, val_fg, hue_bg, sat_bg, val_bg);
+    return true; //TODO check this
+}
