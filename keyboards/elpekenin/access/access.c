@@ -88,21 +88,21 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
         // TODO: Change so it actually updates matrix, and stuff other than basic keycodes work
         uint8_t current_layer = get_highest_layer(layer_state);
         tap_code(keymaps[current_layer][key_selector_mode_last_key]);
-        
+
         return empty_mouse_report();
     }
 
     // Update the direction
     if (abs(mouse_report.x) > abs(mouse_report.y)) {
         if (mouse_report.x > 0)
-            key_selector_direction = DIRECTION_UP;
+            key_selector_direction = DIRECTION_RIGHT;
         else
             key_selector_direction = DIRECTION_LEFT;
     } else {
         if (mouse_report.y > 0)
-            key_selector_direction = DIRECTION_DOWN;
+            key_selector_direction = DIRECTION_UP;
         else
-            key_selector_direction = DIRECTION_RIGHT;
+            key_selector_direction = DIRECTION_DOWN;
     }
         case KC_SPC:
 
