@@ -2,6 +2,8 @@ RGB_MATRIX_EFFECT(key_selector_mode)
 
 #ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
 
+// FIXME This code assumes no unused positions on the key matrix
+
 #    if (RGB_MATRIX_LED_COUNT != (MATRIX_COLS * MATRIX_ROWS))
 #        error "This effect doesn't make sense if LEDs != keys"
 #    endif

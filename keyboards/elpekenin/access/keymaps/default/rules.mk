@@ -1,16 +1,31 @@
-VPATH += keyboards/elpekenin/access/code \
-         keyboards/elpekenin/access/code/generated
+# POINTING_DEVICE_DRIVER = analog_joystick
+# POINTING_DEVICE_ENABLE = yes
 
 XAP_ENABLE = yes
 
-ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
-SRC += fira_code.qff.c \
-       graphics.c \
-       rp2040.qgf.c
+# Custom features
+ONE_HAND_MODE = no
+QP_XAP = yes
+
+# ------------------ Extra logic ------------------
+# New code
+VPATH += keyboards/elpekenin/access/code \
+         keyboards/elpekenin/access/code/generated
 
 ifeq ($(strip $(XAP_ENABLE)), yes)
-SRC += qp_xap.c
+    SRC += graphics.c \
+           fira_code.qff.c \
+           rp2040.qgf.c
 endif
 
+# Custom features
+ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
+    ifeq ($(strip $(ONE_HAND_MODE)), yes)
+        OPT_DEFS += -DONE_HAND_MODE
+    endif
 endif
 
+ifeq ($(strip $(QP_XAP)), yes)
+    OPT_DEFS += -DQP_XAP
+    SRC += qp_xap.c
+endif

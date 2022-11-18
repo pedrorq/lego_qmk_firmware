@@ -1,9 +1,9 @@
-DEFAULT_FOLDER = elpekenin/access
-
 DEFERRED_EXEC_ENABLE = yes
 
-QUANTUM_PAINTER_DRIVERS = ili9486_shiftreg_spi
+DEFAULT_FOLDER = elpekenin/access
 
 RGB_MATRIX_CUSTOM_KB = yes
 RGB_MATRIX_DRIVER = WS2812
 WS2812_DRIVER = vendor
+
+QUANTUM_PAINTER_DRIVERS = ili9486_shiftreg_spi

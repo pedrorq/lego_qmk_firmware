@@ -5,6 +5,9 @@
 
 #include "config_common.h"
 
+
+// #define DEBUG_MATRIX_SCAN_RATE
+
 // =======
 // Power indicator
 #define POWER_LED_PIN GP25
@@ -38,7 +41,12 @@
 #define RGB_DISABLE_WHEN_USB_SUSPENDED
 #define RGB_MATRIX_LED_COUNT DRIVER_LED_TOTAL
 #define RGB_MATRIX_MAXIMUM_BRIGHTNESS 100
-#define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CUSTOM_key_selector_mode
+#if defined(ONE_HAND_MODE)
+#    define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CUSTOM_key_selector_mode
+#else
+#    define ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT
+#    define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_GRADIENT_LEFT_RIGHT
+#endif   // ONE_HAND_MODE
 #define WS2812_PIO_USE_PIO1
 
 
@@ -61,4 +69,3 @@
 #    define LCD_WIDTH  _LCD_HEIGHT
 #    define LCD_HEIGHT _LCD_WIDTH
 #endif // LCD_ROTATION
-

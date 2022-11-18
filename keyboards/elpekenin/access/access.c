@@ -69,28 +69,48 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
 
-#ifdef RGB_MATRIX_ENABLE
-    switch (keycode) {
-        case KC_W:
+    return true;
+}
+
+#ifdef ONE_HAND_MODE
+report_mouse_t empty_mouse_report() {
+    return report_mouse_t {
+        .x = 0,
+        .y = 0,
+        .h = 0,
+        .v = 0,
+        .buttons = 0
+    }
+}
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (mouse_report.buttons) {
+        // TODO: Change so it actually updates matrix, and stuff other than basic keycodes work
+        uint8_t current_layer = get_highest_layer(layer_state);
+        tap_code(keymaps[current_layer][key_selector_mode_last_key]);
+        
+        return empty_mouse_report();
+    }
+
+    // Update the direction
+    if (abs(mouse_report.x) > abs(mouse_report.y)) {
+        if (mouse_report.x > 0)
             key_selector_direction = DIRECTION_UP;
-            return true;
-
-        case KC_A:
+        else
             key_selector_direction = DIRECTION_LEFT;
-            return true;
-
-        case KC_S:
+    } else {
+        if (mouse_report.y > 0)
             key_selector_direction = DIRECTION_DOWN;
-            return true;
-
-        case KC_D:
+        else
             key_selector_direction = DIRECTION_RIGHT;
-            return true;
+    }
+        case KC_SPC:
+
+            return false;
 
         default:
             return true;
-    }
-#endif // RGB_MATRIX_ENABLE
 
-    return true;
+    return empty_mouse_report();
 }
+#endif // ONE_HAND_MODE

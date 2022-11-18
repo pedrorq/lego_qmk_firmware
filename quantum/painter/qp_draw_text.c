@@ -127,14 +127,14 @@ static inline bool font_mem_stream_factory(qff_font_handle_t *font, void *arg) {
     return true;
 }
 
-#if defined(XAP_ENABLE)
+#if defined(QP_XAP)
 painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS] = {};
-#endif // XAP_ENABLE
+#endif // QP_XAP
 
 painter_font_handle_t qp_load_font_mem(const void *buffer) {
     painter_font_handle_t temp = qp_load_font_internal(font_mem_stream_factory, (void *)buffer);
 
-#if defined(XAP_ENABLE)
+#if defined(QP_XAP)
     static uint8_t i = 0;
     if (i < QUANTUM_PAINTER_NUM_FONTS) {
         qp_xap_fonts[i] = temp;
@@ -142,7 +142,7 @@ painter_font_handle_t qp_load_font_mem(const void *buffer) {
     } else {
         qp_dprintf("Couldn't load font into XAP array as it is already full, you might want to increase QUANTUM_PAINTER_NUM_FONTS\n");
     }
-#endif // XAP_ENABLE
+#endif // QP_XAP
 
     return temp;
 }
