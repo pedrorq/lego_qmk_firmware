@@ -3,12 +3,12 @@
 
 #pragma once
 
-#ifdef QUANTUM_PAINTER_ENABLE
+#if defined(QUANTUM_PAINTER_ENABLE)
 #    include "qp.h"
 extern painter_device_t lcd;
 #endif // QUANTUM_PAINTER_ENABLE
 
-#ifdef RGB_MATRIX_ENABLE
+#if defined(RGB_MATRIX_ENABLE)
 typedef enum key_selector_direction_t{
     DIRECTION_NONE,
     DIRECTION_UP,

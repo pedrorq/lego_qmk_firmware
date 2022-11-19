@@ -1,6 +1,6 @@
 RGB_MATRIX_EFFECT(key_selector_mode)
 
-#ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
+#if defined(RGB_MATRIX_CUSTOM_EFFECT_IMPLS)
 
 // FIXME This code assumes no unused positions on the key matrix
 
