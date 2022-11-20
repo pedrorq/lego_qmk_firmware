@@ -20,7 +20,7 @@
         "mousekey": true,
         "extrakey": true,
         "nkro": false,
-        "quantum_painter": true,
+        "quantum_painter": false,
         "rgb_matrix": true,
         "unicode": false,
         "usbpd": false,

@@ -14,6 +14,7 @@ typedef struct touch_comms_config_t {
 typedef struct touch_driver_t {
     uint16_t width;
     uint16_t height;
+    uint8_t measurements;
     uint16_t offset;
     uint16_t max;
     touch_rotation_t rotation;

@@ -14,11 +14,17 @@ QP_XAP = yes
 VPATH += keyboards/elpekenin/access/code \
          keyboards/elpekenin/access/code/generated
 
-# QP resources
-ifeq ($(strip $(XAP_ENABLE)), yes)
+ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
+    # QP resources
     SRC += graphics.c \
            fira_code.qff.c \
            rp2040.qgf.c
+
+    # QP over XAP
+    ifeq ($(strip $(QP_XAP)), yes)
+        OPT_DEFS += -DQP_XAP
+        SRC += qp_xap.c
+    endif
 endif
 
 # Custom features
@@ -29,11 +35,8 @@ ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
 endif
 
 ifeq ($(strip $(TOUCH_SCREEN)), yes)
+    QUANTUM_LIB_SRC += spi_master.c
     OPT_DEFS += -DTOUCH_SCREEN
     SRC += touch_driver.c
 endif
 
-ifeq ($(strip $(QP_XAP)), yes)
-    OPT_DEFS += -DQP_XAP
-    SRC += qp_xap.c
-endif

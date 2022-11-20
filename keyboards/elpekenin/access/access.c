@@ -62,6 +62,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     touch_driver_t touch_driver = {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
+        .measurements = 3,
         .offset = 430,
         .max = 3270,
         .rotation = _SCREEN_ROTATION,
@@ -136,7 +137,8 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 void housekeeping_task_kb(void) {
     if (touch_device != NULL) {
         touch_report_t touch_report = touch_get_report(touch_device);
-        printf("x: %d, y:%d, pressed:%d \n", touch_report.x, touch_report.y, touch_report.pressed);
+        if (touch_report.pressed)
+            printf("x: %u, y: %u\n", touch_report.x, touch_report.y);
     }
 }
 #endif // TOUCH_SCREEN
