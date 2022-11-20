@@ -30,5 +30,4 @@ typedef struct touch_report_t {
 } __attribute__((packed)) touch_report_t;
 
 bool touch_spi_init(touch_device_t device);
-bool touch_spi_start(touch_device_t device);
 touch_report_t touch_get_report(touch_device_t device);

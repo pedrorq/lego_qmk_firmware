@@ -29,8 +29,8 @@ Enter the bootloader in 4 ways:
 * **Keycode in layout**: Press the key mapped to `QK_BOOT` if it is available
 
 ## Custom features
-They are enabled/disabled at keyboard-level `rules.mk`, by default only `QP_XAP` is
 ### 1. QP over XAP
+`Automatically added if you have both features enabled`
 This feature allows the control of your Quantum Painter display over XAP.
 If you want to add this on your own branch/fork/keyboard, you'd need:
 - Start from the XAP branch (or checkout the needed files)

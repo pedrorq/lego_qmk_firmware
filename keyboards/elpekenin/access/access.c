@@ -27,7 +27,6 @@ touch_device_t touch_device;
 
 void keyboard_post_init_kb(void) {
     debug_enable = true;
-    debug_matrix = true;
 
 #if defined(DEFERRED_EXEC_ENABLE)
     // Define function so `defer_exec` doesn't crash the compiling
@@ -38,7 +37,7 @@ void keyboard_post_init_kb(void) {
 }
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
-    print("Running deferred code\n");
+    dprint("Running deferred code\n");
 #endif // DEFERRED_EXEC_ENABLE
 
     // =======
@@ -47,7 +46,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     writePinHigh(POWER_LED_PIN);
 
     // ==========
-    // Setup SPI
+    // SPI devices
 #if defined(QUANTUM_PAINTER_ENABLE)
     setPinOutput(LCD_BL_PIN);
     writePinHigh(LCD_BL_PIN);
@@ -56,16 +55,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     qp_init(lcd, _SCREEN_ROTATION);
     qp_rect(lcd, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1, HSV_BLACK, true);
     load_qp_resources();
-#else
-    setPinOutput(LCD_CS_PIN);
-    writePinHigh(LCD_CS_PIN);
+    dprint("Display initialized\n");
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined (TOUCH_SCREEN)
-    touch_driver_t touch_driver = {
+    static touch_driver_t touch_driver = {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
-        .measurements = 1,
+        .measurements = 3,
         .offset = 430,
         .max = 3270,
         .rotation = _SCREEN_ROTATION,
@@ -80,10 +77,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     touch_device = &touch_driver;
     touch_spi_init(touch_device);
-    touch_spi_start(touch_device);
-#else
-    setPinOutput(TOUCH_CS_PIN);
-    writePinHigh(TOUCH_CS_PIN);
+    dprint("Touch initialized\n");
 #endif // TOUCH_SCREEN
 
     // =======
@@ -153,6 +147,6 @@ void housekeeping_task_kb(void) {
     touch_timer = timer_read32();
     touch_report_t touch_report = touch_get_report(touch_device);
     if (touch_report.pressed)
-        printf("x: %u, y: %u\n", touch_report.x, touch_report.y);
+        dprintf("x: %u, y: %u\n", touch_report.x, touch_report.y);
 }
 #endif // TOUCH_SCREEN
