@@ -56,13 +56,16 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     qp_init(lcd, _SCREEN_ROTATION);
     qp_rect(lcd, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1, HSV_BLACK, true);
     load_qp_resources();
+#else
+    setPinOutput(LCD_CS_PIN);
+    writePinHigh(LCD_CS_PIN);
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined (TOUCH_SCREEN)
     touch_driver_t touch_driver = {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
-        .measurements = 3,
+        .measurements = 1,
         .offset = 430,
         .max = 3270,
         .rotation = _SCREEN_ROTATION,
@@ -78,6 +81,9 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     touch_device = &touch_driver;
     touch_spi_init(touch_device);
     touch_spi_start(touch_device);
+#else
+    setPinOutput(TOUCH_CS_PIN);
+    writePinHigh(TOUCH_CS_PIN);
 #endif // TOUCH_SCREEN
 
     // =======
@@ -134,11 +140,19 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 #endif // ONE_HAND_MODE
 
 #if defined (TOUCH_SCREEN)
+uint32_t touch_timer = 0;
 void housekeeping_task_kb(void) {
-    if (touch_device != NULL) {
-        touch_report_t touch_report = touch_get_report(touch_device);
-        if (touch_report.pressed)
-            printf("x: %u, y: %u\n", touch_report.x, touch_report.y);
-    }
+    // Wait until device is initialized
+    if (touch_device == NULL)
+        return;
+
+    // Read every 0.5 seconds
+    if (timer_elapsed32(touch_timer) < 500)
+        return;
+
+    touch_timer = timer_read32();
+    touch_report_t touch_report = touch_get_report(touch_device);
+    if (touch_report.pressed)
+        printf("x: %u, y: %u\n", touch_report.x, touch_report.y);
 }
 #endif // TOUCH_SCREEN

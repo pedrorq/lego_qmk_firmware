@@ -1,9 +1,9 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "print.h"
 #include "spi_master.h"
 #include "touch_driver.h"
-#include "wait.h"
 
 bool touch_spi_init(touch_device_t device) {
     struct touch_driver_t       *driver      = (struct touch_driver_t *)device;
@@ -29,17 +29,6 @@ bool touch_spi_start(touch_device_t device) {
     return spi_start(comms_config.chip_select_pin, comms_config.lsb_first, comms_config.mode, comms_config.divisor);
 }
 
-void touch_spi_send(touch_device_t device, const uint8_t *data, uint8_t byte_count) {
-    struct touch_driver_t       *driver      = (struct touch_driver_t *)device;
-    struct touch_comms_config_t comms_config = driver->comms_config;
-
-    // Use CS so the data is received by touch screen
-    writePinLow(comms_config.chip_select_pin);
-    wait_us(200); //time diff between samples, so averaging is useful
-    spi_transmit(data, byte_count);
-    writePinHigh(comms_config.chip_select_pin);
-}
-
 touch_report_t touch_get_report(touch_device_t device) {
     struct touch_driver_t       *driver      = (struct touch_driver_t *)device;
     struct touch_comms_config_t comms_config = driver->comms_config;
@@ -52,16 +41,13 @@ touch_report_t touch_get_report(touch_device_t device) {
         .pressed = false
     };
 
-    // writePinLow(comms_config.chip_select_pin);
-    // wait_ms(1);
-
     if (readPin(comms_config.irq_pin)) {
-        // writePinHigh(comms_config.chip_select_pin);
+        print("IRQ high\n");
         report.pressed = false;
         return report;
     }
 
-    // writePinHigh(comms_config.chip_select_pin);
+    print("IRQ low\n");
     report.pressed = true;
 
     // Read data from sensor, 0-rotation based
@@ -70,12 +56,26 @@ touch_report_t touch_get_report(touch_device_t device) {
     uint8_t buf[2];
 
     for (uint8_t i=0; i<driver->measurements; i++) {
-        touch_spi_send(device, (uint8_t *)0xD0, 1);
-        spi_receive(buf, 2);
-        x += ((buf[0]<<8) + buf[1])>>3;
+        // Send command
+        writePinLow(comms_config.chip_select_pin);
+        spi_write(0xD0);
+        writePinHigh(comms_config.chip_select_pin);
 
-        touch_spi_send(device, (uint8_t *)0x90, 1);
+        // Receive answer
         spi_receive(buf, 2);
+
+        // Parse data
+        x += ((buf[0]<<8) + buf[1])>>3;
+        // ------------------------------------
+        // Send command
+        writePinLow(comms_config.chip_select_pin);
+        spi_write(0x90);
+        writePinHigh(comms_config.chip_select_pin);
+
+        // Receive answer
+        spi_receive(buf, 2);
+
+        // Parse data
         y += ((buf[0]<<8) + buf[1])>>3;
     }
 
@@ -108,6 +108,11 @@ touch_report_t touch_get_report(touch_device_t device) {
             report.y = driver->width - x;
             break;
     }
+
+    //IRQ stays at low without this, makes no sense as:
+    // 1- The loop already ends with CS set on high
+    // 2- We are (according to prints) not getting here
+    writePinHigh(comms_config.chip_select_pin);
 
     return report;
 }

@@ -31,5 +31,4 @@ typedef struct touch_report_t {
 
 bool touch_spi_init(touch_device_t device);
 bool touch_spi_start(touch_device_t device);
-void touch_spi_send(touch_device_t device, const uint8_t *data, uint8_t byte_count);
 touch_report_t touch_get_report(touch_device_t device);

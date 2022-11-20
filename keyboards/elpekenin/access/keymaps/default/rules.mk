@@ -6,7 +6,7 @@ XAP_ENABLE = yes
 # Custom features
 ONE_HAND_MODE = no
 TOUCH_SCREEN = yes
-QP_XAP = yes
+QP_XAP = no
 
 # ------------------ Extra logic ------------------
 # Doesn't seem to work if added at keyboard level
@@ -21,9 +21,11 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
            rp2040.qgf.c
 
     # QP over XAP
-    ifeq ($(strip $(QP_XAP)), yes)
-        OPT_DEFS += -DQP_XAP
-        SRC += qp_xap.c
+    ifeq ($(strip $(XAP_ENABLE)), yes)
+        ifeq ($(strip $(QP_XAP)), yes)
+            OPT_DEFS += -DQP_XAP
+            SRC += qp_xap.c
+        endif
     endif
 endif
 
