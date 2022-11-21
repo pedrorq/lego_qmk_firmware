@@ -23,6 +23,8 @@ touch_device_t touch_device;
 
 
 void keyboard_post_init_kb(void) {
+    debug_enable = true;
+
 #if defined(DEFERRED_EXEC_ENABLE)
     // Define function so `defer_exec` doesn't crash the compiling
     uint32_t deferred_init(uint32_t trigger_time, void *cb_arg);
@@ -58,22 +60,24 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
         .measurements = 1,
-        .offset_x = 745,
-        .scale_x = -0.1,
-        .offset_y = 1030,
-        .scale_y = -0.13,
-        .rotation = _SCREEN_ROTATION,
-        .comms_config = {
+        .offset = 430,
+        .scale = 3270,
+        .rotation = (_SCREEN_ROTATION+2)%4,
+        .upside_down = false,
+        .spi_config = {
             .chip_select_pin = TOUCH_CS_PIN,
             .divisor = SPI_DIV,
             .lsb_first = false,
             .mode = SPI_MODE,
-            .irq_pin = TOUCH_IRQ_PIN
-        }
+            .irq_pin = TOUCH_IRQ_PIN,
+            .x_cmd = 0xD0,
+            .y_cmd = 0x90
+        },
     };
 
     touch_device = &touch_driver;
     touch_spi_init(touch_device);
+    dprint("Touch initialized\n");
 #endif // TOUCH_SCREEN
 
     dprint("\n---------- User code ----------\n");

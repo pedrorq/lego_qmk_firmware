@@ -5,7 +5,9 @@
 
 #include "config_common.h"
 
-
+// =======
+// Debugging
+// #define QUANTUM_PAINTER_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
 
 // =======
@@ -28,7 +30,6 @@
 #define LCD_DC_PIN   GP6
 #define LCD_BL_PIN   GP7
 #define LCD_RST_PIN  GP8
-#define QUANTUM_PAINTER_DEBUG
 
 // -- Touch screen
 #define TOUCH_CS_PIN  GP9

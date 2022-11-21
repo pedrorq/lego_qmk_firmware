@@ -15,10 +15,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-void keyboard_post_init_user(void) {
-    debug_enable = true;
-}
-
 #if defined (TOUCH_SCREEN)
 uint32_t touch_timer = 0;
 void housekeeping_task_user(void) {
@@ -31,7 +27,7 @@ void housekeeping_task_user(void) {
         return;
 
     touch_timer = timer_read32();
-    touch_report_t touch_report = get_touch_report(touch_device);
+    touch_report_t touch_report = get_spi_touch_report(touch_device);
     if (touch_report.pressed)
         dprintf("Screen was pressed at x: %u, y: %u\n", touch_report.x, touch_report.y);
 }
