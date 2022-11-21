@@ -87,6 +87,7 @@ def get_device():
             "device",
             message="Select a device",
             choices=names,
+            carousel=True,
         ),
     ]
     name = inquirer.prompt(device_selector, theme=BlueComposure())["device"]
@@ -394,6 +395,7 @@ if __name__ == "__main__":
                         message="Want it filled?",
                         choices=["Yes", "No"],
                         default="Yes",
+                        carousel=True,
                     ))
                     continue
 
@@ -422,6 +424,7 @@ if __name__ == "__main__":
                 "method",
                 message="What do you want to do?",
                 choices=methods,
+                carousel=True,
             ),
         ]
         # ========================================================================

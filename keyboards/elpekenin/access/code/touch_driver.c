@@ -1,6 +1,7 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <stdint.h>
 #include "debug.h"
 #include "spi_master.h"
 #include "touch_driver.h"
@@ -55,8 +56,8 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     report.pressed = true;
 
     // Read data from sensor, 0-rotation based
-    uint16_t x = 0;
-    uint16_t y = 0;
+    int16_t x = 0;
+    int16_t y = 0;
 
     // Take several measurements and then compute the mean
     for (uint8_t i=0; i<driver->measurements; i++) {
@@ -74,10 +75,12 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     // Compute average
     x = x/driver->measurements;
     y = y/driver->measurements;
+    dprintf("Average | x: %d, y: %d\n", x, y);
 
     // Map to correct range
-    x = ((x - driver->offset) / driver->scale * driver->width);
-    y = ((y - driver->offset) / driver->scale * driver->height);
+    x = ((x - driver->offset) * driver->width  / driver->scale);
+    y = ((y - driver->offset) * driver->height / driver->scale);
+    dprintf("Scaled | x: %d, y: %d\n", x, y);
 
     // Handle posible edge cases
     if (x < 0) { x = 0; }
@@ -90,26 +93,30 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
         report.x = driver->width - x;
     }
 
+    // Appropiate type
+    uint16_t _x = x;
+    uint16_t _y = y;
+
     // Apply rotation adjustments
     switch (driver->rotation) {
         case TOUCH_ROTATION_0:
-            report.x = x;
-            report.y = y;
+            report.x = _x;
+            report.y = _y;
             break;
 
         case TOUCH_ROTATION_90:
-            report.x = driver->height - y;
-            report.y = x;
+            report.x = driver->height - _y;
+            report.y = _x;
             break;
 
         case TOUCH_ROTATION_180:
-            report.x = driver->width  - x;
-            report.y = driver->height - y;
+            report.x = driver->width  - _x;
+            report.y = driver->height - _y;
             break;
 
         case TOUCH_ROTATION_270:
-            report.x = y;
-            report.y = driver->width - x;
+            report.x = _y;
+            report.y = driver->width - _x;
             break;
     }
 

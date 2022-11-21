@@ -22,7 +22,7 @@ typedef struct spi_touch_comms_config_t {
     pin_t    irq_pin;
     uint8_t  x_cmd;
     uint8_t  y_cmd;
-} spi_touch_comms_config_t;
+} __attribute__((packed)) spi_touch_comms_config_t;
 
 // -------------------
 typedef struct touch_driver_t {
