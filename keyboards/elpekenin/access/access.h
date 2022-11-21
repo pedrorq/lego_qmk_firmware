@@ -19,3 +19,8 @@ typedef enum key_selector_direction_t{
 extern uint8_t key_selector_mode_last_key;
 extern key_selector_direction_t key_selector_direction;
 #endif // RGB_MATRIX_ENABLE
+
+#if defined (TOUCH_SCREEN)
+#    include "touch_driver.h"
+extern touch_device_t touch_device;
+#endif // TOUCH_SCREEN

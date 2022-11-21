@@ -3,7 +3,6 @@
 
 #include QMK_KEYBOARD_H
 #include "access.h"
-#include "print.h"
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "color.h"
@@ -23,11 +22,7 @@ touch_device_t touch_device;
 #endif // TOUCH_SCREEN
 
 
-// ---------------------------------------------------------------------
-
 void keyboard_post_init_kb(void) {
-    debug_enable = true;
-
 #if defined(DEFERRED_EXEC_ENABLE)
     // Define function so `defer_exec` doesn't crash the compiling
     uint32_t deferred_init(uint32_t trigger_time, void *cb_arg);
@@ -37,7 +32,7 @@ void keyboard_post_init_kb(void) {
 }
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
-    dprint("Running deferred code\n");
+    dprint("---------- Init phase ----------\n");
 #endif // DEFERRED_EXEC_ENABLE
 
     // =======
@@ -62,9 +57,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     static touch_driver_t touch_driver = {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
-        .measurements = 3,
-        .offset = 430,
-        .max = 3270,
+        .measurements = 1,
+        .offset_x = 745,
+        .scale_x = -0.1,
+        .offset_y = 1030,
+        .scale_y = -0.13,
         .rotation = _SCREEN_ROTATION,
         .comms_config = {
             .chip_select_pin = TOUCH_CS_PIN,
@@ -77,12 +74,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     touch_device = &touch_driver;
     touch_spi_init(touch_device);
-    dprint("Touch initialized\n");
 #endif // TOUCH_SCREEN
+
+    dprint("\n---------- User code ----------\n");
 
     // =======
     // Call user code
     keyboard_post_init_user();
+
 #if defined(DEFERRED_EXEC_ENABLE)
     return 0; //don't repeat the function
 #endif // DEFERRED_EXEC_ENABLE
@@ -132,21 +131,3 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     return empty_mouse_report();
 }
 #endif // ONE_HAND_MODE
-
-#if defined (TOUCH_SCREEN)
-uint32_t touch_timer = 0;
-void housekeeping_task_kb(void) {
-    // Wait until device is initialized
-    if (touch_device == NULL)
-        return;
-
-    // Read every 0.5 seconds
-    if (timer_elapsed32(touch_timer) < 500)
-        return;
-
-    touch_timer = timer_read32();
-    touch_report_t touch_report = touch_get_report(touch_device);
-    if (touch_report.pressed)
-        dprintf("x: %u, y: %u\n", touch_report.x, touch_report.y);
-}
-#endif // TOUCH_SCREEN

@@ -19,7 +19,7 @@
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
 #define SPI_MODE 0
-#define SPI_DIV  4
+#define SPI_DIV  16
 
 // -- Display
 // Rotation (multiple of 90º)

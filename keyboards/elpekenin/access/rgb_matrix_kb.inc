@@ -1,3 +1,6 @@
+// Copyright 2022 Pablo Martinez (@elpekenin)
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 RGB_MATRIX_EFFECT(key_selector_mode)
 
 #if defined(RGB_MATRIX_CUSTOM_EFFECT_IMPLS)

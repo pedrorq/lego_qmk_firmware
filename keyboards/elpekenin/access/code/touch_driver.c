@@ -4,7 +4,6 @@
 #include "debug.h"
 #include "spi_master.h"
 #include "touch_driver.h"
-#include "wait.h"
 
 bool touch_spi_init(touch_device_t device) {
     struct touch_driver_t       *driver      = (struct touch_driver_t *)device;
@@ -24,7 +23,6 @@ bool touch_spi_init(touch_device_t device) {
 }
 
 bool touch_spi_start(touch_comms_config_t comms_config) {
-    writePinHigh(comms_config.chip_select_pin);
     return spi_start(comms_config.chip_select_pin, comms_config.lsb_first, comms_config.mode, comms_config.divisor);
 }
 
@@ -33,14 +31,7 @@ void touch_spi_stop(touch_comms_config_t comms_config) {
     writePinHigh(comms_config.chip_select_pin);
 }
 
-void touch_spi_send(uint8_t cmd, pin_t chip_select_pin) {
-    writePinLow(chip_select_pin);
-    spi_write(cmd);
-    writePinHigh(chip_select_pin);
-    wait_us(200);
-}
-
-touch_report_t touch_get_report(touch_device_t device) {
+touch_report_t get_touch_report(touch_device_t device) {
     struct touch_driver_t       *driver      = (struct touch_driver_t *)device;
     struct touch_comms_config_t comms_config = driver->comms_config;
 
@@ -60,58 +51,69 @@ touch_report_t touch_get_report(touch_device_t device) {
     if (!touch_spi_start(comms_config)) {
         dprint("Couldn't start touch comms\n");
     }
+
     report.pressed = true;
 
     // Read data from sensor, 0-rotation based
-    uint16_t x = 0;
-    uint16_t y = 0;
+    int16_t x = 0;
+    int16_t y = 0;
     uint8_t buf[2];
 
     // Take several measurements and then compute the mean
     for (uint8_t i=0; i<driver->measurements; i++) {
         // Send command
-        touch_spi_send(0xD0, comms_config.chip_select_pin);
+        spi_write(0xD0);
         // Receive answer
         spi_receive(buf, 2);
         // Parse data
         x += ((buf[0]<<8) + buf[1])>>3;
-        // ------------------------------------
+
         // Send command
-        touch_spi_send(0x90, comms_config.chip_select_pin);
+        spi_write(0x90);
         // Receive answer
         spi_receive(buf, 2);
         // Parse data
         y += ((buf[0]<<8) + buf[1])>>3;
     }
 
-    dprintf("Computing average of %d samples\n", driver->measurements);
-    x = (uint16_t) x/driver->measurements;
-    y = (uint16_t) y/driver->measurements;
+    // Compute average
+    x = x/driver->measurements;
+    y = y/driver->measurements;
 
-    // This was on the Python code, not seen it on C's example code (didn't look much tbh)
-    x = (uint16_t) ((x - driver->offset) * driver->width/driver->max);
-    y = (uint16_t) ((y - driver->offset) * driver->height/driver->max);
+    // Map to correct range
+    x = (driver->offset_x + x * driver->scale_x);
+    y = (driver->offset_y + y * driver->scale_y);
+
+    // Handle posible edge cases
+    if (x < 0) { x = 0; }
+    if (x > driver->width) { x = driver->width; }
+    if (y < 0) { y = 0; }
+    if (y > driver->height) { y = driver->height; }
+
+    // Convert to appropiate types:
+    uint16_t _x = x;
+    uint16_t _y = y;
 
     // Apply rotation adjustments
     switch (driver->rotation) {
         case TOUCH_ROTATION_0:
-            report.x = x;
-            report.y = y;
+            report.x = _x;
+            report.y = _y;
             break;
 
         case TOUCH_ROTATION_90:
-            report.x = driver->height - y;
-            report.y = x;
+            report.x = driver->height - _y;
+            report.y = _x;
             break;
 
         case TOUCH_ROTATION_180:
-            report.x = driver->width  - x;
-            report.y = driver->height - y;
+            report.x = driver->width  - _x;
+            report.y = driver->height - _y;
             break;
 
         case TOUCH_ROTATION_270:
-            report.x = y;
-            report.y = driver->width - x;
+            report.x = _y;
+            report.y = driver->width - _x;
             break;
     }
 
