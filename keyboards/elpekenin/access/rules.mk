@@ -1,3 +1,5 @@
+AUDIO_DRIVER = pwm_hardware
+
 DEFERRED_EXEC_ENABLE = yes
 
 DEFAULT_FOLDER = elpekenin/access

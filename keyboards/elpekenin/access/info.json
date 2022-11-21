@@ -12,7 +12,7 @@
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "features": {
-        "audio": false,
+        "audio": true,
         "backlight": false,
         "bootmagic": true,
         "console": true,
