@@ -75,12 +75,10 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     // Compute average
     x = x/driver->measurements;
     y = y/driver->measurements;
-    dprintf("Average | x: %d, y: %d\n", x, y);
 
     // Map to correct range
     x = ((x - driver->offset) * driver->width  / driver->scale);
     y = ((y - driver->offset) * driver->height / driver->scale);
-    dprintf("Scaled | x: %d, y: %d\n", x, y);
 
     // Handle posible edge cases
     if (x < 0) { x = 0; }
