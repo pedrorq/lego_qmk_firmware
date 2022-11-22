@@ -23,4 +23,8 @@ extern key_selector_direction_t key_selector_direction;
 #if defined (TOUCH_SCREEN)
 #    include "touch_driver.h"
 extern touch_device_t touch_device;
+#    if defined(ONE_HAND_MODE)
+void screen_one_hand(touch_report_t touch_report);
+#    endif //ONE_HAND_MODE
 #endif // TOUCH_SCREEN
+

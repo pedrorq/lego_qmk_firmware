@@ -1,6 +1,7 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "gpio.h"
 #include QMK_KEYBOARD_H
 #include "access.h"
 
@@ -34,8 +35,9 @@ void keyboard_post_init_kb(void) {
 }
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
-    dprint("---------- Init phase ----------\n");
 #endif // DEFERRED_EXEC_ENABLE
+
+    dprint("---------- Init phase ----------\n");
 
     // =======
     // Power indicator
@@ -43,7 +45,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     writePinHigh(POWER_LED_PIN);
 
     // ==========
-    // SPI devices
+    // Peripherals
 #if defined(QUANTUM_PAINTER_ENABLE)
     setPinOutput(LCD_BL_PIN);
     writePinHigh(LCD_BL_PIN);
@@ -100,6 +102,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 
 #if defined(ONE_HAND_MODE)
+#    if defined(POINTING_DEVICE_ENABLE)
 report_mouse_t empty_mouse_report() {
     return report_mouse_t {
         .x = 0,
@@ -134,4 +137,18 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 
     return empty_mouse_report();
 }
+#    endif // POINTING_DEVICE_ENABLE
+
+#    if defined (TOUCH_SCREEN)
+void screen_one_hand(touch_report_t touch_report) {
+    int16_t x = touch_report.x - SCREEN_WIDTH/2;
+    int16_t y = touch_report.y - SCREEN_HEIGHT/2;
+
+    if (x>0) {
+        key_selector_direction = y>0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+    } else {
+        key_selector_direction = y>0 ? DIRECTION_UP : DIRECTION_DOWN;
+    }
+}
+#    endif // TOUCH_SCREEN
 #endif // ONE_HAND_MODE

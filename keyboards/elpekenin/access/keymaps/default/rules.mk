@@ -4,7 +4,7 @@
 XAP_ENABLE = yes
 
 # Custom features
-ONE_HAND_MODE = no
+ONE_HAND_MODE = yes
 TOUCH_SCREEN = yes
 
 # ------------------ Extra logic ------------------
@@ -27,11 +27,11 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
 endif
 
 # Custom features
-ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
+# ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
     ifeq ($(strip $(ONE_HAND_MODE)), yes)
         OPT_DEFS += -DONE_HAND_MODE
     endif
-endif
+# endif
 
 ifeq ($(strip $(TOUCH_SCREEN)), yes)
     QUANTUM_LIB_SRC += spi_master.c

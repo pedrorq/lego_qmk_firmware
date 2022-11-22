@@ -5,9 +5,11 @@ RGB_MATRIX_EFFECT(key_selector_mode)
 
 #if defined(RGB_MATRIX_CUSTOM_EFFECT_IMPLS)
 
-// FIXME This code assumes no unused positions on the key matrix
+// TODO This code assumes no unused positions on the key matrix... and a few other things
 
-#    if (RGB_MATRIX_LED_COUNT != (MATRIX_COLS * MATRIX_ROWS))
+#    define MATRIX_KEYS (MATRIX_COLS*MATRIX_ROWS)
+
+#    if (RGB_MATRIX_LED_COUNT != MATRIX_KEYS)
 #        error "This effect doesn't make sense if LEDs != keys"
 #    endif
 
@@ -42,24 +44,32 @@ static bool key_selector_mode(effect_params_t *params) {
 
         case DIRECTION_LEFT:
             new_key = (key_selector_mode_last_key - 1);
+
+            // From 1st column to last
+            if ((key_selector_mode_last_key%MATRIX_COLS) == 0) {
+                new_key += MATRIX_COLS;
+            }
             break;
 
         case DIRECTION_RIGHT:
             new_key = (key_selector_mode_last_key + 1);
+
+            // From last column to 1st
+            if (((key_selector_mode_last_key+1)%MATRIX_COLS) == 0) {
+                new_key -= MATRIX_COLS;
+            }
             break;
 
-        //nothing to be done
-        default:
+        case DIRECTION_NONE:
             return false;
     }
 
-    // -- Edge cases
+    // Out of bounds
     if (new_key < 0) {
-        // turn negative into end-of-chain index
-        new_key = (MATRIX_ROWS * MATRIX_COLS) + new_key;
+        new_key += MATRIX_KEYS;
+    } else if (new_key >= MATRIX_KEYS) {
+        new_key -= MATRIX_KEYS;
     }
-    // turn out-of-range into start-of-chain index
-    new_key %= (MATRIX_ROWS * MATRIX_COLS);
 
     rgb_matrix_set_color(key_selector_mode_last_key, SELECTOR_BG_COLOR);
     key_selector_mode_last_key = (uint8_t) new_key;
