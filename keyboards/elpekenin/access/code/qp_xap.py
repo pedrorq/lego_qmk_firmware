@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
-import logging
+"""This script provides a (somewhat) friendly interface to interact with your Quantum Painter
+devices over a XAP connection.
 
+Note: Has only been tested on 3.10.8 and 3.11, but should work down to 3.6
+"""
+import importlib
+import logging
+import random
+import subprocess
+import sys
 
 # ================================= DISCLAIMER =================================
 # Should be compatible with +3.6 (f-strings), but only tested on 3.11 and 3.10.8
@@ -9,16 +17,16 @@ import logging
 
 
 # ======= CONFIG =======
-USAGE         = 0x0058
-USAGE_PAGE    = 0xFF51
-SCREEN_WIDTH  = 480
+USAGE = 0x0058
+USAGE_PAGE = 0xFF51
+SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320
-LOG_LEVEL     = logging.CRITICAL
+LOG_LEVEL = logging.DEBUG
 # ======================
 
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(levelname)s - %(message)s",
     level=LOG_LEVEL,
     # filename="qp_xap.log",
     # filemode="w",
@@ -26,51 +34,37 @@ logging.basicConfig(
 
 
 # ============================================ HELPERS ============================================
-def check_dependencies():
-    """This function will check for the needed dependencies.
-    If something is not installed, user will be prompted get it installed.
+def log_exception(exception):
+    """Log the type of exception that happened
     """
+    logging.error("Exception was handled: [%s]%s", exception.__class__.__name__, exception)
 
-    import importlib
-    import subprocess
-    global sys
-    import sys
 
+def check_dependencies():
+    """Checks for the needed dependencies. If any is missing, user is prompted get it installed.
+    """
     for dep in ["hid", "inquirer"]:
         try:
-            importlib.import_module(dep)
-            logging.info(f"{dep} was already installed ✔")
+            importlib.import_module(dep)  # pylint: disable=import-outside-toplevel
+            logging.info("%s was already installed ✔", dep)
 
-        except Exception as e:
-            logging.error(f"Error while trying to import {dep}: [{e.__class__.__name__}]{e}")
+        except ModuleNotFoundError as imp_exc:
+            log_exception(imp_exc)
             ans = input(f"Module {dep} not installed, do you want to install it? [Y/n]: ")
             if ans.lower() in ["", "y", "yes"]:
                 print("-------------")
-                logging.info(f"Intalling {dep} through pip")
-                subprocess.run([sys.executable, "-m", "pip", "install", dep])
+                logging.info("Intalling %s through pip", dep)
+                subprocess.run([sys.executable, "-m", "pip", "install", dep], check=True)
                 print("-------------")
 
-def to_u8(value):
-    return int(value)&0xFF
-
-def parse_color(color):
-    color = (
-        color.replace("[", "")
-             .replace("]", "")
-             .replace(" ", "")
-             .split(",")
-    )
-
-    if len(color) != 3:
-        raise ValueError("Color has to contain 3 elemets")
-
-    return [to_u8(i) for i in color]
-
-def to16(value):
-    return int(value)&0xFF, int(value)>>8
 
 def get_device():
-    import hid
+    """Finds compatible endpoints:
+        - If none: Quits
+        - In one: Automatically select it
+        - If many: Prompt user to select one
+    """
+    import hid  # pylint: disable=import-outside-toplevel
 
     devices = [i for i in hid.enumerate() if i["usage_page"] == USAGE_PAGE and i["usage"] == USAGE]
 
@@ -79,7 +73,7 @@ def get_device():
         sys.exit(0)
 
     if len(devices) == 1:
-        return QP_XAP(hid.Device(path=devices[0]["path"]))
+        return QpXap(hid.Device(path=devices[0]["path"]))
 
     names = [f"{i['manufacturer_string']}, {i['product_string']}" for i in devices]
     device_selector = [
@@ -92,33 +86,89 @@ def get_device():
     ]
     name = inquirer.prompt(device_selector, theme=BlueComposure())["device"]
     device = devices[names.index(name)]
-    return QP_XAP(hid.Device(path=device["path"]))
+    return QpXap(hid.Device(path=device["path"]))
 
 
-def parse_bool(x):
-    return str(x).lower() in ["true", "yes", "y", "1"]
+def to_u8(value):
+    """Convert any number to 8 bit representation (can lose some of MSB)
+    """
+    return int(value) & 0xFF
 
-def validate_color(_, x):
+
+def to16(value):
+    """Convert any number to 16 bit representation (can lose some of MSB)
+    """
+    return int(value) & 0xFF, int(value) >> 8
+
+
+def parse_bool(value):
+    """Parse string into boolean
+    """
+    return str(value).lower() in ["true", "yes", "y", "1"]
+
+
+def generate_color(_):
+    """Generate a color
+        - H = random(0-255)
+        - S = 255
+        - V = 255
+    """
+    return f"[{random.randint(0, 255)}, 255, 255]"
+
+
+def parse_color(color):
+    """Parse string into color
+    """
+    color = (
+        color.replace("[", "")
+             .replace("]", "")
+             .replace(" ", "")
+             .split(",")
+    )
+
+    if len(color) != 3:
+        raise ValueError("Color has to contain 3 elemets")
+
+    return [to_u8(i) for i in color]
+
+
+def validate_color(_, value):
+    """Validate if string is a color
+    """
     try:
-        parse_color(x)
+        parse_color(value)
         return True
-    except:
+    except ValueError:
         return False
 
-def validate_number(_, x):
+
+def generate_number(_):
+    """Generate a number = random(0, 100)
+    """
+    return f"{random.randint(0, 100)}"
+
+
+def validate_number(_, value):
+    """Validate if string is a number
+    """
     try:
-        int(x)
+        int(value)
         return True
-    except:
+    except ValueError:
         return False
 
-def validate_str(_, x):
+
+def validate_str(__, _):
+    """Validate if string has correct content
+    """
     return True
 # =================================================================================================
 
 
 # ===================================== HID Abstraction =====================================
-class QP_XAP:
+class QpXap:
+    """Abstraction over HID details, to easily call any of the QP functions over XAP
+    """
     def __init__(self, hid):
         self._hid = hid
         print(f"Connected to {hid.manufacturer}:{hid.product}")
@@ -135,7 +185,7 @@ class QP_XAP:
             raise ValueError(f"Payload is too long, ({len(payload)} > 61)")
 
         # Clear
-        for i in range(2, len(self._payload)):
+        for i in range(2, len(self._payload)):  # pylint: disable=redefined-outer-name
             self._payload[i] = 0x00
 
         # Copy payload
@@ -148,20 +198,25 @@ class QP_XAP:
             self._payload = [0, *self._payload]
 
         # Send
-        self._hid.write(bytes(self._payload[:65])) #make sure we only send 64B
-        response = self._hid.read(64, timeout=1000)
+        self._hid.write(bytes(self._payload[:65]))  # make sure we only send 64B
+        _ = self._hid.read(64, timeout=1000)
 
     def _close(self):
         self._hid.close()
 
+    def __del__(self):
+        self._close()
+
     def clear(self, display):
-        #dooesn't seem to do anything
+        """Fill the selected display black
+        """
+        # dooesn't seem to do anything
         self._send([
             2, 2, 1,
             to_u8(display),
         ])
 
-        #make all screen black
+        # make all screen black
         self.rect(
             display=display,
             left=0,
@@ -173,6 +228,8 @@ class QP_XAP:
         )
 
     def setpixel(self, *, display, x, y, color):
+        """Draw a single pixel
+        """
         self._send([
             2, 2, 2,
             to_u8(display),
@@ -182,6 +239,8 @@ class QP_XAP:
         ])
 
     def line(self, *, display, x0, y0, x1, y1, color):
+        """Draw a line
+        """
         self._send([
             2, 2, 3,
             to_u8(display),
@@ -193,6 +252,8 @@ class QP_XAP:
         ])
 
     def rect(self, *, display, left, top, right, bottom, color, filled):
+        """Draw a rectangle
+        """
         filled = parse_bool(filled)
 
         self._send([
@@ -207,6 +268,8 @@ class QP_XAP:
         ])
 
     def circle(self, *, display, x, y, radius, color, filled):
+        """Draw a circle
+        """
         filled = parse_bool(filled)
 
         self._send([
@@ -220,6 +283,8 @@ class QP_XAP:
         ])
 
     def ellipse(self, *, display, x, y, sizex, sizey, color, filled):
+        """Draw an ellipse
+        """
         filled = parse_bool(filled)
 
         self._send([
@@ -234,6 +299,8 @@ class QP_XAP:
         ])
 
     def drawimage(self, *, display, x, y, img):
+        """Draw an image (based on its array index)
+        """
         self._send([
             2, 2, 7,
             to_u8(display),
@@ -243,6 +310,8 @@ class QP_XAP:
         ])
 
     def drawimage_recolor(self, *, display, x, y, img, fg_color, bg_color):
+        """Draw an image (based on its array index) and change its colors
+        """
         self._send([
             2, 2, 8,
             to_u8(display),
@@ -253,7 +322,9 @@ class QP_XAP:
             *parse_color(bg_color),
         ])
 
-    def animate(self, *, display, x, y, image):
+    def animate(self, *, display, x, y, img):
+        """Draw an animation (based on its array index)
+        """
         self._send([
             2, 2, 9,
             to_u8(display),
@@ -262,7 +333,9 @@ class QP_XAP:
             to_u8(img),
         ])
 
-    def animate_recolor(self, *, display, x, y, image, fg_color, bg_color):
+    def animate_recolor(self, *, display, x, y, img, fg_color, bg_color):
+        """Draw an animation (based on its array index) and change its colors
+        """
         self._send([
             2, 2, 0xA,
             to_u8(display),
@@ -274,6 +347,8 @@ class QP_XAP:
         ])
 
     def drawtext(self, *, display, x, y, font, text):
+        """Write some text
+        """
         self._send([
             2, 2, 0xB,
             to_u8(display),
@@ -284,6 +359,8 @@ class QP_XAP:
         ])
 
     def drawtext_recolor(self, *, display, x, y, font, fg_color, bg_color, text):
+        """Write some text and change its colors
+        """
         self._send([
             2, 2, 0xC,
             to_u8(display),
@@ -328,51 +405,47 @@ LOGO = r"""
 # =================================================================
 
 
-
 if __name__ == "__main__":
     try:
         check_dependencies()
 
-        global inquirer, BlueComposure
+        global inquirer, BlueComposure  # pylint: disable=invalid-name, global-at-module-level
         import inquirer
         from inquirer.themes import BlueComposure
-
-
-        import random
 
         # ==== Get XAP device
         qp_xap = get_device()
 
-
         # ==================== Print start message ====================
-        text = TEXT.split("\n")
-        text_rows = len(text)
-        text_cols = max([len(row) for row in text])
+        text_rows = TEXT.split("\n")
+        n_text_rows = len(text_rows)
+        n_text_cols = max(len(row) for row in text_rows)
 
-        logo = LOGO.split("\n")
-        logo_rows = len(logo)
-        logo_cols = max([len(row) for row in logo])
+        logo_rows = LOGO.split("\n")
+        n_logo_rows = len(logo_rows)
+        n_logo_cols = max(len(row) for row in logo_rows)
 
-        offset = (logo_rows - text_rows) // 2
-        space  = (text_cols + 10)
+        offset = (n_logo_rows - n_text_rows) // 2
+        space = (n_text_cols + 10)
 
-        print("╸"*int((space+logo_cols)/1))
-        for i, l in enumerate(logo):
+        print("╸" * int((space + n_logo_cols) / 1))
+        for i, l in enumerate(logo_rows):
             j = i - offset
-            t = text[j] if j in range(text_rows) else ""
+            t = text_rows[j] if j in range(n_text_rows) else ""
             spacer = " " * (space - len(t))
             print(f"{t}{spacer}{l}")
 
-        print("╸"*int((space+logo_cols)/1))
-        # =============================================================
-
+        print("╸" * int((space + n_logo_cols) / 1))
 
         # ================== Prepare variables for the mainloop ==================
-        methods = list(filter(lambda x: not x.startswith("_"), vars(QP_XAP).keys()))
+        methods = list(filter(lambda x: not x.startswith("_"), vars(QpXap).keys()))
         arguments = {
-            method: [i for i in getattr(QP_XAP, method).__code__.co_varnames
-                if i not in ["self", "log"]]
-                for method in methods
+            method: [
+                i
+                for i in getattr(QpXap, method).__code__.co_varnames
+                if i not in ["self", "log"]
+            ]
+            for method in methods
         }
 
         prompts = {}
@@ -380,14 +453,14 @@ if __name__ == "__main__":
             prompt = []
             for arg in arguments.get(method):
                 if arg in ["display", "font", "img"]:
-                    message  = f"Select a{'n' if arg == 'image' else ''} {arg}"
-                    validate = validate_number
-                    default  = "0"
+                    MESSAGE = f"Select a{'n' if arg == 'img' else ''} {arg}"
+                    VALIDATE = validate_number
+                    DEFAULT = "0"
 
                 elif "color" in arg:
-                    message  = f"Input {'a ' if arg =='color' else ''} {arg}"
-                    validate = validate_color
-                    default  = lambda _: f"[{random.randint(0, 255)}, 255, 255]"
+                    MESSAGE = f"Input {'a ' if arg =='color' else ''} {arg}"
+                    VALIDATE = validate_color
+                    DEFAULT = generate_color
 
                 elif arg == "filled":
                     prompt.append(inquirer.List(
@@ -400,20 +473,20 @@ if __name__ == "__main__":
                     continue
 
                 elif arg == "text":
-                    message  = "Write something"
-                    validate = validate_str
-                    default  = "Hello!"
+                    MESSAGE = "Write something"
+                    VALIDATE = validate_str
+                    DEFAULT = "Hello!"
 
                 else:
-                    message  = f"Input a value for {arg}"
-                    validate = validate_number
-                    default  = lambda _: f"{random.randint(0, 100)}"
+                    MESSAGE = f"Input a value for {arg}"
+                    VALIDATE = validate_number
+                    DEFAULT = generate_number
 
                 prompt.append(inquirer.Text(
                     arg,
-                    message=message,
-                    validate=validate,
-                    default=default,
+                    message=MESSAGE,
+                    validate=VALIDATE,
+                    default=DEFAULT,
                 ))
 
             prompts[method] = prompt
@@ -427,8 +500,6 @@ if __name__ == "__main__":
                 carousel=True,
             ),
         ]
-        # ========================================================================
-
 
         # ============================ Mainloop ============================
         while True:
@@ -443,6 +514,8 @@ if __name__ == "__main__":
             getattr(qp_xap, method)(**args)
         # ==================================================================
 
-    except Exception as e:
-        print(f"Quitting due to [{e.__class__.__name__}]: {e}")
-        qp_xap._close()
+    except Exception as run_exc:  # pylint: disable=broad-except
+        log_exception(run_exc)
+
+    finally:
+        del qp_xap
