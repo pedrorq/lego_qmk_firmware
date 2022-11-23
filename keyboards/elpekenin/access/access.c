@@ -1,7 +1,6 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "gpio.h"
 #include QMK_KEYBOARD_H
 #include "access.h"
 
@@ -31,7 +30,7 @@ void keyboard_post_init_kb(void) {
     uint32_t deferred_init(uint32_t trigger_time, void *cb_arg);
 
     // Defer init code so USB has started and we can receive console messages
-    defer_exec(2500, deferred_init, NULL);
+    defer_exec(INIT_DELAY, deferred_init, NULL);
 }
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {

@@ -3,7 +3,7 @@
 """This script provides a (somewhat) friendly interface to interact with your Quantum Painter
 devices over a XAP connection.
 
-Note: Has only been tested on 3.10.8 and 3.11, but should work down to 3.6
+Note: Has only been tested on 3.10.8 and 3.11, but should work down to 3.6 (f-strings)
 """
 import importlib
 import logging
@@ -11,17 +11,13 @@ import random
 import subprocess
 import sys
 
-# ================================= DISCLAIMER =================================
-# Should be compatible with +3.6 (f-strings), but only tested on 3.11 and 3.10.8
-# ==============================================================================
-
 
 # ======= CONFIG =======
 USAGE = 0x0058
 USAGE_PAGE = 0xFF51
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.CRITICAL
 # ======================
 
 
@@ -51,11 +47,13 @@ def check_dependencies():
         except ModuleNotFoundError as imp_exc:
             log_exception(imp_exc)
             ans = input(f"Module {dep} not installed, do you want to install it? [Y/n]: ")
-            if ans.lower() in ["", "y", "yes"]:
-                print("-------------")
-                logging.info("Intalling %s through pip", dep)
-                subprocess.run([sys.executable, "-m", "pip", "install", dep], check=True)
-                print("-------------")
+            if ans.lower() not in ["", "y", "yes"]:
+                print("Can't procceed")
+
+            print("-------------")
+            logging.info("Intalling %s through pip", dep)
+            subprocess.run([sys.executable, "-m", "pip", "install", dep], check=True)
+            print("-------------")
 
 
 def get_device():
@@ -65,6 +63,8 @@ def get_device():
         - If many: Prompt user to select one
     """
     import hid  # pylint: disable=import-outside-toplevel
+    import inquirer  # pylint: disable=import-outside-toplevel
+    from inquirer.themes import BlueComposure  # pylint: disable=import-outside-toplevel
 
     devices = [i for i in hid.enumerate() if i["usage_page"] == USAGE_PAGE and i["usage"] == USAGE]
 
@@ -73,7 +73,7 @@ def get_device():
         sys.exit(0)
 
     if len(devices) == 1:
-        return QpXap(hid.Device(path=devices[0]["path"]))
+        return hid.Device(path=devices[0]["path"])
 
     names = [f"{i['manufacturer_string']}, {i['product_string']}" for i in devices]
     device_selector = [
@@ -86,7 +86,7 @@ def get_device():
     ]
     name = inquirer.prompt(device_selector, theme=BlueComposure())["device"]
     device = devices[names.index(name)]
-    return QpXap(hid.Device(path=device["path"]))
+    return hid.Device(path=device["path"])
 
 
 def to_u8(value):
@@ -162,16 +162,15 @@ def validate_str(__, _):
     """Validate if string has correct content
     """
     return True
-# =================================================================================================
 
 
 # ===================================== HID Abstraction =====================================
 class QpXap:
     """Abstraction over HID details, to easily call any of the QP functions over XAP
     """
-    def __init__(self, hid):
-        self._hid = hid
-        print(f"Connected to {hid.manufacturer}:{hid.product}")
+    def __init__(self, dev):
+        self._hid = dev
+        print(f"Connected to {dev.manufacturer}:{dev.product}")
 
         # Empty buffer
         self._payload = [0x00] * 64
@@ -371,7 +370,6 @@ class QpXap:
             *parse_color(bg_color),
             *[ord(i) for i in text],
         ])
-# ===========================================================================================
 
 
 # =========================== ASCII Art ===========================
@@ -402,120 +400,127 @@ LOGO = r"""
        %%%%%%%%%%%%%%%%%%%%%%%%%%%
           //   //  ///  //   //
 """
-# =================================================================
+
+
+def welcome_message():
+    """Show a greeting after checking dependencies and connecting to a device
+    """
+    text_rows = TEXT.split("\n")
+    n_text_rows = len(text_rows)
+    n_text_cols = max(len(row) for row in text_rows)
+
+    logo_rows = LOGO.split("\n")
+    n_logo_rows = len(logo_rows)
+    n_logo_cols = max(len(row) for row in logo_rows)
+
+    offset = (n_logo_rows - n_text_rows) // 2
+    space = (n_text_cols + 10)
+
+    print("╸" * int((space + n_logo_cols) / 1))
+    # This code assumes logo has more rows than text does
+    for logo_index, logo_row in enumerate(logo_rows):
+        text_index = logo_index - offset
+        text_row = text_rows[text_index] if text_index in range(n_text_rows) else ""
+        spacer = " " * (space - len(text_row))
+        print(f"{text_row}{spacer}{logo_row}")
+
+    print("╸" * int((space + n_logo_cols) / 1))
+
+
+# =========================== Main loop ===========================
+def user_input_loop(qp_xap):
+    """Listen to user input and send messages to the connected device
+    """
+    import inquirer  # pylint: disable=import-outside-toplevel
+    from inquirer.themes import BlueComposure  # pylint: disable=import-outside-toplevel
+
+    methods = list(filter(lambda x: not x.startswith("_"), vars(QpXap).keys()))
+    arguments = {
+        method: [
+            i
+            for i in getattr(QpXap, method).__code__.co_varnames
+            if i not in ["self", "log"]
+        ]
+        for method in methods
+    }
+
+    prompts = {}
+    for method in methods:
+        prompt = []
+        for arg in arguments.get(method):
+            if arg in ["display", "font", "img"]:
+                message = f"Select a{'n' if arg == 'img' else ''} {arg}"
+                validate = validate_number
+                default = "0"
+
+            elif "color" in arg:
+                message = f"Input {'a ' if arg =='color' else ''} {arg}"
+                validate = validate_color
+                default = generate_color
+
+            elif arg == "filled":
+                prompt.append(inquirer.List(
+                    arg,
+                    message="Want it filled?",
+                    choices=["Yes", "No"],
+                    default="Yes",
+                    carousel=True,
+                ))
+                continue
+
+            elif arg == "text":
+                message = "Write something"
+                validate = validate_str
+                default = "Hello!"
+
+            else:
+                message = f"Input a value for {arg}"
+                validate = validate_number
+                default = generate_number
+
+            prompt.append(inquirer.Text(
+                arg,
+                message=message,
+                validate=validate,
+                default=default,
+            ))
+
+        prompts[method] = prompt
+
+    methods.append("quit")
+    method_selector = [
+        inquirer.List(
+            "method",
+            message="What do you want to do?",
+            choices=methods,
+            carousel=True,
+        ),
+    ]
+
+    while True:
+        # Get method
+        method = inquirer.prompt(method_selector, theme=BlueComposure())
+        if method is None or method["method"] == "quit":
+            break
+
+        # Get args
+        method = method["method"]
+        args = inquirer.prompt(prompts[method], theme=BlueComposure())
+
+        # Call the function
+        getattr(qp_xap, method)(**args)
 
 
 if __name__ == "__main__":
     try:
         check_dependencies()
-
-        global inquirer, BlueComposure  # pylint: disable=invalid-name, global-at-module-level
-        import inquirer
-        from inquirer.themes import BlueComposure
-
-        # ==== Get XAP device
-        qp_xap = get_device()
-
-        # ==================== Print start message ====================
-        text_rows = TEXT.split("\n")
-        n_text_rows = len(text_rows)
-        n_text_cols = max(len(row) for row in text_rows)
-
-        logo_rows = LOGO.split("\n")
-        n_logo_rows = len(logo_rows)
-        n_logo_cols = max(len(row) for row in logo_rows)
-
-        offset = (n_logo_rows - n_text_rows) // 2
-        space = (n_text_cols + 10)
-
-        print("╸" * int((space + n_logo_cols) / 1))
-        for i, l in enumerate(logo_rows):
-            j = i - offset
-            t = text_rows[j] if j in range(n_text_rows) else ""
-            spacer = " " * (space - len(t))
-            print(f"{t}{spacer}{l}")
-
-        print("╸" * int((space + n_logo_cols) / 1))
-
-        # ================== Prepare variables for the mainloop ==================
-        methods = list(filter(lambda x: not x.startswith("_"), vars(QpXap).keys()))
-        arguments = {
-            method: [
-                i
-                for i in getattr(QpXap, method).__code__.co_varnames
-                if i not in ["self", "log"]
-            ]
-            for method in methods
-        }
-
-        prompts = {}
-        for method in methods:
-            prompt = []
-            for arg in arguments.get(method):
-                if arg in ["display", "font", "img"]:
-                    MESSAGE = f"Select a{'n' if arg == 'img' else ''} {arg}"
-                    VALIDATE = validate_number
-                    DEFAULT = "0"
-
-                elif "color" in arg:
-                    MESSAGE = f"Input {'a ' if arg =='color' else ''} {arg}"
-                    VALIDATE = validate_color
-                    DEFAULT = generate_color
-
-                elif arg == "filled":
-                    prompt.append(inquirer.List(
-                        arg,
-                        message="Want it filled?",
-                        choices=["Yes", "No"],
-                        default="Yes",
-                        carousel=True,
-                    ))
-                    continue
-
-                elif arg == "text":
-                    MESSAGE = "Write something"
-                    VALIDATE = validate_str
-                    DEFAULT = "Hello!"
-
-                else:
-                    MESSAGE = f"Input a value for {arg}"
-                    VALIDATE = validate_number
-                    DEFAULT = generate_number
-
-                prompt.append(inquirer.Text(
-                    arg,
-                    message=MESSAGE,
-                    validate=VALIDATE,
-                    default=DEFAULT,
-                ))
-
-            prompts[method] = prompt
-
-        methods.append("quit")
-        method_selector = [
-            inquirer.List(
-                "method",
-                message="What do you want to do?",
-                choices=methods,
-                carousel=True,
-            ),
-        ]
-
-        # ============================ Mainloop ============================
-        while True:
-            method = inquirer.prompt(method_selector, theme=BlueComposure())
-            # not using walrus (:=) so this is compatible with older version
-            if method is None or method["method"] == "quit":
-                break
-
-            method = method["method"]
-            args = inquirer.prompt(prompts[method], theme=BlueComposure())
-            # Call the function
-            getattr(qp_xap, method)(**args)
-        # ==================================================================
+        hid_dev = get_device()
+        _qp_xap = QpXap(hid_dev)
+        welcome_message()
+        user_input_loop(_qp_xap)
 
     except Exception as run_exc:  # pylint: disable=broad-except
         log_exception(run_exc)
 
     finally:
-        del qp_xap
+        del _qp_xap

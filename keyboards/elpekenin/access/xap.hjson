@@ -482,6 +482,20 @@
                     ]
                     return_execute: qp_drawtext_recolor
                 }
+                0x0D: {
+                    type: command
+                    name: qp_get_geometry
+                    define: QP_GET_GEOMETRY
+                    description: Expose `qp_get_geometry`
+                    request_struct_length: 1
+                    request_struct_members: [
+                        {
+                            type: u8
+                            name: device_id
+                        }
+                    ]
+                    return_execute: qp_get_geometry
+                }
             }
         }
     }

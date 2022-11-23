@@ -43,6 +43,8 @@ void xap_respond_success(xap_token_t token); // Weird stuff to get the function 
         return false; \
     }
 
+#define u16_TO_u8(x) x & 0xFF, x >> 8
+
 
 // ===========================================================
 // Handlers
@@ -244,5 +246,26 @@ bool xap_respond_qp_drawtext_recolor(xap_token_t token, const uint8_t *data, siz
     uint8_t                val_bg = get_u8(data, i);
 
     qp_drawtext_recolor(dev, x, y, font, (char *) &data[counter], hue_fg, sat_fg, val_fg, hue_bg, sat_bg, val_bg);
+    return true; //TODO check this
+}
+
+bool xap_respond_qp_get_geometry(xap_token_t token, const uint8_t *data, size_t data_len) {
+    CHECK_DATA_LEN_IS(1)
+
+    uint8_t counter = 0; uint8_t *i = &counter;
+
+    painter_device_t dev = qp_xap_displays[get_u8(data, i)];
+
+    uint16_t width;
+    uint16_t height;
+    painter_rotation_t rotation;
+    uint16_t offset_x;
+    uint16_t offset_y;
+
+    qp_get_geometry(dev, &width, &height, &rotation, &offset_x, &offset_y);
+
+    uint8_t ret[9] = {u16_TO_u8(width), u16_TO_u8(height), rotation, u16_TO_u8(offset_x), u16_TO_u8(offset_y)};
+
+    xap_send(token, XAP_RESPONSE_FLAG_SUCCESS, ret, sizeof(ret));
     return true; //TODO check this
 }
