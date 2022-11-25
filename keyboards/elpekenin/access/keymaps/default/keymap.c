@@ -2,24 +2,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <stdint.h>
+#include "keycode.h"
 #include QMK_KEYBOARD_H
 #include "access.h"
 #include "color.h"
 #include "graphics.h"
 #include "touch_driver.h"
 
-#define HSV_GREY 0, 0, 50
-
-#if defined(AUDIO_ENABLE)
-float my_song[][2] = SONG(TERMINAL_SOUND);
-#endif // AUDIO_ENABLE
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_ortho_4x4(
-        QK_BOOT, QK_BOOT, QK_BOOT, QK_BOOT,
-        QK_BOOT, QK_BOOT, QK_BOOT, QK_BOOT,
-        QK_BOOT, QK_BOOT, QK_BOOT, QK_BOOT,
-        QK_BOOT, QK_BOOT, QK_BOOT, QK_BOOT
+        QK_BOOT,   KC_7,   KC_8,   KC_9,
+           KC_A,   KC_4,   KC_5,   KC_6,
+           KC_B,   KC_1,   KC_2,   KC_3,
+           KC_C, KC_SPC, KC_DOT, KC_DOT
     )
 };
 
@@ -49,7 +45,7 @@ void housekeeping_task_user(void) {
         uint8_t payload[4] = { touch_report.x & 0xFF, touch_report.x >> 8, touch_report.y & 0xFF, touch_report.y >> 8 };
         // 0x03 means: user-level message
         xap_broadcast(0x03, payload, sizeof(payload));
-        dprintf("x: %u, y: %u\n", touch_report.x, touch_report.y);
+
         release_notified = false;
     }
 
@@ -61,5 +57,9 @@ void housekeeping_task_user(void) {
         release_notified = true;
     }
 #    endif // XAP_ENABLE
+
+#    if defined(ONE_HAND_MODE)
+    screen_one_hand(touch_report);
+#    endif // ONE_HAND_MODE
 }
 #endif // TOUCH_SCREEN

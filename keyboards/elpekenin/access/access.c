@@ -140,14 +140,50 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 
 #    if defined (TOUCH_SCREEN)
 void screen_one_hand(touch_report_t touch_report) {
+    if (!touch_report.pressed) {
+        return;
+    }
+
     int16_t x = touch_report.x - SCREEN_WIDTH/2;
     int16_t y = touch_report.y - SCREEN_HEIGHT/2;
 
-    if (x>0) {
-        key_selector_direction = y>0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
-    } else {
-        key_selector_direction = y>0 ? DIRECTION_UP : DIRECTION_DOWN;
+    if (x > 30) {
+        key_selector_direction = y > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+    } else if (x < -30){
+        key_selector_direction = y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
     }
+}
+
+bool matrix_scan_custom(matrix_row_t current_matrix[]) {
+    // Wait until it is initialized
+    if (touch_device == NULL){
+        return false;
+    }
+
+    // Get touchscreen status
+    touch_report_t touch_report = get_spi_touch_report(touch_device);
+
+    // Translate index to matrix coords
+    // TODO: Improve this to work with empty spots, etc
+    uint8_t row = key_selector_mode_last_key / MATRIX_COLS;
+    uint8_t col = key_selector_mode_last_key % MATRIX_COLS;
+
+    // Convert left-based to center-based coord
+    int16_t x = touch_report.x - SCREEN_WIDTH/2;
+
+    // Store previous state for comparations
+    matrix_row_t previous = current_matrix[row];
+
+    // If screen is not pressed, neither will the key
+    if (!touch_report.pressed) {
+        current_matrix[row] &= ~(1 << col);
+    }
+    // If pressed and in zone, press the key
+    else if (-30 < x && x < 30) {
+        current_matrix[row] |= 1 << col;
+    }
+
+    return previous != current_matrix[row];
 }
 #    endif // TOUCH_SCREEN
 #endif // ONE_HAND_MODE
