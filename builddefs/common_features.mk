@@ -623,7 +623,7 @@ ifeq ($(strip $(XAP_ENABLE)), yes)
 
     DYNAMIC_KEYMAP_ENABLE := yes
     FNV_ENABLE := yes
-    SECURE_ENABLE := yes
+    # SECURE_ENABLE := yes
     BOOTMAGIC_ENABLE := yes
 
     OPT_DEFS += -DXAP_ENABLE

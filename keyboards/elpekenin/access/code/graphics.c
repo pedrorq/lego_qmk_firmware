@@ -5,16 +5,19 @@
 #include "qp.h"
 
 // Images
-#include "rp2040.qgf.h"
-static painter_image_handle_t rp2040;
+#include "thermometer.qgf.h"
+painter_image_handle_t thermometer;
+#include "message.qgf.h"
+painter_image_handle_t message;
 
 // Fonts
 #include "fira_code.qff.h"
-static painter_font_handle_t fira_code;
+painter_font_handle_t fira_code;
 
 // =======
 // LCD Init
 void load_qp_resources(void) {
-    rp2040 = qp_load_image_mem(gfx_rp2040);
+    thermometer = qp_load_image_mem(gfx_thermometer);
+    message = qp_load_image_mem(gfx_message);
     fira_code = qp_load_font_mem(font_fira_code);
 }

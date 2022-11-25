@@ -7,9 +7,9 @@
 
 // =======
 // Debugging
-// #define QUANTUM_PAINTER_DEBUG
+#define QUANTUM_PAINTER_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
-// #define INIT_DELAY 2000
+#define INIT_DELAY 2000
 
 // =======
 // Power indicator
