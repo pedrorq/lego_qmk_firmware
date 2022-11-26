@@ -1,12 +1,8 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <stdint.h>
-#include "keycode.h"
 #include QMK_KEYBOARD_H
 #include "access.h"
-#include "color.h"
-#include "graphics.h"
 #include "touch_driver.h"
 
 
@@ -18,13 +14,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
            KC_C, KC_SPC, KC_DOT, KC_DOT
     )
 };
-
-void keyboard_post_init_user(void) {
-#if defined(QUANTUM_PAINTER_ENABLE)
-    qp_drawimage(lcd, 180, 135, thermometer);
-    qp_drawimage(lcd, 252, 135, message);
-#endif // QUANTUM_PAINTER_ENABLE
-}
 
 #if defined (TOUCH_SCREEN)
 uint32_t touch_timer = 0;

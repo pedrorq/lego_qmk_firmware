@@ -12,6 +12,10 @@
 #define INIT_DELAY 2000
 
 // =======
+// Painter
+#define QUANTUM_PAINTER_NUM_IMAGES 16
+
+// =======
 // Power indicator
 #define POWER_LED_PIN GP25
 

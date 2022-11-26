@@ -4,7 +4,7 @@
 XAP_ENABLE = yes
 
 # Custom features
-ONE_HAND_MODE = yes
+ONE_HAND_MODE = no
 TOUCH_SCREEN = yes
 
 # ------------------ Extra logic ------------------
@@ -15,10 +15,9 @@ VPATH += keyboards/elpekenin/access/code \
 
 ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
     # QP resources
-    SRC += graphics.c \
-           fira_code.qff.c \
-           message.qgf.c \
-           thermometer.qgf.c
+    SRC += graphics.c
+    mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+    SRC += $(shell find $(dir $(mkfile_path))../../code/generated -name "*.c")
 
     # QP over XAP
     ifeq ($(strip $(XAP_ENABLE)), yes)
