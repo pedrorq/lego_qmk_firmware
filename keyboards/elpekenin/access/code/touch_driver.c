@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "spi_master.h"
 #include "touch_driver.h"
+#include "wait.h"
 
 bool touch_spi_init(touch_device_t device) {
     struct touch_driver_t           *driver      = (struct touch_driver_t *)device;
@@ -55,6 +56,9 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
 
     report.pressed = true;
 
+    // wait a bit so measurement is less noisy
+    wait_ms(20);
+
     // Read data from sensor, 0-rotation based
     int16_t x = 0;
     int16_t y = 0;
@@ -77,8 +81,8 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     y = y/driver->measurements;
 
     // Map to correct range
-    x = ((x - driver->offset) * driver->width  / driver->scale);
-    y = ((y - driver->offset) * driver->height / driver->scale);
+    x = x * driver->scale_x + driver->offset_x;
+    y = y * driver->scale_y + driver->offset_y;
 
     // Handle posible edge cases
     if (x < 0) { x = 0; }

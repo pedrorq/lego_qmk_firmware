@@ -62,9 +62,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
         .width = _SCREEN_WIDTH,
         .height = _SCREEN_HEIGHT,
         .measurements = 1,
-        .offset = 430,
-        .scale = 3270,
-        .rotation = (_SCREEN_ROTATION+2)%4,
+        .scale_x = 0.095,
+        .scale_y = 0.12,
+        .offset_x = -44,
+        .offset_y = -23,
+        .rotation = (_SCREEN_ROTATION+2)%4, // My screen is rotated 180º from touch sensor
         .upside_down = false,
         .spi_config = {
             .chip_select_pin = TOUCH_CS_PIN,
