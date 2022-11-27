@@ -4,7 +4,7 @@
 XAP_ENABLE = yes
 
 # Custom features
-ONE_HAND_MODE = no
+ONE_HAND_ENABLE = no
 TOUCH_SCREEN = yes
 
 # ------------------ Extra logic ------------------
@@ -28,8 +28,8 @@ endif
 
 # Custom features
 # ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
-    ifeq ($(strip $(ONE_HAND_MODE)), yes)
-        OPT_DEFS += -DONE_HAND_MODE
+    ifeq ($(strip $(ONE_HAND_ENABLE)), yes)
+        OPT_DEFS += -DONE_HAND_ENABLE
     endif
 # endif
 

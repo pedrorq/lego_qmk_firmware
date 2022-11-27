@@ -11,10 +11,11 @@
 painter_device_t lcd;
 #endif // QUANTUM_PAINTER_ENABLE
 
-#if defined(RGB_MATRIX_ENABLE)
-uint8_t key_selector_mode_last_key;
-key_selector_direction_t key_selector_direction;
-#endif // RGB_MATRIX_ENABLE
+#if defined(ONE_HAND_ENABLE)
+uint8_t one_hand_col;
+uint8_t one_hand_row;
+one_hand_movement_t one_hand_movement;
+#endif // ONE_HAND_ENABLE
 
 #if defined (TOUCH_SCREEN)
 #    include "touch_driver.h"
@@ -100,44 +101,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-#if defined(ONE_HAND_MODE)
-#    if defined(POINTING_DEVICE_ENABLE)
-report_mouse_t empty_mouse_report() {
-    return report_mouse_t {
-        .x = 0,
-        .y = 0,
-        .h = 0,
-        .v = 0,
-        .buttons = 0
-    }
-}
-
-report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    if (mouse_report.buttons) {
-        // TODO: Change so it actually updates matrix, and stuff other than basic keycodes work
-        uint8_t current_layer = get_highest_layer(layer_state);
-        tap_code(keymaps[current_layer][key_selector_mode_last_key]);
-
-        return empty_mouse_report();
-    }
-
-    // Update the direction
-    if (abs(mouse_report.x) > abs(mouse_report.y)) {
-        if (mouse_report.x > 0)
-            key_selector_direction = DIRECTION_RIGHT;
-        else
-            key_selector_direction = DIRECTION_LEFT;
-    } else {
-        if (mouse_report.y > 0)
-            key_selector_direction = DIRECTION_UP;
-        else
-            key_selector_direction = DIRECTION_DOWN;
-    }
-
-    return empty_mouse_report();
-}
-#    endif // POINTING_DEVICE_ENABLE
-
+#if defined(ONE_HAND_ENABLE)
 #    if defined (TOUCH_SCREEN)
 void screen_one_hand(touch_report_t touch_report) {
     if (!touch_report.pressed) {
@@ -148,9 +112,9 @@ void screen_one_hand(touch_report_t touch_report) {
     int16_t y = touch_report.y - SCREEN_HEIGHT/2;
 
     if (x > 30) {
-        key_selector_direction = y > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+        one_hand_movement = y > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
     } else if (x < -30){
-        key_selector_direction = y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
+        one_hand_movement = y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
     }
 }
 
@@ -163,27 +127,22 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     // Get touchscreen status
     touch_report_t touch_report = get_spi_touch_report(touch_device);
 
-    // Translate index to matrix coords
-    // TODO: Improve this to work with empty spots, etc
-    uint8_t row = key_selector_mode_last_key / MATRIX_COLS;
-    uint8_t col = key_selector_mode_last_key % MATRIX_COLS;
-
     // Convert left-based to center-based coord
     int16_t x = touch_report.x - SCREEN_WIDTH/2;
 
     // Store previous state for comparations
-    matrix_row_t previous = current_matrix[row];
+    matrix_row_t previous = current_matrix[one_hand_row];
 
     // If screen is not pressed, neither will the key
     if (!touch_report.pressed) {
-        current_matrix[row] &= ~(1 << col);
+        current_matrix[one_hand_row] &= ~(1 << one_hand_col);
     }
     // If pressed and in zone, press the key
     else if (-30 < x && x < 30) {
-        current_matrix[row] |= 1 << col;
+        current_matrix[one_hand_row] |= 1 << one_hand_col;
     }
 
-    return previous != current_matrix[row];
+    return previous != current_matrix[one_hand_row];
 }
 #    endif // TOUCH_SCREEN
-#endif // ONE_HAND_MODE
+#endif // ONE_HAND_ENABLE

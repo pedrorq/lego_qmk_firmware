@@ -47,8 +47,8 @@ void housekeeping_task_user(void) {
     }
 #    endif // XAP_ENABLE
 
-#    if defined(ONE_HAND_MODE)
+#    if defined(ONE_HAND_ENABLE)
     screen_one_hand(touch_report);
-#    endif // ONE_HAND_MODE
+#    endif // ONE_HAND_ENABLE
 }
 #endif // TOUCH_SCREEN
