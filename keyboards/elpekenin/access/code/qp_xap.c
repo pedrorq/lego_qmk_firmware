@@ -45,13 +45,13 @@ void xap_respond_success(xap_token_t token); // Weird stuff to get the function 
 
 #define CHECK_DATA_LEN_IS(len) \
     if (data_len != len) { \
-        qp_dprintf("---\nERROR: QP over XAP check failed, got %dbytes while expecting %dbytes\n---\n", len, data_len); \
+        qp_dprintf("---\nERROR: QP over XAP check failed, got %dbytes while expecting %dbytes\n---\n", data_len, len); \
         return false; \
     }
 
 #define CHECK_DATA_LEN_IS_AT_LEAST(len) \
     if (data_len < len) { \
-        qp_dprintf("---\nERROR: QP over XAP check failed, got %dbytes while expecting at least %dbytes\n---\n", len, data_len); \
+        qp_dprintf("---\nERROR: QP over XAP check failed, got %dbytes while expecting at least %dbytes\n---\n", data_len, len); \
         return false; \
     }
 
