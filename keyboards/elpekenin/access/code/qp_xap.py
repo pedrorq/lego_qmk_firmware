@@ -6,6 +6,7 @@ devices over a XAP connection.
 Note: Has only been tested on 3.10.8 and 3.11, but should work down to 3.6 (f-strings)
 """
 import importlib
+import inspect
 import logging
 import random
 import subprocess
@@ -95,11 +96,15 @@ def to_u8(value):
     return int(value) & 0xFF
 
 
-def to16(value):
+def to_u16(value):
     """Convert any number to 16 bit representation (can lose some of MSB)
     """
     return int(value) & 0xFF, int(value) >> 8
 
+def from_u16(hi, lo):
+    """Convert 2 bytes to number
+    """
+    return (lo << 8) | hi
 
 def parse_bool(value):
     """Parse string into boolean
@@ -198,7 +203,10 @@ class QpXap:
 
         # Send
         self._hid.write(bytes(self._payload[:65]))  # make sure we only send 64B
-        _ = self._hid.read(64, timeout=1000)
+        response = self._hid.read(64, timeout=1000)
+
+        # TODO check token and flags
+        return response[4:4+response[3]]
 
     def _close(self):
         self._hid.close()
@@ -206,7 +214,7 @@ class QpXap:
     def __del__(self):
         self._close()
 
-    def clear(self, display):
+    def clear(self, *, display):
         """Fill the selected display black
         """
         # dooesn't seem to do anything
@@ -232,8 +240,8 @@ class QpXap:
         self._send([
             2, 2, 2,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             *parse_color(color),
         ])
 
@@ -243,10 +251,10 @@ class QpXap:
         self._send([
             2, 2, 3,
             to_u8(display),
-            *to16(x0),
-            *to16(y0),
-            *to16(x1),
-            *to16(y1),
+            *to_u16(x0),
+            *to_u16(y0),
+            *to_u16(x1),
+            *to_u16(y1),
             *parse_color(color),
         ])
 
@@ -258,10 +266,10 @@ class QpXap:
         self._send([
             2, 2, 4,
             to_u8(display),
-            *to16(left),
-            *to16(top),
-            *to16(right),
-            *to16(bottom),
+            *to_u16(left),
+            *to_u16(top),
+            *to_u16(right),
+            *to_u16(bottom),
             *parse_color(color),
             to_u8(filled),
         ])
@@ -274,9 +282,9 @@ class QpXap:
         self._send([
             2, 2, 5,
             to_u8(display),
-            *to16(x),
-            *to16(y),
-            *to16(radius),
+            *to_u16(x),
+            *to_u16(y),
+            *to_u16(radius),
             *parse_color(color),
             to_u8(filled),
         ])
@@ -289,10 +297,10 @@ class QpXap:
         self._send([
             2, 2, 6,
             to_u8(display),
-            *to16(x),
-            *to16(y),
-            *to16(sizex),
-            *to16(sizey),
+            *to_u16(x),
+            *to_u16(y),
+            *to_u16(sizex),
+            *to_u16(sizey),
             *parse_color(color),
             to_u8(filled),
         ])
@@ -303,8 +311,8 @@ class QpXap:
         self._send([
             2, 2, 7,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(img),
         ])
 
@@ -314,8 +322,8 @@ class QpXap:
         self._send([
             2, 2, 8,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(img),
             *parse_color(fg_color),
             *parse_color(bg_color),
@@ -327,8 +335,8 @@ class QpXap:
         self._send([
             2, 2, 9,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(img),
         ])
 
@@ -338,8 +346,8 @@ class QpXap:
         self._send([
             2, 2, 0xA,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(img),
             *parse_color(fg_color),
             *parse_color(bg_color),
@@ -351,8 +359,8 @@ class QpXap:
         self._send([
             2, 2, 0xB,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(font),
             *[ord(i) for i in text],
         ])
@@ -363,14 +371,29 @@ class QpXap:
         self._send([
             2, 2, 0xC,
             to_u8(display),
-            *to16(x),
-            *to16(y),
+            *to_u16(x),
+            *to_u16(y),
             to_u8(font),
             *parse_color(fg_color),
             *parse_color(bg_color),
             *[ord(i) for i in text],
         ])
 
+    def get_geometry(self, *, display):
+        """Get information about a display
+        """
+        response = self._send([
+            2, 2, 0xD,
+            to_u8(display),
+        ])
+
+        width    = from_u16(*response[0:2])
+        height   = from_u16(*response[2:4])
+        rotation = response[4]*90
+        offset_x = from_u16(*response[5:7])
+        offset_y = from_u16(*response[7:9])
+
+        print(f"{width=}, {height=}, {rotation=}º, {offset_x=}, {offset_y=}")
 
 # =========================== ASCII Art ===========================
 TEXT = r"""
@@ -438,8 +461,7 @@ def user_input_loop(qp_xap):
     arguments = {
         method: [
             i
-            for i in getattr(QpXap, method).__code__.co_varnames
-            if i not in ["self", "log"]
+            for i in inspect.getfullargspec(getattr(QpXap, method)).kwonlyargs
         ]
         for method in methods
     }
