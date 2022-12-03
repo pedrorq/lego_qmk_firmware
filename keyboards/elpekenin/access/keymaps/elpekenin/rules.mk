@@ -39,13 +39,3 @@ ifeq ($(strip $(TOUCH_SCREEN)), yes)
     SRC += touch_driver.c
 endif
 
-
-# Add SD over SPI support
-CHIBIOS  = $(dir $(mkfile_path))../../../../../lib/chibios
-FATFSSRC = $(CHIBIOS)/os/various/fatfs_bindings/fatfs_diskio.c \
-           $(CHIBIOS)/os/various/fatfs_bindings/fatfs_syscall.c \
-           $(CHIBIOS)/ext/fatfs/source/ff.c \
-           $(CHIBIOS)/ext/fatfs/source/ffunicode.c
-
-VPATH   += $(CHIBIOS)/ext/fatfs/source
-SRC     += $(FATFSSRC)
