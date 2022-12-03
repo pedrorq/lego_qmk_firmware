@@ -6,10 +6,6 @@
 #include "access.h"
 #include "touch_driver.h"
 
-#include "vfs.h"
-#include "ff.h"
-#include "diskio.h"
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_ortho_4x4(
         QK_BOOT,   KC_7,   KC_8,   KC_9,
