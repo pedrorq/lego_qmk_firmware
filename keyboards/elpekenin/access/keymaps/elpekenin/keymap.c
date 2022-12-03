@@ -1,10 +1,14 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "keyboard.h"
 #include QMK_KEYBOARD_H
 #include "access.h"
 #include "touch_driver.h"
 
+#include "vfs.h"
+#include "ff.h"
+#include "diskio.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_ortho_4x4(

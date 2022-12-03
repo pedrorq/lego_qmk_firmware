@@ -27,11 +27,11 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
 endif
 
 # Custom features
-# ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
+ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
     ifeq ($(strip $(ONE_HAND_ENABLE)), yes)
         OPT_DEFS += -DONE_HAND_ENABLE
     endif
-# endif
+endif
 
 ifeq ($(strip $(TOUCH_SCREEN)), yes)
     QUANTUM_LIB_SRC += spi_master.c
@@ -39,3 +39,13 @@ ifeq ($(strip $(TOUCH_SCREEN)), yes)
     SRC += touch_driver.c
 endif
 
+
+# Add SD over SPI support
+CHIBIOS  = $(dir $(mkfile_path))../../../../../lib/chibios
+FATFSSRC = $(CHIBIOS)/os/various/fatfs_bindings/fatfs_diskio.c \
+           $(CHIBIOS)/os/various/fatfs_bindings/fatfs_syscall.c \
+           $(CHIBIOS)/ext/fatfs/source/ff.c \
+           $(CHIBIOS)/ext/fatfs/source/ffunicode.c
+
+VPATH   += $(CHIBIOS)/ext/fatfs/source
+SRC     += $(FATFSSRC)
