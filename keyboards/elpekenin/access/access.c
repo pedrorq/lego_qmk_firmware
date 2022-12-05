@@ -75,8 +75,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #if defined (TOUCH_SCREEN)
     // TODO: Check rotation and calibrate
     static touch_driver_t ili9341_touch_driver = {
-        .width = _ILI9486_WIDTH,
-        .height = _ILI9486_HEIGHT,
+        .width = _ILI9341_WIDTH,
+        .height = _ILI9341_HEIGHT,
         .measurements = 1,
         .scale_x = 0.095,
         .scale_y = 0.12,
