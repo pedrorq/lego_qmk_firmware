@@ -83,8 +83,8 @@
 // ==================================================================================================
 // SOME MAGIC DOWN HERE
 // - Real size, used for init function
-#define ILI9163_WIDTH 128
-#define ILI9163_HEIGHT 128
+#define _ILI9163_WIDTH 129
+#define _ILI9163_HEIGHT 128
 #define _ILI9341_WIDTH 240
 #define _ILI9341_HEIGHT 320
 #define _ILI9486_WIDTH 320
@@ -102,6 +102,14 @@
 #endif
 
 // - Virtual size, used for drawing funcs
+#if (ILI9163_ROTATION % 2 == 0)
+#    define ILI9163_WIDTH  _ILI9163_WIDTH
+#    define ILI9163_HEIGHT _ILI9163_HEIGHT
+#else
+#    define ILI9163_WIDTH  _ILI9163_HEIGHT
+#    define ILI9163_HEIGHT _ILI9163_WIDTH
+#endif
+
 #if (ILI9341_ROTATION % 2 == 0)
 #    define ILI9341_WIDTH  _ILI9341_WIDTH
 #    define ILI9341_HEIGHT _ILI9341_HEIGHT
