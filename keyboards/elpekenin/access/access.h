@@ -5,7 +5,9 @@
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "qp.h"
-extern painter_device_t lcd;
+extern painter_device_t ili9163;
+extern painter_device_t ili9341;
+extern painter_device_t ili9486;
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(RGB_MATRIX_ENABLE) && defined(ONE_HAND_ENABLE)
@@ -23,7 +25,8 @@ extern one_hand_movement_t one_hand_movement;
 
 #if defined (TOUCH_SCREEN)
 #    include "touch_driver.h"
-extern touch_device_t touch_device;
+extern touch_device_t ili9341_touch;
+extern touch_device_t ili9486_touch;
 #    if defined(ONE_HAND_ENABLE)
 void screen_one_hand(touch_report_t touch_report);
 #    endif // ONE_HAND_ENABLE

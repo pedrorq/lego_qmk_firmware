@@ -8,7 +8,9 @@
 #    include "color.h"
 #    include "graphics.h"
 #    include "qp.h"
-painter_device_t lcd;
+painter_device_t ili9163;
+painter_device_t ili9341;
+painter_device_t ili9486;
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(ONE_HAND_ENABLE)
@@ -19,7 +21,8 @@ one_hand_movement_t one_hand_movement;
 
 #if defined (TOUCH_SCREEN)
 #    include "touch_driver.h"
-touch_device_t touch_device;
+touch_device_t ili9341_touch;
+touch_device_t ili9486_touch;
 #endif // TOUCH_SCREEN
 
 
@@ -47,41 +50,77 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // ==========
     // Peripherals
 #if defined(QUANTUM_PAINTER_ENABLE)
-    setPinOutput(LCD_BL_PIN);
-    writePinHigh(LCD_BL_PIN);
-    wait_ms(150); //Let it draw some power
-    lcd = qp_ili9486_shiftreg_make_spi_device(_SCREEN_WIDTH, _SCREEN_HEIGHT, LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, SPI_DIV, SPI_MODE);
-    qp_init(lcd, _SCREEN_ROTATION);
-    qp_rect(lcd, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1, HSV_BLACK, true);
+    wait_ms(150); //Let screens draw some power
+
+    // Init screens
+    ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(ili9163, ILI9163_ROTATION);
+
+    ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(ili9341, ILI9341_ROTATION);
+
+    ili9486 = qp_ili9486_shiftreg_make_spi_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(ili9486, ILI9486_ROTATION);
+
+    // Fill them black
+    qp_rect(ili9163, 0, 0, ILI9163_WIDTH-1, ILI9163_HEIGHT-1, HSV_BLACK, true);
+    qp_rect(ili9341, 0, 0, ILI9341_WIDTH-1, ILI9341_HEIGHT-1, HSV_BLACK, true);
+    qp_rect(ili9486, 0, 0, ILI9486_WIDTH-1, ILI9486_HEIGHT-1, HSV_BLACK, true);
+
     load_qp_resources();
-    dprint("Display initialized\n");
+
+    dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined (TOUCH_SCREEN)
-    static touch_driver_t touch_driver = {
-        .width = _SCREEN_WIDTH,
-        .height = _SCREEN_HEIGHT,
+    // TODO: Check rotation and calibrate
+    static touch_driver_t ili9341_touch_driver = {
+        .width = _ILI9486_WIDTH,
+        .height = _ILI9486_HEIGHT,
         .measurements = 1,
         .scale_x = 0.095,
         .scale_y = 0.12,
         .offset_x = -44,
         .offset_y = -23,
-        .rotation = (_SCREEN_ROTATION+2)%4, // My screen is rotated 180º from touch sensor
+        .rotation = (ILI9341_ROTATION+2)%4,
         .upside_down = false,
         .spi_config = {
-            .chip_select_pin = TOUCH_CS_PIN,
+            .chip_select_pin = ILI9341_TOUCH_CS_PIN,
             .divisor = SPI_DIV,
             .lsb_first = false,
             .mode = SPI_MODE,
-            .irq_pin = TOUCH_IRQ_PIN,
+            .irq_pin = ILI9341_TOUCH_IRQ_PIN,
             .x_cmd = 0xD0,
             .y_cmd = 0x90
         },
     };
+    ili9341_touch = &ili9341_touch_driver;
+    touch_spi_init(ili9341_touch);
 
-    touch_device = &touch_driver;
-    touch_spi_init(touch_device);
-    dprint("Touch initialized\n");
+    static touch_driver_t ili9486_touch_driver = {
+        .width = _ILI9486_WIDTH,
+        .height = _ILI9486_HEIGHT,
+        .measurements = 1,
+        .scale_x = 0.095,
+        .scale_y = 0.12,
+        .offset_x = -44,
+        .offset_y = -23,
+        .rotation = (ILI9486_ROTATION+2)%4, // My screen is rotated 180º from touch sensor
+        .upside_down = false,
+        .spi_config = {
+            .chip_select_pin = ILI9486_TOUCH_CS_PIN,
+            .divisor = SPI_DIV,
+            .lsb_first = false,
+            .mode = SPI_MODE,
+            .irq_pin = ILI9486_TOUCH_IRQ_PIN,
+            .x_cmd = 0xD0,
+            .y_cmd = 0x90
+        },
+    };
+    ili9486_touch = &ili9486_touch_driver;
+    touch_spi_init(ili9486_touch);
+
+    dprint("Touch devices ready\n");
 #endif // TOUCH_SCREEN
 
     dprint("\n---------- User code ----------\n");
@@ -110,8 +149,8 @@ void screen_one_hand(touch_report_t touch_report) {
         return;
     }
 
-    int16_t x = touch_report.x - SCREEN_WIDTH/2;
-    int16_t y = touch_report.y - SCREEN_HEIGHT/2;
+    int16_t x = touch_report.x - ILI9486_WIDTH/2;
+    int16_t y = touch_report.y - ILI9486_HEIGHT/2;
 
     if (x > 30) {
         one_hand_movement = y > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
@@ -122,15 +161,15 @@ void screen_one_hand(touch_report_t touch_report) {
 
 bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     // Wait until it is initialized
-    if (touch_device == NULL){
+    if (ili9486_touch == NULL){
         return false;
     }
 
     // Get touchscreen status
-    touch_report_t touch_report = get_spi_touch_report(touch_device);
+    touch_report_t touch_report = get_spi_touch_report(ili9486_touch);
 
     // Convert left-based to center-based coord
-    int16_t x = touch_report.x - SCREEN_WIDTH/2;
+    int16_t x = touch_report.x - ILI9486_WIDTH/2;
 
     // Store previous state for comparations
     matrix_row_t previous = current_matrix[one_hand_row];

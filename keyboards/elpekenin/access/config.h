@@ -14,6 +14,7 @@
 // =======
 // Painter
 #define QUANTUM_PAINTER_NUM_IMAGES 16
+#define QUANTUM_PAINTER_NUM_DISPLAYS 3
 
 // =======
 // Power indicator
@@ -21,24 +22,28 @@
 
 // =======
 // SPI config
-#define SPI_DRIVER   SPID0
-#define SPI_SCK_PIN  GP2
+#define SPI_DRIVER SPID0
+#define SPI_SCK_PIN GP2
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
+#define SPI_DC_PIN GP6
+#define SPI_RST_PIN GP7
 #define SPI_MODE 0
-#define SPI_DIV  16
+#define SPI_DIV 16
 
-// -- Display
-// Rotation (multiple of 90º)
-#define SCREEN_ROTATION 270
-#define LCD_CS_PIN   GP5
-#define LCD_DC_PIN   GP6
-#define LCD_BL_PIN   GP7
-#define LCD_RST_PIN  GP8
+// -- Displays
+#define ILI9163_ROTATION 0
+#define ILI9163_CS_PIN GP10
 
-// -- Touch screen
-#define TOUCH_CS_PIN  GP9
-#define TOUCH_IRQ_PIN GP10
+#define ILI9341_ROTATION 0
+#define ILI9341_CS_PIN GP11
+#define ILI9341_TOUCH_CS_PIN GP12
+#define ILI9341_TOUCH_IRQ_PIN GP13
+
+#define ILI9486_ROTATION 1
+#define ILI9486_CS_PIN GP5
+#define ILI9486_TOUCH_CS_PIN GP8
+#define ILI9486_TOUCH_IRQ_PIN GP9
 
 // =======
 // RGB
@@ -75,24 +80,43 @@
 #    define GOODBYE_SONG SONG(COIN_SOUND)
 #endif // AUDIO_ENABLE
 
-// =======
+// ==================================================================================================
 // SOME MAGIC DOWN HERE
-// - Real size and rotation used for init function
-#define _SCREEN_WIDTH  320
-#define _SCREEN_HEIGHT 480
-#if !(SCREEN_ROTATION == 0 || SCREEN_ROTATION == 90 || SCREEN_ROTATION == 180 || SCREEN_ROTATION == 270)
-#    error SCREEN_ROTATION has to be a multiple of 90º between 0º and 360º
+// - Real size, used for init function
+#define ILI9163_WIDTH 128
+#define ILI9163_HEIGHT 128
+#define _ILI9341_WIDTH 240
+#define _ILI9341_HEIGHT 320
+#define _ILI9486_WIDTH 320
+#define _ILI9486_HEIGHT 480
+
+// - Check rotation
+#if !(ILI9163_ROTATION == 0 || ILI9163_ROTATION == 1 || ILI9163_ROTATION == 2 || ILI9163_ROTATION == 3)
+#    error ILI9163_ROTATION has to be within 0-3 (both included)
+#endif
+#if !(ILI9341_ROTATION == 0 || ILI9341_ROTATION == 1 || ILI9341_ROTATION == 2 || ILI9341_ROTATION == 3)
+#    error ILI9341_ROTATION has to be within 0-3 (both included)
+#endif
+#if !(ILI9486_ROTATION == 0 || ILI9486_ROTATION == 1 || ILI9486_ROTATION == 2 || ILI9486_ROTATION == 3)
+#    error ILI9486_ROTATION has to be within 0-3 (both included)
 #endif
 
 // - Virtual size, used for drawing funcs
-#define _SCREEN_ROTATION (SCREEN_ROTATION/90)
-#if (_SCREEN_ROTATION % 2 == 0)
-#    define SCREEN_WIDTH  _SCREEN_WIDTH
-#    define SCREEN_HEIGHT _SCREEN_HEIGHT
+#if (ILI9341_ROTATION % 2 == 0)
+#    define ILI9341_WIDTH  _ILI9341_WIDTH
+#    define ILI9341_HEIGHT _ILI9341_HEIGHT
 #else
-#    define SCREEN_WIDTH  _SCREEN_HEIGHT
-#    define SCREEN_HEIGHT _SCREEN_WIDTH
-#endif // SCREEN_ROTATION
+#    define ILI9341_WIDTH  _ILI9341_HEIGHT
+#    define ILI9341_HEIGHT _ILI9341_WIDTH
+#endif
+
+#if (ILI9486_ROTATION % 2 == 0)
+#    define ILI9486_WIDTH  _ILI9486_WIDTH
+#    define ILI9486_HEIGHT _ILI9486_HEIGHT
+#else
+#    define ILI9486_WIDTH  _ILI9486_HEIGHT
+#    define ILI9486_HEIGHT _ILI9486_WIDTH
+#endif
 
 // - Default values
 #if !defined(INIT_DELAY)

@@ -18,7 +18,7 @@ painter_font_handle_t fira_code;
 #include "pokeball.qgf.h"
 
 // =======
-// LCD Init
+// Load resources
 void load_qp_resources(void) {
     qp_load_font_mem(font_fira_code);
     qp_load_image_mem(gfx_lightbulb_off_outline);

@@ -16,8 +16,8 @@ import sys
 # ======= CONFIG =======
 USAGE = 0x0058
 USAGE_PAGE = 0xFF51
-SCREEN_WIDTH = 480
-SCREEN_HEIGHT = 320
+ILI9486_WIDTH = 480
+ILI9486_HEIGHT = 320
 LOG_LEVEL = logging.CRITICAL
 # ======================
 
@@ -228,8 +228,8 @@ class QpXap:
             display=display,
             left=0,
             top=0,
-            right=SCREEN_WIDTH,
-            bottom=SCREEN_HEIGHT,
+            right=ILI9486_WIDTH,
+            bottom=ILI9486_HEIGHT,
             color="0, 0, 0",
             filled=True,
         )

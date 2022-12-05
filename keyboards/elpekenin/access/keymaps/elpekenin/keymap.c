@@ -19,7 +19,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 uint32_t touch_timer = 0;
 void housekeeping_task_user(void) {
     // Wait until device is initialized
-    if (touch_device == NULL)
+    if (ili9486_touch == NULL)
         return;
 
     // Read every 0.5 seconds
@@ -27,23 +27,25 @@ void housekeeping_task_user(void) {
         return;
 
     touch_timer = timer_read32();
-    touch_report_t touch_report = get_spi_touch_report(touch_device);
 #    if defined(XAP_ENABLE)
-    static bool release_notified = true;
-    if (touch_report.pressed) {
-        uint8_t payload[4] = { touch_report.x & 0xFF, touch_report.x >> 8, touch_report.y & 0xFF, touch_report.y >> 8 };
+#        define PAYLOAD_SIZE 5
+
+#        define ILI9486_ID 0
+    touch_report_t ili9486_touch_report = get_spi_touch_report(ili9486_touch);
+    static bool ili9486_release_notified = true;
+    if (ili9486_touch_report.pressed) {
+        uint8_t payload[PAYLOAD_SIZE] = { ILI9486_ID, ili9486_touch_report.x & 0xFF, ili9486_touch_report.x >> 8, ili9486_touch_report.y & 0xFF, ili9486_touch_report.y >> 8 };
         // 0x03 means: user-level message
         xap_broadcast(0x03, payload, sizeof(payload));
 
-        release_notified = false;
+        ili9486_release_notified = false;
     }
-
-    else if (!release_notified) {
+    else if (!ili9486_release_notified) {
         // Send x:0, y:0 (no button there) for cleanup
-        uint8_t payload[4] = { 0, 0, 0 , 0};
+        uint8_t payload[PAYLOAD_SIZE] = { ILI9486_ID };
         xap_broadcast(0x03, payload, sizeof(payload));
 
-        release_notified = true;
+        ili9486_release_notified = true;
     }
 #    endif // XAP_ENABLE
 
