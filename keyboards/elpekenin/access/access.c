@@ -53,19 +53,19 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // Init screens
-    ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9163, ILI9163_ROTATION);
 
-    ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9341, ILI9341_ROTATION);
 
-    ili9486 = qp_ili9486_shiftreg_make_spi_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, SPI_RST_PIN, SPI_DIV, SPI_MODE);
+    ili9486 = qp_ili9486_shiftreg_make_spi_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9486, ILI9486_ROTATION);
 
     // Fill them black
-    qp_rect(ili9163, 0, 0, ILI9163_WIDTH-1, ILI9163_HEIGHT-1, HSV_BLACK, true);
-    qp_rect(ili9341, 0, 0, ILI9341_WIDTH-1, ILI9341_HEIGHT-1, HSV_BLACK, true);
-    qp_rect(ili9486, 0, 0, ILI9486_WIDTH-1, ILI9486_HEIGHT-1, HSV_BLACK, true);
+    qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
+    qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
+    qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
 
     load_qp_resources();
 
