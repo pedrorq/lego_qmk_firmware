@@ -5,6 +5,7 @@ QUANTUM_PAINTER_ANIMATIONS_ENABLE ?= yes
 # The list of permissible drivers that can be listed in QUANTUM_PAINTER_DRIVERS
 VALID_QUANTUM_PAINTER_DRIVERS := \
     rgb565_surface \
+    il91874_spi \
     ili9163_spi \
     ili9341_spi \
     ili9486_spi \
@@ -56,6 +57,16 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/generic
         SRC += \
             $(DRIVER_PATH)/painter/generic/qp_rgb565_surface.c \
+
+    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),il91874_spi)
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
+        OPT_DEFS += -DQUANTUM_PAINTER_IL91874_ENABLE -DQUANTUM_PAINTER_IL91874_SPI_ENABLE
+        COMMON_VPATH += \
+            $(DRIVER_PATH)/painter/eink
+        SRC += \
+            $(DRIVER_PATH)/painter/eink/qp_eink_panel.c \
+            $(DRIVER_PATH)/painter/eink/qp_il91874_spi.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
