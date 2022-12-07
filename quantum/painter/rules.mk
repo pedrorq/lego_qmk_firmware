@@ -66,7 +66,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/eink
         SRC += \
             $(DRIVER_PATH)/painter/eink/qp_eink_panel.c \
-            $(DRIVER_PATH)/painter/eink/qp_il91874_spi.c \
+            $(DRIVER_PATH)/painter/eink/qp_il91874.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes

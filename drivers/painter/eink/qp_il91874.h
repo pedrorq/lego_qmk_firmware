@@ -21,7 +21,6 @@
 // Quantum Painter IL91874_NUM_DEVICES device factories
 
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
-#    define ILI91874_SETTINGS 0b10011
 /**
  * Factory method for an IL91874 SPI LCD device.
  *

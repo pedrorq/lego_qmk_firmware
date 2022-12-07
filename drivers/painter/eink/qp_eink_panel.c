@@ -2,7 +2,6 @@
 // Copyright 2021 Nick Brassel (@tzarc)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "color.h"
 #include "qp_internal.h"
 #include "qp_comms.h"
 #include "qp_draw.h"
@@ -44,21 +43,26 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Convert supplied palette entries into their native equivalents
 
-bool qp_eink_panel_palette_convert_rgb565_swapped(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    for (int16_t i = 0; i < palette_size; ++i) {
-        RGB      rgb      = hsv_to_rgb_nocie((HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v});
-        uint16_t rgb565   = (((uint16_t)rgb.r) >> 3) << 11 | (((uint16_t)rgb.g) >> 2) << 5 | (((uint16_t)rgb.b) >> 3);
-        palette[i].rgb565 = __builtin_bswap16(rgb565);
-    }
-    return true;
+uint16_t hsv_distance(uint8_t h, uint8_t s, uint8_t v, HSV hsv) {
+    return abs(h-hsv.h) + abs(s-hsv.s) + abs(v-hsv.v);
 }
 
-bool qp_eink_panel_palette_convert_rgb888(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
+bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
     for (int16_t i = 0; i < palette_size; ++i) {
-        RGB rgb             = hsv_to_rgb_nocie((HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v});
-        palette[i].rgb888.r = rgb.r;
-        palette[i].rgb888.g = rgb.g;
-        palette[i].rgb888.b = rgb.b;
+        HSV hsv = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
+        uint16_t black_distance = hsv_distance(HSV_BLACK, hsv);
+        uint16_t red_distance   = hsv_distance(HSV_RED, hsv);
+        uint16_t white_distance = hsv_distance(HSV_WHITE, hsv);
+
+        uint8_t value;
+        if (black_distance <= red_distance && black_distance <= white_distance)
+            value = 0b01;
+        if (red_distance <= black_distance && red_distance <= white_distance)
+            value = 0b10;
+        else
+            value = 0b00;
+
+        palette[i].eink3 = value;
     }
     return true;
 }
@@ -66,19 +70,11 @@ bool qp_eink_panel_palette_convert_rgb888(painter_device_t device, int16_t palet
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Append pixels to the target location, keyed by the pixel index
 
-bool qp_eink_panel_append_pixels_rgb565(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
+bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
     uint16_t *buf = (uint16_t *)target_buffer;
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        buf[pixel_offset + i] = palette[palette_indices[i]].rgb565;
+        buf[pixel_offset + i] = palette[palette_indices[i]].eink3;
     }
     return true;
 }
 
-bool qp_eink_panel_append_pixels_rgb888(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
-    for (uint32_t i = 0; i < pixel_count; ++i) {
-        target_buffer[(pixel_offset + i) * 3 + 0] = palette[palette_indices[i]].rgb888.r;
-        target_buffer[(pixel_offset + i) * 3 + 1] = palette[palette_indices[i]].rgb888.g;
-        target_buffer[(pixel_offset + i) * 3 + 2] = palette[palette_indices[i]].rgb888.b;
-    }
-    return true;
-}

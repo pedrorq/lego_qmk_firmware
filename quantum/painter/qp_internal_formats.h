@@ -1,3 +1,4 @@
+// Copyright 2022 Pablo Martinez (@elpekenin)
 // Copyright 2021 Nick Brassel (@tzarc)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -26,6 +27,7 @@ typedef union QP_PACKED qp_pixel_t {
     } rgb888;
 
     uint16_t rgb565;
+    uint8_t eink3;
 
     uint32_t dummy;
 } qp_pixel_t;

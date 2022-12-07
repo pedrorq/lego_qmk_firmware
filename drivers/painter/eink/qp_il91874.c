@@ -21,20 +21,13 @@ eink_panel_dc_reset_painter_device_t il91874_drivers[IL91874_NUM_DEVICES] = {0};
 // Initialization
 
 bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
-    const uint8_t rotation_lut[] = {
-        [QP_ROTATION_0]   = 0b1000,
-        [QP_ROTATION_90]  = 0b1100,
-        [QP_ROTATION_180] = 0b0100,
-        [QP_ROTATION_270] = 0b0000,
-    };
-
     // clang-format off
     const uint8_t il91874_init_sequence[] = {
         // Command,                 Delay,  N, Data[N]
         IL91874_BOOSTER_SOFT_START,     0,  3, 0x07, 0x07, 0x17,
         // delay is 500 on https://github.com/adafruit/Adafruit_EPD/blob/master/src/drivers/Adafruit_IL91874.cpp#L7
         IL91874_POWER_ON,             255,  0,
-        IL91874_PANEL_SETTING,          0,  1, ILI91874_SETTINGS | rotation_lut[rotation],
+        IL91874_PANEL_SETTING,          0,  1, 0x1F, //default config
         IL91874_PDRF,                   0,  1, 0x00,
         IL91874_CDI,                    0,  1, 0x97
     };
@@ -56,8 +49,8 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = NULL,
-            .palette_convert = qp_eink_panel_palette_convert_rgb565_swapped,
-            .append_pixels   = qp_eink_panel_append_pixels_rgb565,
+            .palette_convert = qp_eink_panel_palette_convert_eink3,
+            .append_pixels   = qp_eink_panel_append_pixels_eink3,
         },
     .num_window_bytes   = 2,
     .swap_window_coords = true,
@@ -81,7 +74,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_vtable;
-            driver->base.native_bits_per_pixel = 16; // RGB565
+            driver->base.native_bits_per_pixel = 8; // 3 color palette
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
             driver->base.rotation              = QP_ROTATION_0;
