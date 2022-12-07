@@ -26,7 +26,7 @@ static inline void shift_out(uint16_t value) {
 
   uint8_t message[2]  = {(value >> 8) & 0xFF ,(uint8_t)(value & 0xFF) };
 
-  spi_start(SPI_LATCH_PIN, true, 1, SPI_DIVISOR);
+  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
   spi_transmit(message,2);
   spi_stop();
 
