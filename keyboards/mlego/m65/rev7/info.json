@@ -1,12 +1,18 @@
 {
     "manufacturer": "Alin Elena",
     "keyboard_name": "mlego/m65 rev7",
+    "url": "mlego.elena.space/m65",
     "maintainer": "alin elena",
     "processor": "RP2040",
     "bootloader": "rp2040",
     "board":"GENERIC_RP_RP2040",
     "debounce": 5,
     "diode_direction": "COL2ROW",
+    "usb": {
+        "device_version": "0.0.1",
+        "pid": "0x6064",
+        "vid": "0xBABA"
+    },
     "encoder": {
         "enabled": true,
         "rotary": [
@@ -54,15 +60,6 @@
         "pin": "GP12",
         "max_brightness": 64
 
-    },
-    "url": "mlego.elena.space/m65",
-    "usb": {
-        "device_version": "0.0.1",
-        "pid": "0x6064",
-        "vid": "0xBABA"
-    },
-    "tapping": {
-        "toggle": 2
     },
     "layouts": {
         "LAYOUT_ortho_5x13": {
