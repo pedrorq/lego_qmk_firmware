@@ -27,15 +27,15 @@
         "audio": false,
         "backlight": false,
         "bootmagic": false,
-        "command": true,
-        "console": true,
+        "command": false,
+        "console": false,
         "encoder": true,
         "encoder_map": true,
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
         "oled": false,
-        "rgblight": false,
+        "rgblight": true,
         "wpm": false
     },
     "indicators": {
