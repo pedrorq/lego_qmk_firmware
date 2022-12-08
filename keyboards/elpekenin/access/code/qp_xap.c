@@ -41,7 +41,7 @@ painter_font_handle_t get_font(const uint8_t *data, uint8_t *i) {
     return qp_xap_fonts[get_u8(data, i)];
 }
 
-void xap_respond_success(xap_token_t token); // Weird stuff to get the function imported
+bool xap_respond_success(xap_token_t token); // Weird stuff to get the function imported
 
 #define CHECK_DATA_LEN_IS(len) \
     if (data_len != len) { \

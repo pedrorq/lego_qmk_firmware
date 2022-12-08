@@ -73,16 +73,16 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined (TOUCH_SCREEN)
-    // TODO: Check rotation and calibrate
+    // Calibration isn't very precise
     static touch_driver_t ili9341_touch_driver = {
         .width = _ILI9341_WIDTH,
         .height = _ILI9341_HEIGHT,
         .measurements = 1,
-        .scale_x = 0.095,
-        .scale_y = 0.12,
-        .offset_x = -44,
-        .offset_y = -23,
-        .rotation = (ILI9341_ROTATION+2)%4,
+        .scale_x = 0.07,
+        .scale_y = -0.09,
+        .offset_x = -26,
+        .offset_y = 345,
+        .rotation = ILI9341_ROTATION,
         .upside_down = false,
         .spi_config = {
             .chip_select_pin = ILI9341_TOUCH_CS_PIN,
@@ -105,7 +105,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
         .scale_y = 0.12,
         .offset_x = -44,
         .offset_y = -23,
-        .rotation = (ILI9486_ROTATION+2)%4, // My screen is rotated 180º from touch sensor
+        .rotation = (ILI9486_ROTATION+2)%4,
         .upside_down = false,
         .spi_config = {
             .chip_select_pin = ILI9486_TOUCH_CS_PIN,

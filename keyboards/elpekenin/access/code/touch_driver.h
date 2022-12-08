@@ -3,6 +3,17 @@
 
 #pragma once
 
+#ifdef TOUCH_SCREEN_DEBUG
+#    include <debug.h>
+#    include <print.h>
+#    define ts_dprintf(...) dprintf(__VA_ARGS__)
+#else
+#    define ts_dprintf(...) \
+        do {                \
+        } while (0)
+#endif
+
+
 typedef const void * touch_device_t;
 
 typedef struct touch_report_t {

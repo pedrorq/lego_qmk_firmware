@@ -80,6 +80,8 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     x = x/driver->measurements;
     y = y/driver->measurements;
 
+    ts_dprintf("Read from SPI | x: %d, y: %d\n", x, y);
+
     // Map to correct range
     x = x * driver->scale_x + driver->offset_x;
     y = y * driver->scale_y + driver->offset_y;
@@ -123,6 +125,8 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     }
 
     touch_spi_stop(comms_config);
+
+    ts_dprintf("Scaled down and rotated | x: %d, y: %d\n", x, y);
 
     return report;
 }
