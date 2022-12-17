@@ -91,8 +91,8 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
             return false;
         }
 
-        // Compute indexing based on the current pixel
-        total_offset = x * y;
+        // Compute index based on coords
+        total_offset = x + y * driver->base.panel_width;
         byte_offset  = total_offset / 8;
         bit_offset   = 8 - (total_offset % 8);
 
