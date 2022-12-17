@@ -100,6 +100,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.rotation     = QP_ROTATION_0;
             driver->base.offset_x     = 0;
             driver->base.offset_y     = 0;
+
             uint32_t framebuffer_size = panel_width * panel_height / 8 * 2;
             uint8_t *ptr = (uint8_t *) malloc(framebuffer_size);
             if (ptr == NULL) {
@@ -108,6 +109,10 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
                 memset(ptr, 0, framebuffer_size);
             }
             driver->framebuffer = ptr;
+            driver->viewport.left   = 0;
+            driver->viewport.top    = 0;
+            driver->viewport.right  = 0;
+            driver->viewport.bottom = 0;
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;

@@ -45,6 +45,14 @@ typedef struct eink_panel_dc_reset_painter_device_t {
 
     uint8_t *framebuffer;
 
+    // Stored values to make virtual viewport by addressing the buffer
+    struct {
+        uint16_t left;
+        uint16_t top;
+        uint16_t right;
+        uint16_t bottom;
+    } viewport;
+
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
         // SPI-based configurables

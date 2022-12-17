@@ -52,13 +52,67 @@ bool qp_eink_panel_flush(painter_device_t device) {
 
 // Viewport to draw to
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-    // No-op, there's no viewport on this device
+    // TODO: Implement viewport for screen which have an option for it
+
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+
+    driver->viewport.left   = left;
+    driver->viewport.top    = top;
+    driver->viewport.right  = right;
+    driver->viewport.bottom = bottom;
+
     return true;
 }
 
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    // No-op, as there is no GRAM
+    // TODO: Implement viewport for screen which have an option for it
+
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    uint8_t *pixels = (uint8_t *) pixel_data;
+
+    uint32_t byte_offset;
+    uint8_t  bit_offset, black_bit, red_bit;
+
+    uint32_t total_offset;
+    uint32_t red_offset = driver->base.panel_width * driver->base.panel_height / 8;
+    uint16_t x = driver->viewport.left;
+    uint16_t y = driver->viewport.top;
+
+    for (uint32_t i = 0; i < native_pixel_count; ++i) {
+        // Wrap X and increment Y to stay within viewport
+        if (x == driver->viewport.right) {
+            x = driver->viewport.left;
+            y++;
+        }
+
+        if (y > driver->viewport.bottom) {
+            qp_dprintf("eink's pixdata went out of viewport\n");
+            return false;
+        }
+
+        // Compute indexing based on the current pixel
+        total_offset = x * y;
+        byte_offset  = total_offset / 8;
+        bit_offset   = 8 - (total_offset % 8);
+
+        black_bit = pixels[i] & 0x01;
+        red_bit   = pixels[i] & 0x02;
+
+        if (black_bit)
+            driver->framebuffer[byte_offset] |= 1 << bit_offset;
+        else
+            driver->framebuffer[byte_offset] &= ~(1 << bit_offset);
+
+        if (red_bit)
+            driver->framebuffer[byte_offset+red_offset] |= 1 << bit_offset;
+        else
+            driver->framebuffer[byte_offset+red_offset] &= ~(1 << bit_offset);
+
+        // Iterate to next pixel
+        x++;
+    }
+
     return true;
 }
 
@@ -96,38 +150,10 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
 // Append pixels to the target location, keyed by the pixel index
 
 bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
-    /* Buffer is twice the size of the screen,
-     *   - 1st half: Black data
-     *   - 2nd half: Red data
-     */
-
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-
-    uint32_t total_offset, byte_offset;
-    uint32_t red_offset = driver->base.panel_height * driver->base.panel_width / 8;
-    uint8_t bit_offset, black_bit, red_bit;
-
+    uint8_t *buf = (uint8_t *)target_buffer;
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        // Get the bit representing each color and set it on the buffer
-        total_offset = (pixel_offset + i);
-        byte_offset = total_offset / 8;
-        bit_offset  = 8 - (total_offset % 8);
-
-        black_bit = palette[palette_indices[i]].eink3 & 0x01;
-        red_bit   = palette[palette_indices[i]].eink3 & 0x02;
-
-        if (black_bit)
-            driver->framebuffer[byte_offset] |= 1 << bit_offset;
-        else
-            driver->framebuffer[byte_offset] &= ~(1 << bit_offset);
-
-        // `red_offset` is based on panel size which is(or should be) a multiple of 8, hence previous offsets work
-        if (red_bit)
-            driver->framebuffer[byte_offset+red_offset] |= 1 << bit_offset;
-        else
-            driver->framebuffer[byte_offset+red_offset] &= ~(1 << bit_offset);
+        buf[pixel_offset + i] = palette[palette_indices[i]].eink3;
     }
-
     return true;
 }
 
