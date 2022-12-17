@@ -63,10 +63,11 @@ define handle_quantum_painter_driver
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
         OPT_DEFS += -DQUANTUM_PAINTER_IL91874_ENABLE -DQUANTUM_PAINTER_IL91874_SPI_ENABLE
         COMMON_VPATH += \
-            $(DRIVER_PATH)/painter/eink
+            $(DRIVER_PATH)/painter/eink_panel \
+            $(DRIVER_PATH)/painter/il91874
         SRC += \
-            $(DRIVER_PATH)/painter/eink/qp_eink_panel.c \
-            $(DRIVER_PATH)/painter/eink/qp_il91874.c \
+            $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
+            $(DRIVER_PATH)/painter/il91874/qp_il91874.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes

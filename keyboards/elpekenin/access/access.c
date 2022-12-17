@@ -11,6 +11,7 @@
 painter_device_t ili9163;
 painter_device_t ili9341;
 painter_device_t ili9486;
+painter_device_t il91874;
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(ONE_HAND_ENABLE)
@@ -62,10 +63,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     ili9486 = qp_ili9486_shiftreg_make_spi_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9486, ILI9486_ROTATION);
 
+    il91874 = qp_ili9486_shiftreg_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(il91874, ILI9486_ROTATION);
+
     // Fill them black
     qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
     qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    qp_rect(il91874, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
 
     load_qp_resources();
 

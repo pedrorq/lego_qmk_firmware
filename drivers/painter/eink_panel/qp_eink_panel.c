@@ -27,16 +27,33 @@ bool qp_eink_panel_clear(painter_device_t device) {
 
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
-    struct painter_driver_t *driver = (struct painter_driver_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->driver_vtable;
+    // Flushing sends the framebuffer in RAM + refresh command to apply it
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+
+    uint32_t panel_size = driver->base.panel_width * driver->base.panel_height;
+
+    qp_comms_command(device, vtable->opcodes.send_black_data);
+    qp_comms_send(device, driver->framebuffer, panel_size * driver->base.native_bits_per_pixel);
+
+    if (vtable->has_3_colors) {
+        qp_comms_command(device, vtable->opcodes.send_red_data);
+        qp_comms_send(device, (driver->framebuffer)+panel_size, panel_size * driver->base.native_bits_per_pixel);
+    }
+
     qp_comms_command(device, vtable->opcodes.refresh);
+    return true;
+}
+
+// Viewport to draw to
+bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
+    // No-op, there's no viewport on this device
     return true;
 }
 
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct painter_driver_t *driver = (struct painter_driver_t *)device;
-    qp_comms_send(device, pixel_data, native_pixel_count * driver->native_bits_per_pixel / 8);
+    // No-op, as there is no GRAM
     return true;
 }
 
@@ -44,7 +61,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 // Convert supplied palette entries into their native equivalents
 
 uint16_t hsv_distance(uint8_t h, uint8_t s, uint8_t v, HSV hsv) {
-    return abs(h-hsv.h) + abs(s-hsv.s) + abs(v-hsv.v);
+    return (h-hsv.h)*(h-hsv.h) + (s-hsv.s)*(s-hsv.s) + (v-hsv.v)*(v-hsv.v);
 }
 
 bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
@@ -71,10 +88,20 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
 // Append pixels to the target location, keyed by the pixel index
 
 bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
-    uint16_t *buf = (uint16_t *)target_buffer;
+    /* Buffer is twice the size of the screen,
+     *   - 1st half: Black data
+     *   - 2nd half: Red data
+     */
+
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    uint32_t panel_size = driver->base.panel_height * driver->base.panel_height;
+
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        buf[pixel_offset + i] = palette[palette_indices[i]].eink3;
+        // Get the pixel representing each one and insert it on the corresponding index
+        driver->framebuffer[pixel_offset + i]              = palette[palette_indices[i]].eink3 & 0x01; // Black data is stored on last bit of palette
+        driver->framebuffer[pixel_offset + i + panel_size] = palette[palette_indices[i]].eink3 & 0x02; // Red data is 2nd last bit
     }
+
     return true;
 }
 

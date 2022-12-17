@@ -23,16 +23,27 @@ struct eink_panel_dc_reset_painter_driver_vtable_t {
     bool swap_window_coords;
 
     // Opcodes for normal display operation
+    // On/Off may not be needed, or even worse not exist on other displays
     struct {
         uint8_t display_on;
         uint8_t display_off;
+        uint8_t send_black_data;
+        uint8_t send_red_data;
         uint8_t refresh;
     } opcodes;
+
+    // E-Ink specific config
+    bool has_3_colors;
+    // TODO: Implement logic for this
+    bool has_partial_refresh;
+    bool has_ram;
 };
 
 // Device definition
 typedef struct eink_panel_dc_reset_painter_device_t {
     struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
+
+    uint8_t *framebuffer;
 
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
@@ -50,6 +61,7 @@ typedef struct eink_panel_dc_reset_painter_device_t {
 bool qp_eink_panel_power(painter_device_t device, bool power_on);
 bool qp_eink_panel_clear(painter_device_t device);
 bool qp_eink_panel_flush(painter_device_t device);
+bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom);
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count);
 
 bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);

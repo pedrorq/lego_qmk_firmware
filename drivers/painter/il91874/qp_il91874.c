@@ -24,12 +24,14 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     // clang-format off
     const uint8_t il91874_init_sequence[] = {
         // Command,                 Delay,  N, Data[N]
-        IL91874_BOOSTER_SOFT_START,     0,  3, 0x07, 0x07, 0x17,
-        // delay is 500 on https://github.com/adafruit/Adafruit_EPD/blob/master/src/drivers/Adafruit_IL91874.cpp#L7
         IL91874_POWER_ON,             255,  0,
-        IL91874_PANEL_SETTING,          0,  1, 0x1F, //default config
-        IL91874_PDRF,                   0,  1, 0x00,
-        IL91874_CDI,                    0,  1, 0x97
+        IL91874_PANEL_SETTING,          0,  1, 0xAF,
+        IL91874_PLL,                    0,  1, 0x3A,
+        IL91874_POWER_SETTING,          0,  5, 0x03, 0x00, 0x2B, 0x2B, 0x09,
+        IL91874_BOOSTER_SOFT_START,     0,  3, 0x07, 0x07, 0x17,
+        IL91874_VCM_DC_SETTING,         0,  1, 0x12,
+        IL91874_CDI,                    0,  1, 0x87,
+        IL91874_PDRF,                   0,  1, 0x00
     };
     // clang-format on
     qp_comms_bulk_command_sequence(device, il91874_init_sequence, sizeof(il91874_init_sequence));
@@ -48,18 +50,23 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .clear           = qp_eink_panel_clear,
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
-            .viewport        = NULL,
+            .viewport        = qp_eink_panel_viewport,
             .palette_convert = qp_eink_panel_palette_convert_eink3,
             .append_pixels   = qp_eink_panel_append_pixels_eink3,
         },
     .num_window_bytes   = 2,
-    .swap_window_coords = true,
+    .swap_window_coords = false,
     .opcodes =
         {
             .display_on  = IL91874_POWER_ON,
             .display_off = IL91874_POWER_OFF,
+            .send_black_data = IL91874_SEND_BLACK,
+            .send_red_data = IL91874_SEND_RED,
             .refresh     = IL91874_DISPLAY_REFRESH,
         },
+    .has_3_colors = true,
+    .has_partial_refresh = false,
+    .has_ram = false
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,12 +81,13 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_vtable;
-            driver->base.native_bits_per_pixel = 8; // 3 color palette
-            driver->base.panel_width           = panel_width;
-            driver->base.panel_height          = panel_height;
-            driver->base.rotation              = QP_ROTATION_0;
-            driver->base.offset_x              = 0;
-            driver->base.offset_y              = 0;
+            driver->base.native_bits_per_pixel = 1; // Each pixel by 2 bits (3 color), but code is prepared for that, so this value is correct
+            driver->base.panel_width  = panel_width;
+            driver->base.panel_height = panel_height;
+            driver->base.rotation     = QP_ROTATION_0;
+            driver->base.offset_x     = 0;
+            driver->base.offset_y     = 0;
+            driver->framebuffer = (uint8_t *) malloc(panel_width * panel_height / 8 * 2);
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
@@ -89,6 +97,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->spi_dc_reset_config.spi_config.mode            = spi_mode;
             driver->spi_dc_reset_config.dc_pin                     = dc_pin;
             driver->spi_dc_reset_config.reset_pin                  = reset_pin;
+
             return (painter_device_t)driver;
         }
     }
