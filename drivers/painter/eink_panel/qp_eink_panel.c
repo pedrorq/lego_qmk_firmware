@@ -72,10 +72,13 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
         uint16_t white_distance = hsv_distance(HSV_WHITE, hsv);
 
         uint8_t value;
-        if (black_distance <= red_distance && black_distance <= white_distance)
+        uint16_t min_distance = QP_MIN(black_distance, QP_MIN(red_distance, white_distance));
+        if (min_distance == black_distance)
             value = 0b01;
-        if (red_distance <= black_distance && red_distance <= white_distance)
+
+        else if (min_distance == red_distance)
             value = 0b10;
+
         else
             value = 0b00;
 
