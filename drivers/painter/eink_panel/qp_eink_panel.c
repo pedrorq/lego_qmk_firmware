@@ -7,6 +7,10 @@
 #include "qp_draw.h"
 #include "qp_eink_panel.h"
 
+// TODO: Add rotation support
+// TODO: Add support for screens with partial refresh
+// TODO: Add support for displays with builtin RAM
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter API implementations
 
@@ -52,8 +56,6 @@ bool qp_eink_panel_flush(painter_device_t device) {
 
 // Viewport to draw to
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-    // TODO: Implement viewport for screen which have an option for it
-
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
     driver->viewport.left   = left;
@@ -66,8 +68,6 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    // TODO: Implement viewport for screen which have an option for it
-
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     uint8_t *pixels = (uint8_t *) pixel_data;
 
