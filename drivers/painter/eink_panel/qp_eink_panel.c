@@ -81,7 +81,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 
     for (uint32_t i = 0; i < native_pixel_count; ++i) {
         // Wrap X and increment Y to stay within viewport
-        if (x == driver->viewport.right) {
+        if (x > driver->viewport.right) {
             x = driver->viewport.left;
             y++;
         }
