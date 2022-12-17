@@ -21,6 +21,8 @@ eink_panel_dc_reset_painter_device_t il91874_drivers[IL91874_NUM_DEVICES] = {0};
 // Initialization
 
 bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
+    struct painter_driver_t *driver = (struct painter_driver_t *)device;
+
     // clang-format off
     const uint8_t il91874_init_sequence[] = {
         // Command,                 Delay,  N, Data[N]
@@ -31,6 +33,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
         IL91874_BOOSTER_SOFT_START,     0,  3, 0x07, 0x07, 0x17,
         IL91874_VCM_DC_SETTING,         0,  1, 0x12,
         IL91874_CDI,                    0,  1, 0x87,
+        IL91874_RESOLUTION,             0,  4, (driver->panel_width >> 8) & 0xFF, (driver->panel_width) & 0xFF, (driver->panel_height >> 8) & 0xFF, (driver->panel_height) & 0xFF,
         IL91874_PDRF,                   0,  1, 0x00
     };
     // clang-format on
@@ -87,7 +90,12 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.rotation     = QP_ROTATION_0;
             driver->base.offset_x     = 0;
             driver->base.offset_y     = 0;
-            driver->framebuffer = (uint8_t *) malloc(panel_width * panel_height / 8 * 2);
+            uint8_t *ptr = (uint8_t *) malloc(panel_width * panel_height / 8 * 2);
+            if (ptr == NULL) {
+                qp_dprintf("Couldn't allocate memory for eink buffer\n");
+            } else {
+                driver->framebuffer = ptr;
+            }
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
