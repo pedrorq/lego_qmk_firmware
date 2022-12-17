@@ -63,7 +63,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // ili9486 = qp_ili9486_shiftreg_make_spi_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
     // qp_init(ili9486, ILI9486_ROTATION);
 
-    il91874 = qp_ili9486_shiftreg_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE);
+    il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(il91874, IL91874_ROTATION);
 
     // Fill them black

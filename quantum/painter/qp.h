@@ -452,6 +452,10 @@ painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS];
 #    include "qp_ili9341.h"
 #endif // QUANTUM_PAINTER_ILI9341_ENABLE
 
+#ifdef QUANTUM_PAINTER_IL91874_ENABLE
+#    include "qp_il91874.h"
+#endif // QUANTUM_PAINTER_IL91874_ENABLE
+
 #ifdef QUANTUM_PAINTER_ILI9486_ENABLE
 #    include "qp_ili9486.h"
 #endif // QUANTUM_PAINTER_ILI9486_ENABLE

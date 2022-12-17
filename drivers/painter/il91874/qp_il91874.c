@@ -26,7 +26,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     // clang-format off
     const uint8_t il91874_init_sequence[] = {
         // Command,                 Delay,  N, Data[N]
-        IL91874_POWER_ON,             255,  0,
+        IL91874_POWER_ON,             120,  0,
         IL91874_PANEL_SETTING,          0,  1, 0xAF,
         IL91874_PLL,                    0,  1, 0x3A,
         IL91874_POWER_SETTING,          0,  5, 0x03, 0x00, 0x2B, 0x2B, 0x09,
@@ -83,7 +83,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
-            driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_vtable;
+            driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_shiftreg_vtable;
             driver->base.native_bits_per_pixel = 1; // Each pixel by 2 bits (3 color), but code is prepared for that, so this value is correct
             driver->base.panel_width  = panel_width;
             driver->base.panel_height = panel_height;

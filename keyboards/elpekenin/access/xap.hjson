@@ -496,6 +496,20 @@
                     ]
                     return_execute: qp_get_geometry
                 }
+                0x0E: {
+                    type: command
+                    name: flush
+                    define: FLUSH
+                    description: Expose `qp_flush`
+                    request_struct_length: 1
+                    request_struct_members: [
+                        {
+                            type: u8
+                            name: device_id
+                        },
+                    ]
+                    return_execute: qp_flush
+                }
             }
         }
     }

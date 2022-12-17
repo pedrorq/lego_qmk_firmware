@@ -5,7 +5,7 @@ XAP_ENABLE = yes
 
 # Custom features
 ONE_HAND_ENABLE = no
-TOUCH_SCREEN = yes
+TOUCH_SCREEN = no
 
 # ------------------ Extra logic ------------------
 # Doesn't seem to work if added at keyboard level

@@ -290,3 +290,15 @@ bool xap_respond_qp_get_geometry(xap_token_t token, const uint8_t *data, size_t 
     xap_send(token, XAP_RESPONSE_FLAG_SUCCESS, ret, sizeof(ret));
     return true; //TODO check this
 }
+
+bool xap_respond_qp_flush(xap_token_t token, const uint8_t *data, size_t data_len) {
+    CHECK_DATA_LEN_IS(1)
+
+    uint8_t counter = 0; uint8_t *i = &counter;
+
+    painter_device_t dev = get_display(data, i);
+    qp_flush(dev);
+
+    xap_respond_success(token);
+    return true; //TODO check this
+}
