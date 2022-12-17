@@ -29,3 +29,4 @@
 #define IL91874_CDI 0x50
 #define IL91874_RESOLUTION 0x61
 #define IL91874_VCM_DC_SETTING 0x82
+#define IL91874_MISTERY_COMMAND 0xF8 // Undocummented command on Adafruit's sample code

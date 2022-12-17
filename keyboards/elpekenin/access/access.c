@@ -70,7 +70,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
     // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
-    // qp_rect(il91874, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    // qp_rect(il91874, 0, 0, IL91874_WIDTH, IL91874_HEIGHT, HSV_BLACK, true);
 
     load_qp_resources();
 
