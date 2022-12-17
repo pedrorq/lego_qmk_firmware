@@ -111,8 +111,8 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->framebuffer = ptr;
             driver->viewport.left   = 0;
             driver->viewport.top    = 0;
-            driver->viewport.right  = 0;
-            driver->viewport.bottom = 0;
+            driver->viewport.right  = panel_width-1;
+            driver->viewport.bottom = panel_height-1;
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
