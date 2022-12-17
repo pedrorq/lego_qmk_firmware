@@ -31,14 +31,19 @@ bool qp_eink_panel_flush(painter_device_t device) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
 
-    uint32_t panel_size = driver->base.panel_width * driver->base.panel_height;
+    if (driver->framebuffer == NULL) {
+        qp_dprintf("Buffer is not a valid pointer, can't flush\n");
+        return false;
+    }
+
+    uint32_t n_pixels = driver->base.panel_width * driver->base.panel_height / 8;
 
     qp_comms_command(device, vtable->opcodes.send_black_data);
-    qp_comms_send(device, driver->framebuffer, panel_size * driver->base.native_bits_per_pixel);
+    qp_comms_send(device, driver->framebuffer, n_pixels * driver->base.native_bits_per_pixel);
 
     if (vtable->has_3_colors) {
         qp_comms_command(device, vtable->opcodes.send_red_data);
-        qp_comms_send(device, (driver->framebuffer)+panel_size, panel_size * driver->base.native_bits_per_pixel);
+        qp_comms_send(device, (driver->framebuffer)+n_pixels, n_pixels * driver->base.native_bits_per_pixel);
     }
 
     qp_comms_command(device, vtable->opcodes.refresh);
@@ -97,12 +102,30 @@ bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_
      */
 
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    uint32_t panel_size = driver->base.panel_height * driver->base.panel_height;
+
+    uint32_t total_offset, byte_offset;
+    uint32_t red_offset = driver->base.panel_height * driver->base.panel_width / 8;
+    uint8_t bit_offset, black_bit, red_bit;
 
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        // Get the pixel representing each one and insert it on the corresponding index
-        driver->framebuffer[pixel_offset + i]              = palette[palette_indices[i]].eink3 & 0x01; // Black data is stored on last bit of palette
-        driver->framebuffer[pixel_offset + i + panel_size] = palette[palette_indices[i]].eink3 & 0x02; // Red data is 2nd last bit
+        // Get the bit representing each color and set it on the buffer
+        total_offset = (pixel_offset + i);
+        byte_offset = total_offset / 8;
+        bit_offset  = 8 - (total_offset % 8);
+
+        black_bit = palette[palette_indices[i]].eink3 & 0x01;
+        red_bit   = palette[palette_indices[i]].eink3 & 0x02;
+
+        if (black_bit)
+            driver->framebuffer[byte_offset] |= 1 << bit_offset;
+        else
+            driver->framebuffer[byte_offset] &= ~(1 << bit_offset);
+
+        // `red_offset` is based on panel size which is(or should be) a multiple of 8, hence previous offsets work
+        if (red_bit)
+            driver->framebuffer[byte_offset+red_offset] |= 1 << bit_offset;
+        else
+            driver->framebuffer[byte_offset+red_offset] &= ~(1 << bit_offset);
     }
 
     return true;

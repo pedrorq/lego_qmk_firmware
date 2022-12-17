@@ -151,9 +151,11 @@ uint32_t qp_comms_spi_dc_reset_shiftreg_send_data(painter_device_t device, const
     const uint8_t                         *p              = (const uint8_t *)data;
     uint32_t                              bytes_remaining = byte_count;
 
+    uint16_t bytes_per_transaction = 1024;
+
     writePinHigh(comms_config->dc_pin);
     while (bytes_remaining > 0) {
-        uint32_t bytes_this_loop = bytes_remaining < 1024 ? bytes_remaining : 1024;
+        uint32_t bytes_this_loop = bytes_remaining < bytes_per_transaction ? bytes_remaining : bytes_per_transaction;
         writePinLow(comms_config->spi_config.chip_select_pin);
         spi_transmit(p, bytes_this_loop);
         writePinHigh(comms_config->spi_config.chip_select_pin);
