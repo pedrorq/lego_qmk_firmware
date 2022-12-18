@@ -142,7 +142,7 @@ void set_led_toggle(const uint8_t, const bool);
 
 static inline void led_lwr(const bool on) {
 #ifdef LED_NUM_LOCK_PIN
-    if (PRODUCT_ID == 0x6064) {
+    if ((PRODUCT_ID == 0x6064) || (PRODUCT_ID == 0x6069)) {
        writePin(LED_NUM_LOCK_PIN, !on);
     } else {
        writePin(LED_NUM_LOCK_PIN, on);
@@ -152,7 +152,7 @@ static inline void led_lwr(const bool on) {
 
 static inline void led_rse(const bool on) {
 #ifdef LED_SCROLL_LOCK_PIN
-    if (PRODUCT_ID == 0x6064) {
+    if ((PRODUCT_ID == 0x6064) || (PRODUCT_ID == 0x6069)) {
        writePin(LED_SCROLL_LOCK_PIN, !on);
     } else {
        writePin(LED_SCROLL_LOCK_PIN, on);
