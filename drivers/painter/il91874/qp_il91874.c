@@ -96,7 +96,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_shiftreg_vtable;
-            driver->base.native_bits_per_pixel = 2; // Black and red channels
+            driver->base.native_bits_per_pixel = 8; // Black and red channels
             driver->base.panel_width  = panel_width;
             driver->base.panel_height = panel_height;
             driver->base.rotation     = QP_ROTATION_0;
