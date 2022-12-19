@@ -16,7 +16,7 @@
 
 // Power control
 bool qp_eink_panel_power(painter_device_t device, bool power_on) {
-    struct painter_driver_t *                          driver = (struct painter_driver_t *)device;
+    struct painter_driver_t *                           driver = (struct painter_driver_t *)device;
     struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->driver_vtable;
     qp_comms_command(device, power_on ? vtable->opcodes.display_on : vtable->opcodes.display_off);
     return true;
@@ -43,11 +43,11 @@ bool qp_eink_panel_flush(painter_device_t device) {
     uint32_t n_pixels = driver->base.panel_width * driver->base.panel_height / 8;
 
     qp_comms_command(device, vtable->opcodes.send_black_data);
-    qp_comms_send(device, driver->framebuffer, n_pixels * driver->base.native_bits_per_pixel);
+    qp_comms_send(device, driver->framebuffer, n_pixels);
 
     if (vtable->has_3_colors) {
         qp_comms_command(device, vtable->opcodes.send_red_data);
-        qp_comms_send(device, (driver->framebuffer)+n_pixels, n_pixels * driver->base.native_bits_per_pixel);
+        qp_comms_send(device, &(driver->framebuffer[n_pixels]), n_pixels);
     }
 
     qp_comms_command(device, vtable->opcodes.refresh);
@@ -58,10 +58,40 @@ bool qp_eink_panel_flush(painter_device_t device) {
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
-    driver->viewport.left   = left;
-    driver->viewport.top    = top;
-    driver->viewport.right  = right;
-    driver->viewport.bottom = bottom;
+    uint16_t l = left   + driver->base.offset_x;
+    uint16_t t = top    + driver->base.offset_y;
+    uint16_t r = right  + driver->base.offset_x;
+    uint16_t b = bottom + driver->base.offset_y;
+
+    switch (driver->base.rotation) {
+        case QP_ROTATION_0:
+            driver->viewport.left   = l;
+            driver->viewport.top    = t;
+            driver->viewport.right  = r;
+            driver->viewport.bottom = b;
+            break;
+
+        case QP_ROTATION_90:
+            driver->viewport.left   = driver->base.panel_height - b;
+            driver->viewport.top    = l;
+            driver->viewport.right  = driver->base.panel_height - t;
+            driver->viewport.bottom = r;
+            break;
+
+        case QP_ROTATION_180:
+            driver->viewport.left   = driver->base.panel_width - r;
+            driver->viewport.top    = driver->base.panel_height - b;
+            driver->viewport.right  = driver->base.panel_width - l;
+            driver->viewport.bottom = driver->base.panel_height - t;
+            break;
+
+        case QP_ROTATION_270:
+            driver->viewport.left   = t;
+            driver->viewport.top    = driver->base.panel_height - r;
+            driver->viewport.right  = b;
+            driver->viewport.bottom = driver->base.panel_height - l;
+            break;
+    }
 
     return true;
 }
