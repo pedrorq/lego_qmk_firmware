@@ -1,5 +1,4 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
-// Copyright 2021 Nick Brassel (@tzarc)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "color.h"
@@ -8,6 +7,8 @@
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
 #    include "qp_comms_spi.h"
 #endif // QUANTUM_PAINTER_SPI_ENABLE
+
+#define EINK_BYTES_REQD(w, h) (2 * SURFACE_REQUIRED_BUFFER_BYTE_SIZE(w, h, 1))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common TFT panel implementation using D/C, and RST pins.
@@ -31,27 +32,14 @@ struct eink_panel_dc_reset_painter_driver_vtable_t {
         uint8_t send_red_data;
         uint8_t refresh;
     } opcodes;
-
-    // E-Ink specific config
-    bool has_3_colors;
-    // TODO: Implement logic for this
-    bool has_partial_refresh;
-    bool has_ram;
 };
 
 // Device definition
 typedef struct eink_panel_dc_reset_painter_device_t {
     struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
 
-    uint8_t *framebuffer;
-
-    // Stored values to make virtual viewport by addressing the buffer
-    struct {
-        uint16_t left;
-        uint16_t top;
-        uint16_t right;
-        uint16_t bottom;
-    } viewport;
+    painter_device_t black_surface;
+    painter_device_t red_surface;
 
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE

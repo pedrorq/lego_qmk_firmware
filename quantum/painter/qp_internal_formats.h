@@ -27,7 +27,6 @@ typedef union QP_PACKED qp_pixel_t {
     } rgb888;
 
     uint16_t rgb565;
-    uint8_t eink3;
 
     uint32_t dummy;
 } qp_pixel_t;

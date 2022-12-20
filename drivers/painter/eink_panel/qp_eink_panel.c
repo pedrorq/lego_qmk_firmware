@@ -1,11 +1,11 @@
 // Copyright 2022 Pablo Martinez (@elpekenin)
-// Copyright 2021 Nick Brassel (@tzarc)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "qp_internal.h"
 #include "qp_comms.h"
 #include "qp_draw.h"
 #include "qp_eink_panel.h"
+#include "qp_surface.h"
 
 // TODO: Add rotation support
 // TODO: Add support for screens with partial refresh
@@ -18,80 +18,66 @@
 bool qp_eink_panel_power(painter_device_t device, bool power_on) {
     struct painter_driver_t *                           driver = (struct painter_driver_t *)device;
     struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->driver_vtable;
+
     qp_comms_command(device, power_on ? vtable->opcodes.display_on : vtable->opcodes.display_off);
+
     return true;
 }
 
 // Screen clear
 bool qp_eink_panel_clear(painter_device_t device) {
-    struct painter_driver_t *driver = (struct painter_driver_t *)device;
-    driver->driver_vtable->init(device, driver->rotation); // Re-init the LCD
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
+    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
+
+    qp_rect((void *) black, 0, 0, black->panel_width, black->panel_height, HSV_WHITE, true);
+    qp_rect((void *)red, 0, 0, red->panel_width, red->panel_height, HSV_WHITE, true);
+
     return true;
 }
 
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
     // Flushing sends the framebuffer in RAM + refresh command to apply it
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    struct eink_panel_dc_reset_painter_device_t        *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    // struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    struct surface_painter_device_t                    *black  = (struct surface_painter_device_t *)driver->black_surface;
+    struct surface_painter_device_t                    *red    = (struct surface_painter_device_t *)driver->red_surface;
 
-    if (driver->framebuffer == NULL) {
-        qp_dprintf("Buffer is not a valid pointer, can't flush\n");
-        return false;
+    // qp_comms_command(device, vtable->opcodes.send_black_data);
+    // qp_comms_send(device, black->u8buffer, black->base.panel_width * black->base.panel_height / 8);
+
+    // qp_comms_command(device, vtable->opcodes.send_red_data);
+    // qp_comms_send(device, red->u8buffer, red->base.panel_width * red->base.panel_height / 8);
+
+    // qp_comms_command(device, vtable->opcodes.refresh);
+
+    for (uint32_t i=0; i < driver->base.panel_height * driver->base.panel_width / 8; ++i) {
+        qp_dprintf(
+            "%d %d  %d %d  %d %d  %d %d  %d %d  %d %d  %d %d  %d %d  ",
+            (black->u8buffer[i] >> 0) & 1, (red->u8buffer[i] >> 0) & 1,
+            (black->u8buffer[i] >> 1) & 1, (red->u8buffer[i] >> 1) & 1,
+            (black->u8buffer[i] >> 2) & 1, (red->u8buffer[i] >> 2) & 1,
+            (black->u8buffer[i] >> 3) & 1, (red->u8buffer[i] >> 3) & 1,
+            (black->u8buffer[i] >> 4) & 1, (red->u8buffer[i] >> 4) & 1,
+            (black->u8buffer[i] >> 5) & 1, (red->u8buffer[i] >> 5) & 1,
+            (black->u8buffer[i] >> 6) & 1, (red->u8buffer[i] >> 6) & 1,
+            (black->u8buffer[i] >> 7) & 1, (red->u8buffer[i] >> 7) & 1
+        );
     }
+    qp_dprintf("\n");
 
-    uint32_t n_pixels = driver->base.panel_width * driver->base.panel_height / 8;
-
-    qp_comms_command(device, vtable->opcodes.send_black_data);
-    qp_comms_send(device, driver->framebuffer, n_pixels);
-
-    if (vtable->has_3_colors) {
-        qp_comms_command(device, vtable->opcodes.send_red_data);
-        qp_comms_send(device, &(driver->framebuffer[n_pixels]), n_pixels);
-    }
-
-    qp_comms_command(device, vtable->opcodes.refresh);
     return true;
 }
 
 // Viewport to draw to
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
+    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    uint16_t l = left   + driver->base.offset_x;
-    uint16_t t = top    + driver->base.offset_y;
-    uint16_t r = right  + driver->base.offset_x;
-    uint16_t b = bottom + driver->base.offset_y;
-
-    switch (driver->base.rotation) {
-        case QP_ROTATION_0:
-            driver->viewport.left   = l;
-            driver->viewport.top    = t;
-            driver->viewport.right  = r;
-            driver->viewport.bottom = b;
-            break;
-
-        case QP_ROTATION_90:
-            driver->viewport.left   = driver->base.panel_height - b;
-            driver->viewport.top    = l;
-            driver->viewport.right  = driver->base.panel_height - t;
-            driver->viewport.bottom = r;
-            break;
-
-        case QP_ROTATION_180:
-            driver->viewport.left   = driver->base.panel_width - r;
-            driver->viewport.top    = driver->base.panel_height - b;
-            driver->viewport.right  = driver->base.panel_width - l;
-            driver->viewport.bottom = driver->base.panel_height - t;
-            break;
-
-        case QP_ROTATION_270:
-            driver->viewport.left   = t;
-            driver->viewport.top    = driver->base.panel_height - r;
-            driver->viewport.right  = b;
-            driver->viewport.bottom = driver->base.panel_height - l;
-            break;
-    }
+    black->driver_vtable->viewport((void *) black, left, top, right, bottom);
+    red->driver_vtable->viewport((void *) red, left, top, right, bottom);
 
     return true;
 }
@@ -99,49 +85,11 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    uint8_t *pixels = (uint8_t *) pixel_data;
+    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
+    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    uint32_t byte_offset;
-    uint8_t  bit_offset, black_bit, red_bit;
-
-    uint32_t total_offset;
-    uint32_t red_offset = driver->base.panel_width * driver->base.panel_height / 8;
-    uint16_t x = driver->viewport.left;
-    uint16_t y = driver->viewport.top;
-
-    for (uint32_t i = 0; i < native_pixel_count; ++i) {
-        // Wrap X and increment Y to stay within viewport
-        if (x > driver->viewport.right) {
-            x = driver->viewport.left;
-            y++;
-        }
-
-        if (y > driver->viewport.bottom) {
-            qp_dprintf("eink's pixdata went out of viewport\n");
-            return false;
-        }
-
-        // Compute index based on coords
-        total_offset = x + y * driver->base.panel_width;
-        byte_offset  = total_offset / 8;
-        bit_offset   = 8 - (total_offset % 8);
-
-        black_bit = pixels[i] & 0x01;
-        red_bit   = pixels[i] & 0x02;
-
-        if (black_bit)
-            driver->framebuffer[byte_offset] |= 1 << bit_offset;
-        else
-            driver->framebuffer[byte_offset] &= ~(1 << bit_offset);
-
-        if (red_bit)
-            driver->framebuffer[byte_offset+red_offset] |= 1 << bit_offset;
-        else
-            driver->framebuffer[byte_offset+red_offset] &= ~(1 << bit_offset);
-
-        // Iterate to next pixel
-        x++;
-    }
+    black->driver_vtable->pixdata((void *) black, pixel_data, native_pixel_count);
+    red->driver_vtable->pixdata((void *) red, pixel_data+native_pixel_count, native_pixel_count);
 
     return true;
 }
@@ -171,7 +119,7 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
         else
             value = 0b00;
 
-        palette[i].eink3 = value;
+        palette[i].mono = value;
     }
     return true;
 }
@@ -180,10 +128,30 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
 // Append pixels to the target location, keyed by the pixel index
 
 bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
-    uint8_t *buf = (uint8_t *)target_buffer;
+    // Black data
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        buf[pixel_offset + i] = palette[palette_indices[i]].eink3;
+        uint32_t pixel_num   = pixel_offset + i;
+        uint32_t byte_offset = pixel_num / 8;
+        uint8_t  bit_offset  = pixel_num % 8;
+        if (palette[palette_indices[i]].mono & 1) {
+            target_buffer[byte_offset] |= (1 << bit_offset);
+        } else {
+            target_buffer[byte_offset] &= ~(1 << bit_offset);
+        }
     }
+
+    // Red data
+    for (uint32_t i = 0; i < pixel_count; ++i) {
+        uint32_t pixel_num   = pixel_offset + pixel_count + i;
+        uint32_t byte_offset = pixel_num / 8;
+        uint8_t  bit_offset  = pixel_num % 8;
+        if (palette[palette_indices[i]].mono & 2) {
+            target_buffer[byte_offset] |= (1 << bit_offset);
+        } else {
+            target_buffer[byte_offset] &= ~(1 << bit_offset);
+        }
+    }
+
     return true;
 }
 

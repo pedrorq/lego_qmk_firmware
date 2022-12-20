@@ -4,7 +4,7 @@ QUANTUM_PAINTER_ANIMATIONS_ENABLE ?= yes
 
 # The list of permissible drivers that can be listed in QUANTUM_PAINTER_DRIVERS
 VALID_QUANTUM_PAINTER_DRIVERS := \
-    rgb565_surface \
+    surface \
     il91874_spi \
     ili9163_spi \
     ili9341_spi \
@@ -43,6 +43,7 @@ endif
 
 # Comms flags
 QUANTUM_PAINTER_NEEDS_COMMS_SPI ?= no
+QUANTUM_PAINTER_NEEDS_COMMS_DUMMY ?= no
 
 # Handler for each driver
 define handle_quantum_painter_driver
@@ -51,24 +52,28 @@ define handle_quantum_painter_driver
     ifeq ($$(filter $$(strip $$(CURRENT_PAINTER_DRIVER)),$$(VALID_QUANTUM_PAINTER_DRIVERS)),)
         $$(error "$$(CURRENT_PAINTER_DRIVER)" is not a valid Quantum Painter driver)
 
-    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),rgb565_surface)
-        OPT_DEFS += -DQUANTUM_PAINTER_RGB565_SURFACE_ENABLE
+    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),surface)
+        QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
+        OPT_DEFS += -DQUANTUM_PAINTER_SURFACE_ENABLE
         COMMON_VPATH += \
             $(DRIVER_PATH)/painter/generic
         SRC += \
-            $(DRIVER_PATH)/painter/generic/qp_rgb565_surface.c \
+            $(DRIVER_PATH)/painter/generic/qp_surface.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),il91874_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG := yes
-        OPT_DEFS += -DQUANTUM_PAINTER_IL91874_ENABLE -DQUANTUM_PAINTER_IL91874_SPI_ENABLE
+        OPT_DEFS += -DQUANTUM_PAINTER_IL91874_ENABLE -DQUANTUM_PAINTER_IL91874_SPI_ENABLE -DQUANTUM_PAINTER_SURFACE_ENABLE
         COMMON_VPATH += \
             $(DRIVER_PATH)/painter/eink_panel \
+            $(DRIVER_PATH)/painter/generic \
             $(DRIVER_PATH)/painter/il91874
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
             $(DRIVER_PATH)/painter/il91874/qp_il91874.c \
+            $(DRIVER_PATH)/painter/generic/qp_surface.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -175,6 +180,15 @@ endef
 
 # Iterate through the listed drivers for the build, including what's necessary
 $(foreach qp_driver,$(QUANTUM_PAINTER_DRIVERS),$(eval $(call handle_quantum_painter_driver,$(qp_driver))))
+
+# If dummy comms is needed, set up the required files
+ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_DUMMY)), yes)
+    OPT_DEFS += -DQUANTUM_PAINTER_DUMMY_COMMS_ENABLE
+    VPATH += $(DRIVER_PATH)/painter/comms
+    SRC += \
+        $(QUANTUM_DIR)/painter/qp_comms.c \
+        $(DRIVER_PATH)/painter/comms/qp_comms_dummy.c
+endif
 
 # If SPI comms is needed, set up the required files
 ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_SPI)), yes)

@@ -6,6 +6,7 @@
 #include "qp_il91874.h"
 #include "qp_il91874_opcodes.h"
 #include "qp_eink_panel.h"
+#include "qp_surface.h"
 
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
 #    include <qp_comms_spi.h>
@@ -78,10 +79,7 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .send_black_data = IL91874_SEND_BLACK,
             .send_red_data = IL91874_SEND_RED,
             .refresh = IL91874_DISPLAY_REFRESH,
-        },
-    .has_3_colors = true,
-    .has_partial_refresh = false,
-    .has_ram = false
+        }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +88,7 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
 
 // Factory function for creating a handle to the IL91874 device
-painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, uint8_t *ptr) {
+painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
@@ -103,18 +101,8 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.offset_x     = 0;
             driver->base.offset_y     = 0;
 
-            // uint32_t framebuffer_size = panel_width * panel_height / 8 * 2;
-            // uint8_t *ptr = (uint8_t *) malloc(framebuffer_size);
-            // if (ptr == NULL) {
-            //     qp_dprintf("Couldn't allocate memory for eink buffer\n");
-            // } else {
-            //     memset(ptr, 0, framebuffer_size);
-            // }
-            driver->framebuffer = ptr;
-            driver->viewport.left   = 0;
-            driver->viewport.top    = 0;
-            driver->viewport.right  = panel_width-1;
-            driver->viewport.bottom = panel_height-1;
+            driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
+            driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
