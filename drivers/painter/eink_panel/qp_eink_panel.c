@@ -31,7 +31,7 @@ bool qp_eink_panel_clear(painter_device_t device) {
     struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
     qp_rect((void *) black, 0, 0, black->panel_width, black->panel_height, HSV_WHITE, true);
-    qp_rect((void *)red, 0, 0, red->panel_width, red->panel_height, HSV_WHITE, true);
+    qp_rect((void *) red, 0, 0, red->panel_width, red->panel_height, HSV_WHITE, true);
 
     return true;
 }
@@ -76,8 +76,8 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
     struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
     struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    black->driver_vtable->viewport((void *) black, left, top, right, bottom);
-    red->driver_vtable->viewport((void *) red, left, top, right, bottom);
+    qp_viewport((void *) black, left, top, right, bottom);
+    qp_viewport((void *) red, left, top, right, bottom);
 
     return true;
 }
@@ -88,8 +88,8 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
     struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    black->driver_vtable->pixdata((void *) black, pixel_data, native_pixel_count);
-    red->driver_vtable->pixdata((void *) red, pixel_data+native_pixel_count, native_pixel_count);
+    qp_pixdata((void *) black, pixel_data, native_pixel_count);
+    qp_pixdata((void *) red, pixel_data+native_pixel_count, native_pixel_count);
 
     return true;
 }
