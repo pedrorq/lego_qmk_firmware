@@ -27,11 +27,9 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 // Screen clear
 bool qp_eink_panel_clear(painter_device_t device) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
-    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    qp_rect((void *) black, 0, 0, black->panel_width, black->panel_height, HSV_WHITE, true);
-    qp_rect((void *) red, 0, 0, red->panel_width, red->panel_height, HSV_WHITE, true);
+    qp_rect(driver->black_surface, 0, 0, driver->base.panel_width, driver->base.panel_height, HSV_WHITE, true);
+    qp_rect(driver->red_surface,   0, 0, driver->base.panel_width, driver->base.panel_height, HSV_WHITE, true);
 
     return true;
 }
@@ -73,11 +71,9 @@ bool qp_eink_panel_flush(painter_device_t device) {
 // Viewport to draw to
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
-    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    qp_viewport((void *) black, left, top, right, bottom);
-    qp_viewport((void *) red, left, top, right, bottom);
+    qp_viewport(driver->black_surface, left, top, right, bottom);
+    qp_viewport(driver->red_surface,   left, top, right, bottom);
 
     return true;
 }
