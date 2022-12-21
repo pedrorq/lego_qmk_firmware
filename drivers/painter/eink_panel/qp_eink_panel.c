@@ -81,11 +81,9 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
-    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    qp_pixdata((void *) black, pixel_data, native_pixel_count);
-    qp_pixdata((void *) red, pixel_data+native_pixel_count, native_pixel_count);
+    qp_pixdata(driver->black_surface, pixel_data,                    native_pixel_count);
+    qp_pixdata(driver->red_surface,   pixel_data+native_pixel_count, native_pixel_count);
 
     return true;
 }
