@@ -50,6 +50,24 @@ It uses four pins from the MCU to provide 16 output pins */
 /* Shift Register Clock/Latch configuration (MCU to ShiftRegister.RCLK - 12) */
 /* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER - 14) */
 /* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK - 11) */
+/*
+shift register 74HC165N
+
+3
+nPL |1    16| VCC
+ CP |2    15| nCE
+ D4 |3    14| D3
+ D5 |4    13| D2
+ D6 |5    12| D1
+ D7 |6    11| D0
+nQ7 |7    10| DS
+  G |8    9 | Q7
+
+nCE - G
+nPL - Latch (same as 595)
+CP - Serial Clock (same as 595)
+Q7 - SPI Data in - MISO
+*/
 
 #define SPI_DRIVER SPID0
 
@@ -60,7 +78,7 @@ It uses four pins from the MCU to provide 16 output pins */
 
 #define SPI_DIVISOR 32
 
-#define DEBUG_MATRIX_SCAN_RATE
+//#define DEBUG_MATRIX_SCAN_RATE
 
 
 //0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000
