@@ -59,7 +59,7 @@ struct painter_comms_with_command_vtable_t {
 
 struct painter_driver_t {
     const struct painter_driver_vtable_t *driver_vtable;
-    const struct painter_comms_vtable_t * comms_vtable;
+    const struct painter_comms_vtable_t  *comms_vtable;
 
     // Flag signifying if validation was successful
     bool validate_ok;

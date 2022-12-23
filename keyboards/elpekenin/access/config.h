@@ -15,7 +15,10 @@
 // =======
 // Painter
 #define QUANTUM_PAINTER_NUM_IMAGES 16
-#define QUANTUM_PAINTER_NUM_DISPLAYS 3
+#define SURFACE_NUM_DEVICES 2
+#define QUANTUM_PAINTER_NUM_DISPLAYS 4
+#define QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE 65536
+
 
 // =======
 // Power indicator

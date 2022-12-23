@@ -7,7 +7,6 @@
 #include "qp_eink_panel.h"
 #include "qp_surface.h"
 
-// TODO: Add rotation support
 // TODO: Add support for screens with partial refresh
 // TODO: Add support for displays with builtin RAM
 
@@ -36,34 +35,21 @@ bool qp_eink_panel_clear(painter_device_t device) {
 
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
-    // Flushing sends the framebuffer in RAM + refresh command to apply it
+    // Flushing sends the framebuffers in RAM + refresh command to apply them
     struct eink_panel_dc_reset_painter_device_t        *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    // struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
     struct surface_painter_device_t                    *black  = (struct surface_painter_device_t *)driver->black_surface;
     struct surface_painter_device_t                    *red    = (struct surface_painter_device_t *)driver->red_surface;
 
-    // qp_comms_command(device, vtable->opcodes.send_black_data);
-    // qp_comms_send(device, black->u8buffer, black->base.panel_width * black->base.panel_height / 8);
+    uint32_t n_bytes = driver->base.panel_width * driver->base.panel_height / 8;
 
-    // qp_comms_command(device, vtable->opcodes.send_red_data);
-    // qp_comms_send(device, red->u8buffer, red->base.panel_width * red->base.panel_height / 8);
+    qp_comms_command(device, vtable->opcodes.send_black_data);
+    qp_comms_send(device, black->u8buffer, n_bytes);
 
-    // qp_comms_command(device, vtable->opcodes.refresh);
+    qp_comms_command(device, vtable->opcodes.send_red_data);
+    qp_comms_send(device, red->u8buffer,   n_bytes);
 
-    for (uint32_t i=0; i < driver->base.panel_height * driver->base.panel_width / 8; ++i) {
-        qp_dprintf(
-            "%d %d  %d %d  %d %d  %d %d  %d %d  %d %d  %d %d  %d %d  ",
-            (black->u8buffer[i] >> 0) & 1, (red->u8buffer[i] >> 0) & 1,
-            (black->u8buffer[i] >> 1) & 1, (red->u8buffer[i] >> 1) & 1,
-            (black->u8buffer[i] >> 2) & 1, (red->u8buffer[i] >> 2) & 1,
-            (black->u8buffer[i] >> 3) & 1, (red->u8buffer[i] >> 3) & 1,
-            (black->u8buffer[i] >> 4) & 1, (red->u8buffer[i] >> 4) & 1,
-            (black->u8buffer[i] >> 5) & 1, (red->u8buffer[i] >> 5) & 1,
-            (black->u8buffer[i] >> 6) & 1, (red->u8buffer[i] >> 6) & 1,
-            (black->u8buffer[i] >> 7) & 1, (red->u8buffer[i] >> 7) & 1
-        );
-    }
-    qp_dprintf("\n");
+    qp_comms_command(device, vtable->opcodes.refresh);
 
     return true;
 }
@@ -81,9 +67,16 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 // Stream pixel data to the current write position in GRAM
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
+    struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
 
-    qp_pixdata(driver->black_surface, pixel_data,                    native_pixel_count);
-    qp_pixdata(driver->red_surface,   pixel_data+native_pixel_count, native_pixel_count);
+    uint8_t *pixels = (uint8_t *) pixel_data;
+
+    for (uint32_t i = 0; i < native_pixel_count; ++i) {
+        // Calling driver function manually instead of `qp_pixdata` to avoid getting LOTS of `qp_dprintf` slowing it
+        black->driver_vtable->pixdata((const void *) black, (const void *) (pixels[i] >> 0), 1);
+        red->driver_vtable->pixdata((const void *) red, (const void *) (pixels[i] >> 1), 1);
+    }
 
     return true;
 }
@@ -124,26 +117,9 @@ bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palett
 bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
     // Black data
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        uint32_t pixel_num   = pixel_offset + i;
-        uint32_t byte_offset = pixel_num / 8;
-        uint8_t  bit_offset  = pixel_num % 8;
-        if (palette[palette_indices[i]].mono & 1) {
-            target_buffer[byte_offset] |= (1 << bit_offset);
-        } else {
-            target_buffer[byte_offset] &= ~(1 << bit_offset);
-        }
-    }
-
-    // Red data
-    for (uint32_t i = 0; i < pixel_count; ++i) {
-        uint32_t pixel_num   = pixel_offset + pixel_count + i;
-        uint32_t byte_offset = pixel_num / 8;
-        uint8_t  bit_offset  = pixel_num % 8;
-        if (palette[palette_indices[i]].mono & 2) {
-            target_buffer[byte_offset] |= (1 << bit_offset);
-        } else {
-            target_buffer[byte_offset] &= ~(1 << bit_offset);
-        }
+        // TODO: Optimize code so that each pixel takes 2 bits instead of a whole byte
+        // Current format: | 0000 00BR | 0000 00BR | ...
+        target_buffer[pixel_offset + i] = palette[palette_indices[i]].mono;
     }
 
     return true;
