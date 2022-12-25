@@ -278,9 +278,9 @@ SURFACE_FACTORY_FUNCTION_IMPL(qp_make_mono1bpp_surface, mono1bpp_surface_driver_
 // Drawing routine to copy out the dirty region and send it to another device
 
 bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t x, uint16_t y, bool entire_surface) {
-    struct painter_driver_t * surface_driver = (struct painter_driver_t *)surface;
+    struct painter_driver_t  *surface_driver = (struct painter_driver_t *)surface;
     surface_painter_device_t *surface_handle = (surface_painter_device_t *)surface_driver;
-    struct painter_driver_t * target_driver  = (struct painter_driver_t *)target;
+    struct painter_driver_t  *target_driver  = (struct painter_driver_t *)target;
 
     // If we're not dirty... we're done.
     if (!surface_handle->is_dirty) {

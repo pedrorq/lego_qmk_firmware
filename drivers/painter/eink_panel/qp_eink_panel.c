@@ -47,10 +47,10 @@ bool qp_eink_panel_flush(painter_device_t device) {
     uint32_t n_bytes = driver->base.panel_width * driver->base.panel_height / 8;
 
     qp_comms_command(device, vtable->opcodes.send_black_data);
-    qp_comms_send(device, black->u8buffer, n_bytes);
+    qp_comms_send(device, black->buffer, n_bytes);
 
     qp_comms_command(device, vtable->opcodes.send_red_data);
-    qp_comms_send(device, red->u8buffer,   n_bytes);
+    qp_comms_send(device, red->buffer,   n_bytes);
 
     qp_comms_command(device, vtable->opcodes.refresh);
 
