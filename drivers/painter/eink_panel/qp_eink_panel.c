@@ -72,6 +72,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
     struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
+    struct surface_painter_device_t             *b      = (struct surface_painter_device_t *)driver->black_surface;
 
     uint8_t *pixels = (uint8_t *) pixel_data;
 
@@ -79,6 +80,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
         // Calling driver function manually instead of `qp_pixdata` to avoid getting LOTS of `qp_dprintf` slowing it
         black->driver_vtable->pixdata((const void *) black, (const void *) (pixels[i] >> 0), 1);
         red->driver_vtable->pixdata((const void *) red, (const void *) (pixels[i] >> 1), 1);
+        qp_dprintf("Drawn | x: %d | y: %d | color: %d\n", b->pixdata_x, b->pixdata_y, pixels[i]);
     }
 
     return true;

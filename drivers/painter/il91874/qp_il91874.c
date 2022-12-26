@@ -97,11 +97,11 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_shiftreg_vtable;
             driver->base.native_bits_per_pixel = 8; // Black and red channels
-            driver->base.panel_width  = panel_width;
-            driver->base.panel_height = panel_height;
-            driver->base.rotation     = QP_ROTATION_0;
-            driver->base.offset_x     = 0;
-            driver->base.offset_y     = 0;
+            driver->base.panel_width           = panel_width;
+            driver->base.panel_height          = panel_height;
+            driver->base.rotation              = QP_ROTATION_0;
+            driver->base.offset_x              = 0;
+            driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));

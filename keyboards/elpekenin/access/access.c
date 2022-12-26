@@ -70,6 +70,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *) il91874_buffer);
     qp_init(il91874, IL91874_ROTATION);
+    qp_rect(il91874, 0, 0, 20, 20, HSV_BLACK, true);
+    qp_flush(il91874);
 
     // Fill them black
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
