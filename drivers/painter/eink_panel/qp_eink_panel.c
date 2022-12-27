@@ -36,6 +36,12 @@ bool qp_eink_panel_clear(painter_device_t device) {
     return true;
 }
 
+uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
+    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *) cb_arg;
+    driver->can_flush = true;
+    return 0;
+}
+
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
     // Flushing sends the framebuffers in RAM + refresh command to apply them
@@ -43,6 +49,11 @@ bool qp_eink_panel_flush(painter_device_t device) {
     struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
     struct surface_painter_device_t                    *black  = (struct surface_painter_device_t *)driver->black_surface;
     struct surface_painter_device_t                    *red    = (struct surface_painter_device_t *)driver->red_surface;
+
+    if (!driver->can_flush) {
+        qp_dprintf("qp_eink_panel_flush: fail (can_flush is false)\n");
+        return false;
+    }
 
     uint32_t n_bytes = driver->base.panel_width * driver->base.panel_height / 8;
 
@@ -53,6 +64,10 @@ bool qp_eink_panel_flush(painter_device_t device) {
     qp_comms_send(device, red->buffer,   n_bytes);
 
     qp_comms_command(device, vtable->opcodes.refresh);
+
+    // Set device on can't flush mode and schedule a function to clean the flag after timeout
+    driver->can_flush = false;
+    defer_exec(driver->timeout, can_flush_callback, (void *) device);
 
     return true;
 }
@@ -72,15 +87,13 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct painter_driver_t                     *black  = (struct painter_driver_t *)driver->black_surface;
     struct painter_driver_t                     *red    = (struct painter_driver_t *)driver->red_surface;
-    struct surface_painter_device_t             *b      = (struct surface_painter_device_t *)driver->black_surface;
 
     uint8_t *pixels = (uint8_t *) pixel_data;
 
     for (uint32_t i = 0; i < native_pixel_count; ++i) {
         // Calling driver function manually instead of `qp_pixdata` to avoid getting LOTS of `qp_dprintf` slowing it
         black->driver_vtable->pixdata((const void *) black, (const void *) (pixels[i] >> 0), 1);
-        red->driver_vtable->pixdata((const void *) red, (const void *) (pixels[i] >> 1), 1);
-        qp_dprintf("Drawn | x: %d | y: %d | color: %d\n", b->pixdata_x, b->pixdata_y, pixels[i]);
+        red->driver_vtable->pixdata(  (const void *) red,   (const void *) (pixels[i] >> 1), 1);
     }
 
     return true;

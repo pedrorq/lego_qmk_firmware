@@ -35,7 +35,7 @@ SRC += \
     $(QUANTUM_DIR)/painter/qp_draw_image.c \
     $(QUANTUM_DIR)/painter/qp_draw_text.c
 
-# Check if people want animations... enable the defered exec if so.
+# Check if people want animations... enable the deferred exec if so.
 ifeq ($(strip $(QUANTUM_PAINTER_ANIMATIONS_ENABLE)), yes)
     DEFERRED_EXEC_ENABLE := yes
     OPT_DEFS += -DQUANTUM_PAINTER_ANIMATIONS_ENABLE
@@ -61,6 +61,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/generic/qp_surface.c \
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),il91874_spi)
+        DEFERRED_EXEC_ENABLE := yes # for timeout that prevents damaging screen
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
         QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes

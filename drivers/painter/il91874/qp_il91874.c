@@ -106,6 +106,9 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
 
+            driver->timeout = 3 * 60 * 1000; // 3 minutes as suggested by Adafruit
+            driver->can_flush = true;
+
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
             driver->spi_dc_reset_config.spi_config.chip_select_pin = chip_select_pin;
