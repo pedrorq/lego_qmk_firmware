@@ -27,11 +27,8 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 bool qp_eink_panel_clear(painter_device_t device) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
-    uint16_t width  = driver->base.panel_width;
-    uint16_t height = driver->base.panel_height;
-
-    qp_rect(driver->black_surface, 0, 0, width, height, HSV_WHITE, true);
-    qp_rect(driver->red_surface,   0, 0, width, height, HSV_WHITE, true);
+    qp_init(driver->black_surface, driver->base.rotation);
+    qp_init(driver->red_surface,   driver->base.rotation);
 
     return true;
 }
