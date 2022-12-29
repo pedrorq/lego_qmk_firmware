@@ -67,8 +67,8 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable =
     .swap_window_coords = false,
     .opcodes =
         {
-            .display_on  = 0x00, // No-op couldnt find a turn-on command
-            .display_off = 0x00, // No-op as going into sleep mode requires HW reset in order to wake up
+            .display_on  = SSD1680_NOP, // Couldnt find a turn-on command
+            .display_off = SSD1680_NOP, // There is a cmd to go into sleep mode, but requires HW reset in order to wake up
             .send_black_data = SSD1680_SEND_BLACK,
             .send_red_data = SSD1680_SEND_RED,
             .refresh = SSD1680_DISPLAY_REFRESH,

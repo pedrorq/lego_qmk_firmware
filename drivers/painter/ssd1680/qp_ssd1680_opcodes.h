@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter SSD1680 command opcodes
+#define SSD1680_NOP 0x00
 #define SSD1680_RESOLUTION 0x01
 #define SSD1680_GATE_VOLTAGE 0x03
 #define SSD1680_SOURCE_VOLTAGE 0x04
