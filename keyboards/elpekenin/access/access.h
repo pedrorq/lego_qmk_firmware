@@ -5,9 +5,9 @@
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "qp.h"
-extern painter_device_t ili9163;
-extern painter_device_t ili9341;
-extern painter_device_t ili9486;
+//extern painter_device_t ili9163;
+//extern painter_device_t ili9341;
+//extern painter_device_t ili9486;
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(RGB_MATRIX_ENABLE) && defined(ONE_HAND_ENABLE)

@@ -10,9 +10,9 @@
 #    include "qp.h"
 #    include "qp_eink_panel.h"
 #    include "qp_surface.h"
-painter_device_t ili9163;
-painter_device_t ili9341;
-painter_device_t ili9486;
+//painter_device_t ili9163;
+//painter_device_t ili9341;
+//painter_device_t ili9486;
 painter_device_t il91874;
 uint8_t il91874_buffer[EINK_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
 #endif // QUANTUM_PAINTER_ENABLE
