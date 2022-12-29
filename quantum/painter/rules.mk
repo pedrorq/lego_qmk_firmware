@@ -14,7 +14,8 @@ VALID_QUANTUM_PAINTER_DRIVERS := \
     st7735_spi \
     st7789_spi \
     gc9a01_spi \
-    ssd1351_spi
+    ssd1351_spi \
+    ssd1680_spi
 
 #-------------------------------------------------------------------------------
 
@@ -74,7 +75,7 @@ define handle_quantum_painter_driver
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
             $(DRIVER_PATH)/painter/il91874/qp_il91874.c \
-            $(DRIVER_PATH)/painter/generic/qp_surface.c \
+            $(DRIVER_PATH)/painter/generic/qp_surface.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -85,7 +86,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/ili9xxx
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
-            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9163.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9163.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9341_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -96,7 +97,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/ili9xxx
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
-            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9341.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9341.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9486_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -107,7 +108,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/ili9xxx
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
-            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9486_shiftreg_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -119,7 +120,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/ili9xxx
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
-            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486_shiftreg.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9486_shiftreg.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9488_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -130,7 +131,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/ili9xxx
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
-            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9488.c \
+            $(DRIVER_PATH)/painter/ili9xxx/qp_ili9488.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),st7735_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -175,6 +176,22 @@ define handle_quantum_painter_driver
         SRC += \
             $(DRIVER_PATH)/painter/tft_panel/qp_tft_panel.c \
             $(DRIVER_PATH)/painter/ssd1351/qp_ssd1351.c
+
+    else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ssd1680_spi)
+        DEFERRED_EXEC_ENABLE := yes # for timeout that prevents damaging screen
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
+        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG := yes
+        OPT_DEFS += -DQUANTUM_PAINTER_SSD1680_ENABLE -DQUANTUM_PAINTER_SSD1680_SPI_ENABLE -DQUANTUM_PAINTER_SURFACE_ENABLE
+        COMMON_VPATH += \
+            $(DRIVER_PATH)/painter/eink_panel \
+            $(DRIVER_PATH)/painter/generic \
+            $(DRIVER_PATH)/painter/ssd1680
+        SRC += \
+            $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
+            $(DRIVER_PATH)/painter/ssd1680/qp_ssd1680.c \
+            $(DRIVER_PATH)/painter/generic/qp_surface.c
 
     endif
 endef

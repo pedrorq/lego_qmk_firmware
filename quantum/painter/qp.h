@@ -483,3 +483,7 @@ painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS];
 #ifdef QUANTUM_PAINTER_SSD1351_ENABLE
 #    include "qp_ssd1351.h"
 #endif // QUANTUM_PAINTER_SSD1351_ENABLE
+
+#ifdef QUANTUM_PAINTER_SSD1680_ENABLE
+#    include "qp_ssd1680.h"
+#endif // QUANTUM_PAINTER_SSD1680_ENABLE
