@@ -76,7 +76,10 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
     // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
-
+    qp_rect(il91874, 0, 0, 10, 10, HSV_RED, false);
+    qp_rect(il91874, 10, 10, 20, 20, HSV_RED, false);
+    qp_rect(il91874, 20, 20, 30, 30, HSV_RED, false);
+    qp_flush(il91874);
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE
 

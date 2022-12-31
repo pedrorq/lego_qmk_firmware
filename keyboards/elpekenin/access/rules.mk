@@ -9,4 +9,4 @@ DEFAULT_FOLDER = elpekenin/access
 #WS2812_DRIVER = vendor
 
 QUANTUM_PAINTER_DRIVERS += il91874_spi
-#QUANTUM_PAINTER_DRIVERS += ili9163_spi ili9341_spi ili9486_shiftreg_spi
+QUANTUM_PAINTER_DRIVERS += ili9163_spi ili9341_spi ili9486_shiftreg_spi

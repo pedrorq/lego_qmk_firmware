@@ -5,6 +5,7 @@
     "url": "https://github.com/elpekenin/access_kb",
     "processor": "RP2040",
     "bootloader": "rp2040",
+    "board":"GENERIC_RP_RP2040",
     "bootloader_instructions": "Press the physical BOOT button on the Raspberry Pi Pico, hold the top-left key when plugging in the board. Can also use QK_BOOT if mapped anywhere",
     "debounce": 5,
     "diode_direction": "COL2ROW",
@@ -24,8 +25,8 @@
         "wpm": false
     },
     "matrix_pins": {
-        "cols": ["GP16"],
-        "rows": ["GP17"]
+        "cols": ["GP7"],
+        "rows": ["GP0"]
     },
     "usb": {
         "device_version": "1.0.0",

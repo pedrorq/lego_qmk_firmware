@@ -16,7 +16,7 @@
 // Painter
 #define QUANTUM_PAINTER_NUM_IMAGES 16
 #define SURFACE_NUM_DEVICES 2
-#define QUANTUM_PAINTER_NUM_DISPLAYS 1
+#define QUANTUM_PAINTER_NUM_DISPLAYS 4
 #define QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE 65536
 
 
@@ -30,7 +30,7 @@
 #define SPI_SCK_PIN GP2
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
-#define SPI_DC_PIN GP6
+#define SPI_DC_PIN GP27
 #define SPI_MODE 0
 #define SPI_DIV 16
 /*
@@ -50,12 +50,12 @@
 #define ILI9486_RST_PIN GP7
 #define ILI9486_TOUCH_CS_PIN GP8
 #define ILI9486_TOUCH_IRQ_PIN GP9
+
 */
 
 #define IL91874_ROTATION 0
-#define IL91874_CS_PIN GP18
-#define IL91874_RST_PIN GP1
-
+#define IL91874_CS_PIN GP26
+#define IL91874_RST_PIN GP28
 
 /*
 // =======
@@ -97,14 +97,12 @@
 // ==================================================================================================
 // SOME MAGIC DOWN HERE
 // - Real size, used for init function
-/*
 #define _ILI9163_WIDTH 129
 #define _ILI9163_HEIGHT 128
 #define _ILI9341_WIDTH 240
 #define _ILI9341_HEIGHT 320
 #define _ILI9486_WIDTH 320
 #define _ILI9486_HEIGHT 480
-*/
 #define _IL91874_WIDTH 250
 #define _IL91874_HEIGHT 122
 
@@ -125,7 +123,6 @@
 #endif
 
 // - Virtual size, used for drawing funcs
-/*
 #if (ILI9163_ROTATION % 2 == 0)
 #    define ILI9163_WIDTH  _ILI9163_WIDTH
 #    define ILI9163_HEIGHT _ILI9163_HEIGHT
@@ -149,7 +146,6 @@
 #    define ILI9486_WIDTH  _ILI9486_HEIGHT
 #    define ILI9486_HEIGHT _ILI9486_WIDTH
 #endif
-*/
 
 #if (IL91874_ROTATION % 2 == 0)
 #    define IL91874_WIDTH  _IL91874_WIDTH
