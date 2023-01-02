@@ -173,7 +173,7 @@ altgr shift symbols
  * └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
  *
 */
-  [_QW] = LAYOUT_ortho_5x13(
+  [_QW] = LAYOUT_ortho_5x13e(
        KC_ESC, UK_1   , UK_2    , UK_3   , UK_4    , UK_5  , UK_6  , UK_7  , UK_8   , UK_9   , UK_0   , UK_MINS, KC_BSPC , KC_MUTE,
        KC_TAB, UK_Q   , UK_W    , UK_E   , UK_R    , UK_T  , UK_Y  , UK_U  , UK_I   , UK_O   , UK_P   , UK_LBRC, UK_RBRC ,
       UK_HASH, UK_A   , UK_S    , UK_D   , UK_F    , UK_G  , UK_H  , UK_J  , UK_K   , UK_L   , UK_SCLN, UK_QUOT, KC_ENT  ,
@@ -208,7 +208,7 @@ raise layer shifted
 MB - mouse buttons
 MS - mouse directions
 */
- [_RSE] = LAYOUT_ortho_5x13(
+ [_RSE] = LAYOUT_ortho_5x13e(
      KC_GRV ,    KC_MUTE,  KC_VOLU,  KC_VOLD,  KC_MPRV,  KC_MPLY,  KC_MNXT,  G(KC_P),  KC_SLEP,    KC_WAKE,    KC_PSCR,        KC_DEL,        UK_EQL, _______,
      KC_BTN3,  XP(lq,lQ),XP(lw,lW),XP(le,lE),XP(lr,lR),XP(lt,lT),XP(ly,lY),XP(lu,lU),XP(li,lI),  XP(lo,lO),  XP(lp,lP), XP(lbo1,lbo2), XP(lbc1,lbc2),
      KC_BTN2,  XP(la,lA),XP(ls,lS),XP(ld,lD),XP(lf,lF),XP(lg,lG),XP(lh,lH),XP(lj,lJ),XP(lk,lK),  XP(ll,lL),XP(ll1,lL1),   XP(lk1,lK1),       _______,
@@ -242,12 +242,12 @@ raise layer shifted
  * │   │   │   │   │   │   │   │   │   │   │   │   │   │
  * └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
 */
-  [_LWR] = LAYOUT_ortho_5x13(
-      KC_ESC ,    KC_F1  ,   KC_F2  , KC_F3  ,  KC_F4  ,  KC_F5  , KC_F6  , KC_F7  ,  KC_F8  , KC_F9  , KC_F10 , KC_F11 , KC_F12  ,_______,
-      _______,XP(ra1,rA1),   _______, _______,  _______,XP(rt,rT), _______, _______,XP(ri,rI), _______, _______, _______, _______ ,
-      KC_CAPS,  XP(ra,rA), XP(rs,rS), _______,  _______,  _______, _______, _______,  _______, _______, _______, _______, _______ ,
-      _______,    KC_F20 ,   _______, XP(rx,rX),XP(rc,rC),XP(rv,rV) , XP(rb,rB), XP(rn,rN),  _______, _______, _______, KC_WH_U, _______ ,
-      _______,    _______,   _______, _______,  _______,  _______, _______, _______,  _______, _______, KC_WH_L, KC_WH_D, KC_WH_R),
+  [_LWR] = LAYOUT_ortho_5x13e(
+      KC_ESC ,     KC_F1  ,   KC_F2  ,   KC_F3  ,   KC_F4  ,   KC_F5  ,  KC_F6  ,   KC_F7  ,   KC_F8  , KC_F9  , KC_F10 , KC_F11 , KC_F12  , _______,
+      _______, XP(ra1,rA1),   _______,   _______,   _______, XP(rt,rT),  _______,   _______, XP(ri,rI), _______, _______, _______, _______ ,
+      KC_CAPS,   XP(ra,rA), XP(rs,rS),   _______,   _______,   _______,  _______,   _______,   _______, _______, _______, _______, _______ ,
+      _______,     KC_F20 ,   _______, XP(rx,rX), XP(rc,rC), XP(rv,rV), XP(rb,rB), XP(rn,rN),  _______, _______, _______, KC_WH_U, _______ ,
+      _______,     _______,   _______,   _______,   _______,   _______,  _______,    _______,  _______, _______, KC_WH_L, KC_WH_D, KC_WH_R),
 /*
 adj layer
  * ┌───┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬────┬────┐
@@ -262,8 +262,8 @@ adj layer
  * │TOG│    │   │   │   │   │   │   │   │   │   │M_TW│M_G │
  * └───┴────┴───┴───┴───┴───┴───┴───┴───┴───┴───┴────┴────┘
 */
-  [_ADJ] = LAYOUT_ortho_5x13(
-      RGB_MOD, RGB_RMOD, A(KC_F2), _______, _______, _______, _______, _______, _______, _______, _______, RGB_M_T , RGB_M_SW,_______,
+  [_ADJ] = LAYOUT_ortho_5x13e(
+      RGB_MOD, RGB_RMOD, A(KC_F2), _______, _______, _______, _______, _______, _______, _______, _______, RGB_M_T , RGB_M_SW, _______,
       RGB_HUI, RGB_HUD , RGB_M_P , _______, QK_BOOT, _______, _______, _______, _______, _______, _______, _______ , RGB_M_SN,
       RGB_SAI, RGB_SAD , RGB_M_B , _______, UC_RMOD, _______, _______, _______, _______, _______, _______, _______ , RGB_M_K ,
       RGB_VAI, RGB_VAD , RGB_M_R , _______,  UC_MOD, UC_M_LN, UC_M_WI, UC_M_WC, UC_M_MA, _______, _______, _______ , RGB_M_X ,

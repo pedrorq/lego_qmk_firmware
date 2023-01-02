@@ -99,7 +99,7 @@ Q7 - SPI Data in - MISO
 #    define OLED_DISPLAY_128X32
 #define I2C1_SCL_PIN        GP7
 #define I2C1_SDA_PIN        GP6
-#define I2C_DRIVER I2CD2
+#define I2C_DRIVER I2CD1
 #define OLED_BRIGHTNESS 128
 #define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #endif
