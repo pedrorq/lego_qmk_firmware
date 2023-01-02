@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define OLED_DISPLAY_128X32
 #define I2C1_SCL_PIN        GP3
 #define I2C1_SDA_PIN        GP2
-#define I2C_DRIVER I2CD2
+#define I2C_DRIVER I2CD1
 #define OLED_BRIGHTNESS 128
 #define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #endif
