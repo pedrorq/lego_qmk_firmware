@@ -20,7 +20,7 @@
         "backlight": false,
         "bootmagic": true,
         "command": false,
-        "console": false,
+        "console":false,
         "encoder": true,
          "encoder_map": true,
         "extrakey": true,

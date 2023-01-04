@@ -15,17 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #pragma once
 
-#define EEPROM_PAGE_SIZE
-#define FEE_PAGE_SIZE 0x800
-#define FEE_PAGE_COUNT 4
+#define UNICODE_SELECTED_MODES UNICODE_MODE_LINUX, UNICODE_MODE_MACOS, UNICODE_MODE_WINDOWS, UNICODE_MODE_WINCOMPOSE
 
-#define FEE_MCU_FLASH_SIZE_IGNORE_CHECK
-#define FEE_MCU_FLASH_SIZE                                \
-    ({                                                    \
-        uint16_t flash_size = *(uint16_t*)FLASHSIZE_BASE; \
-        (flash_size <= 512) ? flash_size : 512;           \
-    })
-//#define DEBUG_MATRIX_SCAN_RATE
+#ifdef WPM_ENABLE
+#define WPM_SAMPLE_SECONDS 10
+#define WPM_SAMPLE_PERIODS 100
+#define WPM_ALLOW_COUNT_REGRESSION
+#endif
