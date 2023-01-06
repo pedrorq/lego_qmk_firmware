@@ -76,7 +76,7 @@ Q7 - SPI Data in - MISO
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
 
-#define SPI_DIVISOR 32
+#define SPI_DIVISOR 16
 
 //#define DEBUG_MATRIX_SCAN_RATE
 
