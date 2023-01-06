@@ -34,7 +34,7 @@ static inline void shift_out(uint16_t value) {
   writePinLow(SPI_LATCH_PIN);
   spi_transmit(message,2);
   writePinHigh(SPI_LATCH_PIN);
-  //matrix_output_select_delay();
+  matrix_output_select_delay();
 
 }
 
