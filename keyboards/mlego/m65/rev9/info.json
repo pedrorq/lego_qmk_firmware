@@ -31,12 +31,12 @@
         "console": false,
         "encoder": true,
         "encoder_map": true,
-        "extrakey": true,
+        "extrakey":true,
         "mousekey": true,
         "nkro": true,
         "oled": true,
-        "rgblight": true,
-        "wpm": true
+        "rgblight":true,
+        "wpm":true
     },
     "indicators": {
         "caps_lock": "GP25",
