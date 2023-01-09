@@ -235,7 +235,7 @@ uint8_t il91874_buffer[EINK_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
 // pass it to the next function by doing `(void *) il91874_buffer`
 
 // create the device handle
-painter_device_t qp_ili91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void* ptr);
+painter_device_t qp_ili91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
 ```
 
 The device handle returned from the `qp_ili91874_make_spi_device` function can be used to perform all other drawing operations.
@@ -390,7 +390,7 @@ uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
 // pass it to the next function by doing `(void *) ssd1680_buffer`
 
 // create the device handle
-painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, (void *)ptr);
+painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
 ```
 
 The device handle returned from the `qp_ssd1680_make_spi_device` function can be used to perform all other drawing operations.
