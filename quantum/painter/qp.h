@@ -11,6 +11,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter global configurables (add to your keyboard's config.h)
 
+#ifndef QUANTUM_PAINTER_NUM_DISPLAYS
+#    define QUANTUM_PAINTER_NUM_DISPLAYS 1
+#endif
+
 #ifndef QUANTUM_PAINTER_NUM_IMAGES
 /**
  * @def This controls the maximum number of images that Quantum Painter can load at any one time. Images can be loaded
@@ -430,11 +434,23 @@ int16_t qp_drawtext(painter_device_t device, uint16_t x, uint16_t y, painter_fon
 int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, painter_font_handle_t font, const char *str, uint8_t hue_fg, uint8_t sat_fg, uint8_t val_fg, uint8_t hue_bg, uint8_t sat_bg, uint8_t val_bg);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Export arrays to be used by XAP
+#if defined(QP_XAP)
+painter_device_t qp_xap_displays[QUANTUM_PAINTER_NUM_DISPLAYS];
+painter_image_handle_t qp_xap_images[QUANTUM_PAINTER_NUM_IMAGES];
+painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS];
+#endif // QP_XAP
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter Drivers
 
-#ifdef QUANTUM_PAINTER_RGB565_SURFACE_ENABLE
-#    include "qp_rgb565_surface.h"
-#endif // QUANTUM_PAINTER_RGB565_SURFACE_ENABLE
+#ifdef QUANTUM_PAINTER_GC9A01_ENABLE
+#    include "qp_gc9a01.h"
+#endif // QUANTUM_PAINTER_GC9A01_ENABLE
+
+#ifdef QUANTUM_PAINTER_IL91874_ENABLE
+#    include "qp_il91874.h"
+#endif // QUANTUM_PAINTER_IL91874_ENABLE
 
 #ifdef QUANTUM_PAINTER_ILI9163_ENABLE
 #    include "qp_ili9163.h"
@@ -444,25 +460,29 @@ int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, pai
 #    include "qp_ili9341.h"
 #endif // QUANTUM_PAINTER_ILI9341_ENABLE
 
+#ifdef QUANTUM_PAINTER_ILI9486_ENABLE
+#    include "qp_ili9486.h"
+#endif // QUANTUM_PAINTER_ILI9486_ENABLE
+
 #ifdef QUANTUM_PAINTER_ILI9488_ENABLE
 #    include "qp_ili9488.h"
 #endif // QUANTUM_PAINTER_ILI9488_ENABLE
-
-#ifdef QUANTUM_PAINTER_ST7789_ENABLE
-#    include "qp_st7789.h"
-#endif // QUANTUM_PAINTER_ST7789_ENABLE
 
 #ifdef QUANTUM_PAINTER_ST7735_ENABLE
 #    include "qp_st7735.h"
 #endif // QUANTUM_PAINTER_ST7735_ENABLE
 
-#ifdef QUANTUM_PAINTER_GC9A01_ENABLE
-#    include "qp_gc9a01.h"
-#endif // QUANTUM_PAINTER_GC9A01_ENABLE
+#ifdef QUANTUM_PAINTER_ST7789_ENABLE
+#    include "qp_st7789.h"
+#endif // QUANTUM_PAINTER_ST7789_ENABLE
 
 #ifdef QUANTUM_PAINTER_SSD1351_ENABLE
 #    include "qp_ssd1351.h"
 #endif // QUANTUM_PAINTER_SSD1351_ENABLE
+
+#ifdef QUANTUM_PAINTER_SSD1680_ENABLE
+#    include "qp_ssd1680.h"
+#endif // QUANTUM_PAINTER_SSD1680_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter Extras

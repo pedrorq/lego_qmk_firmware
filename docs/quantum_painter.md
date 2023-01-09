@@ -22,13 +22,16 @@ Supported devices:
 | Display Panel  | Panel Type         | Size             | Comms Transport | Driver                                      |
 |----------------|--------------------|------------------|-----------------|---------------------------------------------|
 | GC9A01         | RGB LCD (circular) | 240x240          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += gc9a01_spi`     |
+| IL91874        | 3-Color E-Ink      | 176x264          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += il91874_spi`    |
 | ILI9163        | RGB LCD            | 128x128          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += ili9163_spi`    |
 | ILI9341        | RGB LCD            | 240x320          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += ili9341_spi`    |
+| ILI9486        | RGB LCD            | 320x480          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += ili9486_spi`    |
 | ILI9488        | RGB LCD            | 320x480          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += ili9488_spi`    |
 | SSD1351        | RGB OLED           | 128x128          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += ssd1351_spi`    |
+| SSD1680        | 3-Color E-Ink      | 176x264          | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += il91874_spi`    |
 | ST7735         | RGB LCD            | 132x162, 80x160  | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += st7735_spi`     |
 | ST7789         | RGB LCD            | 240x320, 240x240 | SPI + D/C + RST | `QUANTUM_PAINTER_DRIVERS += st7789_spi`     |
-| RGB565 Surface | Virtual            | User-defined     | None            | `QUANTUM_PAINTER_DRIVERS += rgb565_surface` |
+| Surface        | Virtual            | User-defined     | None            | `QUANTUM_PAINTER_DRIVERS += surface`        |
 
 ## Quantum Painter Configuration :id=quantum-painter-config
 
@@ -215,6 +218,35 @@ The maximum number of displays can be configured by changing the following in yo
 #define GC9A01_NUM_DEVICES 3
 ```
 
+#### ** IL91874 **
+
+Enabling support for the IL91874 in Quantum Painter is done by adding the following to `rules.mk`:
+
+```make
+QUANTUM_PAINTER_ENABLE = yes
+QUANTUM_PAINTER_DRIVERS += il91874_spi
+```
+
+Creating a IL91874 device in firmware can then be done with the following API:
+
+```c
+// allocate a framebuffer for it
+uint8_t il91874_buffer[EINK_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
+// pass it to the next function by doing `(void *) il91874_buffer`
+
+// create the device handle
+painter_device_t qp_ili91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void* ptr);
+```
+
+The device handle returned from the `qp_ili91874_make_spi_device` function can be used to perform all other drawing operations.
+
+The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
+
+```c
+// 3 displays:
+#define IL91874_NUM_DEVICES 3
+```
+
 #### ** ILI9163 **
 
 Enabling support for the ILI9163 in Quantum Painter is done by adding the following to `rules.mk`:
@@ -263,6 +295,36 @@ The maximum number of displays can be configured by changing the following in yo
 #define ILI9341_NUM_DEVICES 3
 ```
 
+### ** ILI9486 **
+
+Enabling support for the ILI9486 in Quantum Painter is done by adding the following to `rules.mk`:
+
+```make
+QUANTUM_PAINTER_ENABLE = yes
+QUANTUM_PAINTER_DRIVERS += ili9486_spi
+```
+
+Creating a ILI9486 device in firmware can then be done with the following API:
+
+```c
+painter_device_t qp_ili9486_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode);
+```
+
+There's another variant for this [Waveshare module](https://www.waveshare.com/wiki/3.5inch_TFT_Touch_Shield), because it has a quirky SPI->Parallel converter. You can create it with:
+
+```c
+painter_device_t qp_ili9486_make_spi_waveshare_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode);
+```
+
+The device handle returned from the `qp_ili9486_make_spi_device` function can be used to perform all other drawing operations.
+
+The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
+
+```c
+// 3 displays:
+#define ILI9486_NUM_DEVICES 3
+```
+
 #### ** ILI9488 **
 
 Enabling support for the ILI9488 in Quantum Painter is done by adding the following to `rules.mk`:
@@ -309,6 +371,35 @@ The maximum number of displays can be configured by changing the following in yo
 ```c
 // 3 displays:
 #define SSD1351_NUM_DEVICES 3
+```
+
+#### ** SSD1680 **
+
+Enabling support for the SSD1680 in Quantum Painter is done by adding the following to `rules.mk`:
+
+```make
+QUANTUM_PAINTER_ENABLE = yes
+QUANTUM_PAINTER_DRIVERS += ssd1680_spi
+```
+
+Creating a SSD1680 device in firmware can then be done with the following API:
+
+```c
+// allocate a framebuffer for it
+uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
+// pass it to the next function by doing `(void *) ssd1680_buffer`
+
+// create the device handle
+painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, (void *)ptr);
+```
+
+The device handle returned from the `qp_ssd1680_make_spi_device` function can be used to perform all other drawing operations.
+
+The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
+
+```c
+// 3 displays:
+#define SSD1680_NUM_DEVICES 3
 ```
 
 #### ** ST7735 **
@@ -770,7 +861,7 @@ SRC += noto11.qff.c
 #include "noto11.qff.h"
 ```
 
-<!-- tabs: start -->
+<!-- tabs:start -->
 
 #### ** Load Font **
 

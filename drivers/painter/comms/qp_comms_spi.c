@@ -1,4 +1,5 @@
 // Copyright 2021 Nick Brassel (@tzarc)
+// Copyright 2023 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
@@ -33,8 +34,10 @@ bool qp_comms_spi_start(painter_device_t device) {
 uint32_t qp_comms_spi_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
     uint32_t       bytes_remaining = byte_count;
     const uint8_t *p               = (const uint8_t *)data;
+    uint32_t       max_msg_length  = 1024;
+
     while (bytes_remaining > 0) {
-        uint32_t bytes_this_loop = bytes_remaining < 1024 ? bytes_remaining : 1024;
+        uint32_t bytes_this_loop = QP_MIN(bytes_remaining, max_msg_length);
         spi_transmit(p, bytes_this_loop);
         p += bytes_this_loop;
         bytes_remaining -= bytes_this_loop;
@@ -130,6 +133,65 @@ const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
     .bulk_command_sequence = qp_comms_spi_dc_reset_bulk_command_sequence,
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SPI with D/C and RST pins but sending one byte at a time, needed for some devices
+
+void qp_comms_spi_dc_reset_single_byte_send_command(painter_device_t device, uint8_t cmd) {
+    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
+    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    writePinLow(comms_config->spi_config.chip_select_pin);
+    qp_comms_spi_dc_reset_send_command(device, cmd);
+    writePinHigh(comms_config->spi_config.chip_select_pin);
+}
+
+uint32_t qp_comms_spi_dc_reset_single_byte_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
+    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
+    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+
+    uint32_t       bytes_remaining = byte_count;
+    const uint8_t *p               = (const uint8_t *)data;
+    uint32_t       max_msg_length  = 1;
+
+    writePinHigh(comms_config->dc_pin);
+    while (bytes_remaining > 0) {
+        uint32_t bytes_this_loop = QP_MIN(bytes_remaining, max_msg_length);
+        writePinLow(comms_config->spi_config.chip_select_pin);
+        spi_transmit(p, bytes_this_loop);
+        writePinHigh(comms_config->spi_config.chip_select_pin);
+        p += bytes_this_loop;
+        bytes_remaining -= bytes_this_loop;
+    }
+
+    return byte_count - bytes_remaining;
+}
+
+void qp_comms_spi_dc_reset_single_byte_bulk_command_sequence(painter_device_t device, const uint8_t *sequence, size_t sequence_len) {
+    for (size_t i = 0; i < sequence_len;) {
+        uint8_t command   = sequence[i];
+        uint8_t delay     = sequence[i + 1];
+        uint8_t num_bytes = sequence[i + 2];
+        qp_comms_spi_dc_reset_single_byte_send_command(device, command);
+        if (num_bytes > 0) {
+            qp_comms_spi_dc_reset_single_byte_send_data(device, &sequence[i + 3], num_bytes);
+        }
+        if (delay > 0) {
+            wait_ms(delay);
+        }
+        i += (3 + num_bytes);
+    }
+}
+
+const struct painter_comms_with_command_vtable_t spi_comms_with_dc_single_byte_vtable = {
+    .base =
+        {
+            .comms_init  = qp_comms_spi_dc_reset_init,
+            .comms_start = qp_comms_spi_start,
+            .comms_send  = qp_comms_spi_dc_reset_single_byte_send_data,
+            .comms_stop  = qp_comms_spi_stop,
+        },
+    .send_command          = qp_comms_spi_dc_reset_single_byte_send_command,
+    .bulk_command_sequence = qp_comms_spi_dc_reset_single_byte_bulk_command_sequence,
+};
 #    endif // QUANTUM_PAINTER_SPI_DC_RESET_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
