@@ -1,23 +1,32 @@
-// Copyright 2022 Pablo Martinez (@elpekenin)
+// Copyright 2023 Pablo Martinez (@elpekenin)
 // SPDX_License_Identifier: GPL_2.0_or_later
 
-uint64_t __register_pin_state = 0;
+#include "print.h"
+#include "sipo_pins.h"
+#include "spi_master.c"
+#include "wait.h"
+
+uint8_t register_pin_state[_REGISTER_BYTES] = {0};
 
 void set_register_pin(uint8_t  position, bool state) {
+    uint8_t byte_offset = position / 8;
+    uint8_t bit_offset  = position % 8;
+
+    printf("Setting byte %d, bit %d %s\n", byte_offset, bit_offset, state ? "high" : "low");
     if (state)
-        // add data starting on the most significant bit
-        __register_pin_state |=  (1 << (63-position));
+        // add data starting on the least significant bit
+        register_pin_state[byte_offset] |=  (1 << bit_offset);
     else
-        __register_pin_state &= ~(1 << (63-position));
+        register_pin_state[byte_offset] &= ~(1 << bit_offset);
 }
 
-void _write_register_state(uint8_t counter) {
-    // check how many bytes we need to send
-    uint8_t bytes = (counter / 8) + 1;
+void write_register_state() {
+    spi_init();
+    spi_start(REGISTER_CS_PIN, false, 3, 32);
 
-    // latch? and cs as needed
     writePinLow(REGISTER_CS_PIN);
-    // we have 4 bytes and our data starts on the *most* significant bit, we just send as many bytes as needed
-    spi_transmit(&__register_pin_state, bytes);
+    spi_transmit(register_pin_state, _REGISTER_BYTES);
     writePinHigh(REGISTER_CS_PIN);
+
+    spi_stop();
 }

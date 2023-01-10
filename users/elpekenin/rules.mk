@@ -31,7 +31,8 @@ endif
 
 REGISTER_PINS ?= no
 ifeq ($(strip $(REGISTER_PINS)), yes)
-    SRC += register_pins.c
+    OPT_DEFS += -DSIPO_PINS
+    SRC += sipo_pins.c
 endif
 
 TOUCH_SCREEN ?= no

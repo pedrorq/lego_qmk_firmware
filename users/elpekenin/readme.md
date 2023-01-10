@@ -20,11 +20,12 @@ Config:
 
 ## Shift register "pins"
 **WIP** A set of macros and functions that allow to easily use a SerialIn-ParallelOut(SIPO) shift register to control several signals (in my use case, several screens' CS and RST pins) using a single GPIO on the MCU - namely the CS to control the register.
-The status is stored on a `uint64_t`, so chaining up to four 8-output registers may also work with current code but hasn't been tested.
+The status is stored on `uint8_t[]`, so chaining an arbitrary amount registers may also work with current code but hasn't been tested.
 
 How to use:
  - Add `REGISTER_PINS = yes` to your **rules.mk**
  - Configure the register's CS pin by adding `#define REGISTER_CS_PIN <Pin>`, eg: `GP10` on a RP2040
+ - Configure the amount of pins you'll use `#define REGISTER_PINS <N_Pins>`
  - Create your pin(s) name(s) using: `CONFIGURE_REGISTER_PINS(NAME1, NAME2, ...)`
  - Change a pin's state by doing:
    - Manually set state: `set_register_pin(<pin_name>, true)` or `set_register_pin(<pin_name>, false)`

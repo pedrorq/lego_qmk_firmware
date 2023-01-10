@@ -5,6 +5,10 @@
 #include "access.h"
 #include "version.h"
 
+#if defined(SIPO_PINS)
+#    include "sipo_pins.h"
+#endif // SIPO_PINS
+
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "color.h"
 #    include "graphics.h"
@@ -140,6 +144,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     dprint("Touch devices ready\n");
 #endif // TOUCH_SCREEN
+
+#if defined (SIPO_PINS)
+    configure_register_pins(PIN1, PIN2, PIN3, PIN4);
+    register_pin_high(PIN4);
+    write_register_state();
+#else
+    print("SIPO_PINS is not enabled\n");
+#endif // SIPO_PINS
 
     dprint("\n---------- User code ----------\n");
 

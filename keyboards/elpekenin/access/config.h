@@ -26,6 +26,10 @@
 #define SPI_MODE 0
 #define SPI_DIV 16
 
+// -- Register
+#define REGISTER_CS_PIN GP7
+#define REGISTER_PINS 4
+
 // -- Displays
 #define IL91874_ROTATION 0
 #define IL91874_CS_PIN GP18

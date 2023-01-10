@@ -9,3 +9,10 @@ RGB_MATRIX_DRIVER = WS2812
 WS2812_DRIVER = vendor
 
 QUANTUM_PAINTER_DRIVERS += il91874_spi ili9163_spi ili9341_spi ili9486_spi ssd1680_spi
+
+XAP_ENABLE = yes
+
+# Custom features
+TOUCH_SCREEN = no
+ONE_HAND_ENABLE = no
+REGISTER_PINS = yes
