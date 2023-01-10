@@ -103,6 +103,8 @@ static bool onehand_mode(effect_params_t *params) {
             case DIRECTION_NONE:
                 break;
         }
+    // looping ensures we always mark a key as NO_LED should only happen on un-populated points of the matrix
+    // most of the times we will only make an iteration, so it shouldn't be slow
     } while (ONE_HAND_LED_INDEX == NO_LED);
 
     // Clear direction and draw new marker
