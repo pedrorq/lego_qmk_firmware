@@ -12,7 +12,6 @@ void set_register_pin(uint8_t  position, bool state) {
     uint8_t byte_offset = position / 8;
     uint8_t bit_offset  = position % 8;
 
-    printf("Setting byte %d, bit %d %s\n", byte_offset, bit_offset, state ? "high" : "low");
     if (state)
         // add data starting on the least significant bit
         register_pin_state[byte_offset] |=  (1 << bit_offset);

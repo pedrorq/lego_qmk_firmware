@@ -28,32 +28,37 @@
 
 // -- Register
 #define REGISTER_CS_PIN GP7
-#define REGISTER_PINS 4
+#define REGISTER_PINS 8
 
 // -- Displays
 #define IL91874_ROTATION 0
-#define IL91874_CS_PIN GP18
-#define IL91874_RST_PIN GP1
-
 #define ILI9163_ROTATION 0
-#define ILI9163_CS_PIN GP10
-#define ILI9163_RST_PIN GP11
-
 #define ILI9341_ROTATION 2
-#define ILI9341_CS_PIN GP12
-#define ILI9341_RST_PIN GP13
-#define ILI9341_TOUCH_CS_PIN GP14
-#define ILI9341_TOUCH_IRQ_PIN GP15
-
 #define ILI9486_ROTATION 1
-#define ILI9486_CS_PIN GP5
-#define ILI9486_RST_PIN GP7
-#define ILI9486_TOUCH_CS_PIN GP8
+#define SSD1680_ROTATION 0
+
+#define ILI9341_TOUCH_IRQ_PIN GP15
 #define ILI9486_TOUCH_IRQ_PIN GP9
 
-#define SSD1680_ROTATION 0
-#define SSD1680_CS_PIN GP18
-#define SSD1680_RST_PIN GP1
+// If "virtual" pins aren't enabled, use real pins
+#ifndef SIPO_PINS
+#    define IL91874_CS_PIN GP18
+#    define IL91874_RST_PIN GP1
+
+#    define ILI9163_CS_PIN GP10
+#    define ILI9163_RST_PIN GP11
+
+#    define ILI9341_CS_PIN GP12
+#    define ILI9341_RST_PIN GP13
+#    define ILI9341_TOUCH_CS_PIN GP14
+
+#    define ILI9486_CS_PIN GP5
+#    define ILI9486_RST_PIN GP7
+#    define ILI9486_TOUCH_CS_PIN GP8
+
+#    define SSD1680_CS_PIN GP18
+#    define SSD1680_RST_PIN GP1
+#endif
 
 // =======
 // RGB
