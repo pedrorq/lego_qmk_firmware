@@ -69,9 +69,8 @@
 
 #    define SSD1680_CS_PIN GP18
 #    define SSD1680_RST_PIN GP1
-#else
-#    define DUMMY_PIN GP1
-#endif
+#    define SCREEN_SPI_DC_PIN SPI_DC_PIN
+#endif // SIPO_PINS
 
 // =======
 // RGB

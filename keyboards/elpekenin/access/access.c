@@ -66,38 +66,38 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // Virtual pins names
 #    if defined (SIPO_PINS)
     configure_register_pins(
+        SCREEN_SPI_DC_PIN,
         IL91874_CS_PIN, IL91874_RST_PIN,
         ILI9163_CS_PIN, ILI9163_RST_PIN,
-        ILI9341_CS_PIN, ILI9341_RST_PIN, // ILI9341_TOUCH_CS_PIN,
-        ILI9486_CS_PIN, ILI9486_RST_PIN  // ILI9486_TOUCH_CS_PIN,
+        ILI9341_CS_PIN, ILI9341_RST_PIN, ILI9341_TOUCH_CS_PIN,
+        ILI9486_CS_PIN, ILI9486_RST_PIN, ILI9486_TOUCH_CS_PIN
     );
 #    endif // SIPO_PINS
 
     load_qp_resources();
-    printf("Configured pins for 91874 are: %d and %d\n", IL91874_CS_PIN, IL91874_RST_PIN);
 
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
+    // il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREEN_SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
     // qp_init(il91874, IL91874_ROTATION);
 
-    ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
+    ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SCREEN_SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9163, ILI9163_ROTATION);
 
-    ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
-    qp_init(ili9341, ILI9341_ROTATION);
+    // ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SCREEN_SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
+    // qp_init(ili9341, ILI9341_ROTATION);
 
-    ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
-    qp_init(ili9486, ILI9486_ROTATION);
+    // ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SCREEN_SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
+    // qp_init(ili9486, ILI9486_ROTATION);
 
-    // ssd1680 = qp_ssd1680_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SPI_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
+    // ssd1680 = qp_ssd1680_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SCREEN_SPI_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
     // qp_init(ssd1680, SSD1680_ROTATION);
 
     // ----- Fill them black
     qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
-    qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
-    qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
+    // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
     // Don't draw on eink, they have to wait until next draw
 
     dprint("Quantum painter ready\n");
@@ -155,73 +155,6 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #endif // TOUCH_SCREEN
 
     dprint("\n---------- User code ----------\n");
-
-    // For when we get to test displays
-    // configure_register_pins(
-    //     IL91874_CS_PIN, IL91874_RST_PIN,
-    //     ILI9163_CS_PIN, ILI9163_RST_PIN,
-    //     ILI9341_CS_PIN, ILI9341_RST_PIN, // ILI9341_TOUCH_CS_PIN,
-    //     ILI9486_CS_PIN, ILI9486_RST_PIN  // ILI9486_TOUCH_CS_PIN,
-    // );
-
-    // Dummy names i won't use for anything
-    configure_register_pins(A, B, C, D);
-
-    // byte 0
-    register_pin_low(0);
-    register_pin_low(1);
-    register_pin_low(2);
-    register_pin_low(3);
-    register_pin_low(4);
-    register_pin_low(5);
-    register_pin_low(6);
-    register_pin_low(7);
-
-    // byte 1
-    register_pin_low(8);
-    register_pin_high(9);
-    register_pin_low(10);
-    register_pin_low(11);
-    register_pin_low(12);
-    register_pin_low(13);
-    register_pin_low(14);
-    register_pin_low(15);
-
-    // byte 2
-    register_pin_low(16);
-    register_pin_low(17);
-    register_pin_high(18);
-    register_pin_low(19);
-    register_pin_low(20);
-    register_pin_low(21);
-    register_pin_low(22);
-    register_pin_low(23);
-
-#define get_bit(x, y) ((register_pin_state[x] >> y) & 1)
-
-#define print_byte(x)             \
-    printf(                       \
-        " %d: %d%d%d%d%d%d%d%d ", \
-        x,                        \
-        get_bit(x, 7),            \
-        get_bit(x, 6),            \
-        get_bit(x, 5),            \
-        get_bit(x, 4),            \
-        get_bit(x, 3),            \
-        get_bit(x, 2),            \
-        get_bit(x, 1),            \
-        get_bit(x, 0)             \
-    )
-
-    printf("Sending:");
-    print_byte(2);
-    printf("|");
-    print_byte(1);
-    printf("|");
-    print_byte(0);
-    printf("\n");
-
-    write_register_state();
 
     // =======
     // Call user code

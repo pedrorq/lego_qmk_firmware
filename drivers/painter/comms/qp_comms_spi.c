@@ -4,36 +4,43 @@
 
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
 
-#    include "spi_master.h"
 #    include "qp_comms_spi.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Base SPI support
 
-#ifdef SIPO_PINS
-#    include "sipo_pins.h"
-    // only pin we need as output is REGISTER_CS and is already handled by the feature
-#    define qp_setPinOutput(x) do { } while (0)
-
-#    define qp_writePinHigh(x)     \
-            register_pin_high(x);  \
-            write_register_state()
-
-#    define qp_writePinLow(x)      \
-            register_pin_low(x);   \
-            write_register_state()
-#else // regular pin handling
-#    define qp_setPinOutput(x) setPinOutput(x)
-#    define qp_writePinHigh(x) writePinHigh(x)
-#    define qp_writePinLow(x) writePinLow(x)
-#endif
+#    ifdef SIPO_PINS
+#        include "custom_spi_master.h"
+#        include "sipo_pins.h"
+#        define PAINTER_SPI_DRIVER_ID 0
+        // only pin we need as output is REGISTER_CS and is already handled by the feature
+#        define qp_spi_init() custom_spi_init(PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_start(cs, lsb, mode, div) custom_spi_start(cs, lsb, mode, div, PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_write(cmd) custom_spi_write(cmd, PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_transmit(ptr, bytes) custom_spi_transmit(ptr, bytes, PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_stop() custom_spi_stop(PAINTER_SPI_DRIVER_ID)
+#        define qp_setPinOutput(pin) do { } while (0)
+#        define qp_writePinLow(pin) register_pin_low(pin); write_register_state()
+#        define qp_writePinHigh(pin) register_pin_high(pin); write_register_state()
+#    else
+        // regular pin handling
+#        include "spi_master.h"
+#        define qp_spi_init() spi_init()
+#        define qp_spi_start(cs, lsb, mode, div) spi_start(cs, lsb, mode, div)
+#        define qp_spi_write() spi_write()
+#        define qp_spi_transmit(ptr, bytes) spi_transmit(ptr, bytes)
+#        define qp_spi_stop() spi_stop()
+#        define qp_setPinOutput(pin) setPinOutput(pin)
+#        define qp_writePinLow(pin) writePinLow(pin)
+#        define qp_writePinHigh(pin) writePinHigh(pin)
+#    endif
 
 bool qp_comms_spi_init(painter_device_t device) {
     struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
 
     // Initialize the SPI peripheral
-    spi_init();
+    qp_spi_init();
 
     // Set up CS as output high
     qp_setPinOutput(comms_config->chip_select_pin);
@@ -45,12 +52,7 @@ bool qp_comms_spi_init(painter_device_t device) {
 bool qp_comms_spi_start(painter_device_t device) {
     struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
-#ifdef SIPO_PINS
-    // SPI will get started when we need to send a pin's state
-    return spi_start(DUMMY_PIN, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
-#else //regular pin handling
-    return spi_start(comms_config->chip_select_pin, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
-#endif
+    return qp_spi_start(comms_config->chip_select_pin, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
 }
 
 uint32_t qp_comms_spi_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
@@ -60,7 +62,7 @@ uint32_t qp_comms_spi_send_data(painter_device_t device, const void *data, uint3
 
     while (bytes_remaining > 0) {
         uint32_t bytes_this_loop = QP_MIN(bytes_remaining, max_msg_length);
-        spi_transmit(p, bytes_this_loop);
+        qp_spi_transmit(p, bytes_this_loop);
         p += bytes_this_loop;
         bytes_remaining -= bytes_this_loop;
     }
@@ -71,7 +73,7 @@ uint32_t qp_comms_spi_send_data(painter_device_t device, const void *data, uint3
 void qp_comms_spi_stop(painter_device_t device) {
     struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
-    spi_stop();
+    qp_spi_stop();
     qp_writePinHigh(comms_config->chip_select_pin);
 }
 
@@ -124,7 +126,7 @@ void qp_comms_spi_dc_reset_send_command(painter_device_t device, uint8_t cmd) {
     struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
     qp_writePinLow(comms_config->dc_pin);
-    spi_write(cmd);
+    qp_spi_write(cmd);
 }
 
 void qp_comms_spi_dc_reset_bulk_command_sequence(painter_device_t device, const uint8_t *sequence, size_t sequence_len) {
@@ -178,7 +180,7 @@ uint32_t qp_comms_spi_dc_reset_single_byte_send_data(painter_device_t device, co
     while (bytes_remaining > 0) {
         uint32_t bytes_this_loop = QP_MIN(bytes_remaining, max_msg_length);
         qp_writePinLow(comms_config->spi_config.chip_select_pin);
-        spi_transmit(p, bytes_this_loop);
+        qp_spi_transmit(p, bytes_this_loop);
         qp_writePinHigh(comms_config->spi_config.chip_select_pin);
         p += bytes_this_loop;
         bytes_remaining -= bytes_this_loop;
