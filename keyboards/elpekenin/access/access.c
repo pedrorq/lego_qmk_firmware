@@ -67,10 +67,10 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #    if defined (SIPO_PINS)
     configure_register_pins(
         SCREEN_SPI_DC_PIN,
-        IL91874_CS_PIN, IL91874_RST_PIN,
-        ILI9163_CS_PIN, ILI9163_RST_PIN,
-        ILI9341_CS_PIN, ILI9341_RST_PIN, ILI9341_TOUCH_CS_PIN,
-        ILI9486_CS_PIN, ILI9486_RST_PIN, ILI9486_TOUCH_CS_PIN
+        // IL91874_CS_PIN, IL91874_RST_PIN,
+        ILI9163_CS_PIN, ILI9163_RST_PIN
+        // ILI9341_CS_PIN, ILI9341_RST_PIN, ILI9341_TOUCH_CS_PIN,
+        // ILI9486_CS_PIN, ILI9486_RST_PIN, ILI9486_TOUCH_CS_PIN
     );
 #    endif // SIPO_PINS
 

@@ -16,10 +16,6 @@
 
 #include "custom_spi_master.h"
 
-#include "timer.h"
-
-#include "print.h"
-
 static pin_t slave_pins[SPI_COUNT] = {[0 ... SPI_COUNT-1] = NO_PIN};
 static pin_t spi_sck_pins[SPI_COUNT]  = { SPI_SCK_PINS };
 static pin_t spi_mosi_pins[SPI_COUNT] = { SPI_MOSI_PINS };
@@ -33,20 +29,20 @@ bool is_initialised[SPI_COUNT] = {[0 ... SPI_COUNT-1] = false};
 
 __attribute__((weak)) void custom_spi_init(uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return;
     }
 
     if (!is_initialised[index]) {
+        spi_dprintf("Initing SPI for driver %d\n", index);
+
         is_initialised[index] = true;
 
 #if defined(K20x) || defined(KL2x) || defined(RP2040)
-        static SPIConfig spiConfig = {NULL, 0, 0, 0};
+        spi_configs[index] = (SPIConfig){NULL, 0, 0, 0};
 #else
-        static SPIConfig spiConfig = {false, NULL, 0, 0, 0, 0};
+        spi_configs[index] = (SPIConfig){false, NULL, 0, 0, 0, 0};
 #endif
-
-        spi_configs[index] = spiConfig;
 
         // Try releasing special pins for a short time
         setPinInput(spi_sck_pins[index]);
@@ -70,9 +66,11 @@ __attribute__((weak)) void custom_spi_init(uint8_t index) {
 
 bool custom_spi_start(pin_t slavePin, bool lsbFirst, uint8_t mode, uint16_t divisor, uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return false;
     }
+
+    spi_dprintf("Starting SPI for driver %d\n", index);
 
     if (slave_pins[index] != NO_PIN || slavePin == NO_PIN) {
         return false;
@@ -282,9 +280,11 @@ bool custom_spi_start(pin_t slavePin, bool lsbFirst, uint8_t mode, uint16_t divi
 
 spi_status_t custom_spi_write(uint8_t data, uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return SPI_STATUS_ERROR;
     }
+
+    // spi_dprintf("Writing SPI for driver %d\n", index);
 
     uint8_t rxData;
     spiExchange(drivers[index], 1, &data, &rxData);
@@ -294,9 +294,11 @@ spi_status_t custom_spi_write(uint8_t data, uint8_t index) {
 
 spi_status_t custom_spi_read(uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return SPI_STATUS_ERROR;
     }
+
+    // spi_dprintf("Reading SPI for driver %d\n", index);
 
     uint8_t data = 0;
     spiReceive(drivers[index], 1, &data);
@@ -306,9 +308,11 @@ spi_status_t custom_spi_read(uint8_t index) {
 
 spi_status_t custom_spi_transmit(const uint8_t *data, uint16_t length, uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return SPI_STATUS_ERROR;
     }
+
+    // spi_dprintf("Transmitting SPI for driver %d\n", index);
 
     spiSend(drivers[index], length, data);
     return SPI_STATUS_SUCCESS;
@@ -316,9 +320,11 @@ spi_status_t custom_spi_transmit(const uint8_t *data, uint16_t length, uint8_t i
 
 spi_status_t custom_spi_receive(uint8_t *data, uint16_t length, uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return SPI_STATUS_ERROR;
     }
+
+    // spi_dprintf("Receiving SPI for driver %d\n", index);
 
     spiReceive(drivers[index], length, data);
     return SPI_STATUS_SUCCESS;
@@ -326,9 +332,11 @@ spi_status_t custom_spi_receive(uint8_t *data, uint16_t length, uint8_t index) {
 
 void custom_spi_stop(uint8_t index) {
     if (index > SPI_COUNT-1) {
-        printf("Index %d is not valid with the current SPI config\n", index);
+        spi_dprintf("Index %d is not valid with the current SPI config\n", index);
         return;
     }
+
+    spi_dprintf("Stopping SPI for driver %d\n", index);
 
     if (slave_pins[index] != NO_PIN) {
         spiUnselect(drivers[index]);

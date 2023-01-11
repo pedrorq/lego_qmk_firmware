@@ -7,9 +7,11 @@
 
 // =======
 // Debugging
-#define QUANTUM_PAINTER_DEBUG
+// #define CUSTOM_SPI_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
 #define INIT_DELAY 3000
+#define QUANTUM_PAINTER_DEBUG
+#define SIPO_PINS_DEBUG
 #define TOUCH_SCREEN_DEBUG
 
 // =======
@@ -39,7 +41,7 @@
 #define REGISTER_SPI_MODE 3
 #define REGISTER_SPI_DIV 32
 
-#define REGISTER_PINS 24
+#define REGISTER_PINS 8
 
 // -- Displays
 #define IL91874_ROTATION 0

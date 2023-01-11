@@ -25,6 +25,15 @@
 
 #include "cpp_map.h"
 
+#ifdef CUSTOM_SPI_DEBUG
+#    include <debug.h>
+#    include <print.h>
+#    include <wait.h>
+#    define spi_dprintf(...) dprintf(__VA_ARGS__); wait_ms(30)
+#else
+#    define spi_dprintf(...) do { } while (0)
+#endif
+
 #if !defined(SPI_DRIVERS)
 #    pragma message "Select drivers for SPI"
 #endif

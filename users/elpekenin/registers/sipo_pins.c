@@ -29,10 +29,11 @@ void write_register_state() {
         return;
     }
 
-
     writePinLow(REGISTER_CS_PIN);
     custom_spi_transmit(register_pin_state, _REGISTER_BYTES, REGISTER_SPI_DRIVER_ID);
     writePinHigh(REGISTER_CS_PIN);
 
     custom_spi_stop(REGISTER_SPI_DRIVER_ID);
+
+    sipo_print_status();
 }
