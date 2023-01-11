@@ -18,17 +18,28 @@
 
 // =======
 // SPI config
+#define SPI_COUNT 2
+// -- Screens' data
 #define SPI_DRIVER SPID0
 #define SPI_SCK_PIN GP2
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
+
 #define SPI_DC_PIN GP6
 #define SPI_MODE 0
 #define SPI_DIV 16
 
-// -- Register
-#define REGISTER_CS_PIN GP7
-#define REGISTER_PINS 8
+// -- Register's data
+#define REGISTER_SPI_DRIVER SPID1
+#define REGISTER_SPI_SCK_PIN GP10
+#define REGISTER_SPI_MOSI_PIN GP11
+#define REGISTER_SPI_MISO_PIN GP12
+
+#define REGISTER_CS_PIN GP13
+#define REGISTER_SPI_MODE 3
+#define REGISTER_SPI_DIV 32
+
+#define REGISTER_PINS 24
 
 // -- Displays
 #define IL91874_ROTATION 0
@@ -58,6 +69,8 @@
 
 #    define SSD1680_CS_PIN GP18
 #    define SSD1680_RST_PIN GP1
+#else
+#    define DUMMY_PIN GP1
 #endif
 
 // =======

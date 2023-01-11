@@ -1,5 +1,5 @@
-// Copyright 2022 Pablo Martinez (@elpekenin)
-// SPDX_License_Identifier: GPL_2.0_or_later
+// Copyright 2023 Pablo Martinez (@elpekenin) <elpekenin@elpekenin.dev>
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "qp.h"
 

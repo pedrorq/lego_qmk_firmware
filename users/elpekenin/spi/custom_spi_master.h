@@ -23,10 +23,14 @@
 #include "gpio.h"
 #include "chibios_config.h"
 
+#include "cpp_map.h"
 
 #if !defined(SPI_DRIVERS)
 #    pragma message "Select drivers for SPI"
 #endif
+
+#define TO_PTR(x) (&(x)),
+#define _SPI_DRIVERS MAP(TO_PTR, SPI_DRIVERS)
 
 #if !defined(SPI_SCK_PINS)
 #    pragma message "Select pins for SCK"
@@ -76,19 +80,19 @@ typedef int16_t spi_status_t;
 #ifdef __cplusplus
 extern "C" {
 #endif
-void spi_init(uint8_t index);
+void custom_spi_init(uint8_t index);
 
-bool spi_start(pin_t slavePin, bool lsbFirst, uint8_t mode, uint16_t divisor, uint8_t index);
+bool custom_spi_start(pin_t slavePin, bool lsbFirst, uint8_t mode, uint16_t divisor, uint8_t index);
 
-spi_status_t spi_write(uint8_t data, uint8_t index);
+spi_status_t custom_spi_write(uint8_t data, uint8_t index);
 
-spi_status_t spi_read(uint8_t index);
+spi_status_t custom_spi_read(uint8_t index);
 
-spi_status_t spi_transmit(const uint8_t *data, uint16_t length, uint8_t index);
+spi_status_t custom_spi_transmit(const uint8_t *data, uint16_t length, uint8_t index);
 
-spi_status_t spi_receive(uint8_t *data, uint16_t length, uint8_t index);
+spi_status_t custom_spi_receive(uint8_t *data, uint16_t length, uint8_t index);
 
-void spi_stop(uint8_t index);
+void custom_spi_stop(uint8_t index);
 #ifdef __cplusplus
 }
 #endif

@@ -2,7 +2,8 @@ VPATH += $(USER_PATH)/painter \
          $(USER_PATH)/painter/images \
          $(USER_PATH)/painter/fonts \
          $(USER_PATH)/registers \
-         $(USER_PATH)/touch \
+         $(USER_PATH)/spi \
+         $(USER_PATH)/touch
 
 
 QP_XAP ?= yes
@@ -33,6 +34,9 @@ REGISTER_PINS ?= no
 ifeq ($(strip $(REGISTER_PINS)), yes)
     OPT_DEFS += -DSIPO_PINS
     SRC += sipo_pins.c
+
+    # needs a second SPI driver to work, currently not supported on QMK
+    SRC += custom_spi_master.c
 endif
 
 TOUCH_SCREEN ?= no

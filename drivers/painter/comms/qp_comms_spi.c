@@ -43,13 +43,12 @@ bool qp_comms_spi_init(painter_device_t device) {
 }
 
 bool qp_comms_spi_start(painter_device_t device) {
-#ifdef SIPO_PINS
-    // SPI will get started when we need to send a pin's state
-    return true;
-#else //regular pin handling
     struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
-    
+#ifdef SIPO_PINS
+    // SPI will get started when we need to send a pin's state
+    return spi_start(DUMMY_PIN, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
+#else //regular pin handling
     return spi_start(comms_config->chip_select_pin, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
 #endif
 }

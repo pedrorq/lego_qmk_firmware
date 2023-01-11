@@ -1,3 +1,32 @@
+// Copyright 2022 Pablo Martinez (@elpekenin)
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// =======
+// Multi-SPI driver config
+#if defined(REGISTER_SPI_DRIVER)
+#    define SPI_DRIVERS SPI_DRIVER, REGISTER_SPI_DRIVER
+#else
+#    define SPI_DRIVERS SPI_DRIVER
+#endif
+
+#if defined(REGISTER_SPI_SCK_PIN)
+#    define SPI_SCK_PINS SPI_SCK_PIN, REGISTER_SPI_SCK_PIN
+#else
+#    define SPI_SCK_PINS SPI_SCK_PIN
+#endif
+
+#if defined(REGISTER_SPI_MOSI_PIN)
+#    define SPI_MOSI_PINS SPI_MOSI_PIN, REGISTER_SPI_MOSI_PIN
+#else
+#    define SPI_MOSI_PINS SPI_MOSI_PIN
+#endif
+
+#if defined(REGISTER_SPI_MISO_PIN)
+#    define SPI_MISO_PINS SPI_MISO_PIN, REGISTER_SPI_MISO_PIN
+#else
+#    define SPI_MISO_PINS SPI_MISO_PIN
+#endif
+
 // =======
 // Quantum Painter config
 // - Real size, used for init function

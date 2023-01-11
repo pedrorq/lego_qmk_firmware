@@ -1,7 +1,10 @@
+
 # Set of custom features
+**Examples for all if these features can be found at `keyboards/elpekenin/access`**
 
 ## One Hand Mode
-**WIP** The goal for this feature is to add a new *RGB Matrix* animation which only lights a single LED, used as a "marker" so that you can then virtually press the selected key. This will allow for accessibility, because the direction in which the LED moves and the trigger of the press is completely customizable (code does just the bare minimum), thus you can change which events trigger moving around and pressing, eg using different pointing devices, or a set of keys(arrows).
+**WIP**
+The goal for this feature is to add a new *RGB Matrix* animation which only lights a single LED, used as a "marker" so that you can then virtually press the selected key. This will allow for accessibility, because the direction in which the LED moves and the trigger of the press is completely customizable (code does just the bare minimum), thus you can change which events trigger moving around and pressing, eg using different pointing devices, or a set of keys(arrows).
 
 Config:
  - Add `ONE_HAND = yes` to your **rules.mk**
@@ -22,14 +25,22 @@ Config:
  - Add `TOUCH_SCREEN = yes` to your **rules.mk**
 
 ## Shift register "pins"
-**WIP** A set of macros and functions that allow to easily use a SerialIn-ParallelOut(SIPO) shift register to control several signals (in my use case, several screens' CS and RST pins) using a single GPIO on the MCU - namely the CS to control the register.
-The status is stored on `uint8_t[]`, so chaining an arbitrary amount registers may also work with current code but hasn't been tested.
+**WIP**
+A set of macros and functions that allow using a SerialIn-ParallelOut(SIPO) shift register to control several signals, or even chain several together, so that you can generate *virtually* infinite outputs using 3 GPIOs on the MCU.
+ - SCK
+ - MOSI
+ - CS
+
+My use case for this feature is to drive a multi-screen setup, where I use shared SCK/MISO/MOSI and DC + several CS and RST pins, as each screen has its own.
+This has a drawback however, we need a dedicated SPI driver because we have to change pins(CS/DC) controlling the screens while a data transmision is going, so updating those outputs requires sending data to the register(s) via SPI, which would also be received by the screens in an un-desirable way.
+Thus, I've made some patches to both `qp_comms_spi.c` and created a `custom_spi_master.h` to get things working.
+
+Code so far expects the screens to use the "tradicional" names, like `SPI_SCK_PIN` and the register ones prepend `REGISTER_` to those names, they then get merged into an array such that screen's use the driver with index 0 and register has id 1.
 
 How to use:
  - Add `REGISTER_PINS = yes` to your **rules.mk**
- - Configure the register's CS pin by adding `#define REGISTER_CS_PIN <Pin>`, eg: `GP10` on a RP2040
  - Configure the amount of pins you'll use `#define REGISTER_PINS <N_Pins>`
- - Create your pin(s) name(s) using: `CONFIGURE_REGISTER_PINS(NAME1, NAME2, ...)`
+ - Create your pin(s) name(s) using: `configure_register_pins(NAME1, NAME2, ...)`
  - Change a pin's state by doing:
    - Manually set state: `set_register_pin(<pin_name>, true)` or `set_register_pin(<pin_name>, false)`
    - Using helper macros: `register_pin_high(<pin_name>)` or `register_pin_low(<pin_name>)`
