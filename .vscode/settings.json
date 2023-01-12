@@ -7,7 +7,9 @@
         "**/.build": true,
         "**/*.hex": true,
         "**/*.bin": true,
-        "**/*.uf2": true
+        "**/*.uf2": true,
+        "**/keyboards/{[!e],?[!l],??[!p]}*": true,
+        "**/users/{[!e],?[!l],??[!p]}*": true
     },
     "files.associations": {
         "*.h": "c",
@@ -18,7 +20,14 @@
         "xstddef": "c",
         "type_traits": "c",
         "utility": "c",
-        "ranges": "c"
+        "ranges": "c",
+        "*.def": "c",
+        "functional": "c",
+        "typeinfo": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "cstdlib": "c"
     },
     "[markdown]": {
         "editor.trimAutoWhitespace": false,
@@ -27,5 +36,7 @@
     "python.formatting.provider": "yapf",
     "[json]": {
 	    "editor.formatOnSave": false
-    }
+    },
+    "cmake.configureOnOpen": false,
+    "cmake.sourceDirectory": "${workspaceFolder}/lib/googletest"
 }
