@@ -11,7 +11,7 @@
 // #define DEBUG_MATRIX_SCAN_RATE
 #define INIT_DELAY 3000
 // #define QUANTUM_PAINTER_DEBUG
-#define SIPO_PINS_DEBUG
+// #define SIPO_PINS_DEBUG
 // #define TOUCH_SCREEN_DEBUG
 
 // =======
@@ -27,7 +27,8 @@
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
 #define SPI_MODE 0
-#define SPI_DIV 16
+#define SPI_DIV 0
+#define SPI_DIV_9486 8 //cant handle faster speed
 
 // -- Register's data
 #define REGISTER_SPI_DRIVER SPID1
@@ -35,8 +36,8 @@
 #define REGISTER_SPI_MOSI_PIN GP11
 #define REGISTER_SPI_MISO_PIN GP12
 #define REGISTER_CS_PIN GP13
-#define REGISTER_SPI_MODE 3
-#define REGISTER_SPI_DIV 32
+#define REGISTER_SPI_MODE 0
+#define REGISTER_SPI_DIV  0
 
 #define REGISTER_PINS 9
 
@@ -54,7 +55,7 @@
 #if defined(SIPO_PINS)
 #    define DUMMY_PIN GP1
 #elif defined(QUANTUM_PAINTER_ENABLE)
-#    error "Design only supports SIPO output to control displays"
+#    error "Hardware design only supports SIPO output to control displays"
 #endif // SIPO_PINS
 
 // =======

@@ -25,12 +25,12 @@
             get_register_bit(byte, 6), \
             get_register_bit(byte, 7)  \
         )
-#define sipo_print_status()                      \
-        sipo_dprintf("Register status: MCU > "); \
-        for (int i=0; i<_REGISTER_BYTES; ++i) {  \
-            print_register_byte(i);              \
-        }                                        \
-        sipo_dprintf(" < Chain end\n")
+#define sipo_print_status()                        \
+        sipo_dprintf("Register status: MCU > ");   \
+        for (int i=_REGISTER_BYTES-1; i>=0; --i) { \
+            print_register_byte(i);                \
+        }                                          \
+        sipo_dprintf("< Chain end\n")
 
 // compute the amount of bytes needed
 #define _REGISTER_BYTES ((REGISTER_PINS+7)/8)
