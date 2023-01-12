@@ -15,7 +15,7 @@
 #        define PAINTER_SPI_DRIVER_ID 0
 #        define qp_spi_init() custom_spi_init(PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_start(cs, lsb, mode, div) custom_spi_start(cs, lsb, mode, div, PAINTER_SPI_DRIVER_ID)
-#        define qp_spi_write(cmd) custom_spi_write(cmd, PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_write(data) custom_spi_write(data, PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_transmit(ptr, bytes) custom_spi_transmit(ptr, bytes, PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_stop() custom_spi_stop(PAINTER_SPI_DRIVER_ID)
          // only pin we need as output is REGISTER_CS and is already handled by the feature
@@ -27,7 +27,7 @@
 #        include "spi_master.h"
 #        define qp_spi_init() spi_init()
 #        define qp_spi_start(cs, lsb, mode, div) spi_start(cs, lsb, mode, div)
-#        define qp_spi_write() spi_write()
+#        define qp_spi_write(data) spi_write(data)
 #        define qp_spi_transmit(ptr, bytes) spi_transmit(ptr, bytes)
 #        define qp_spi_stop() spi_stop()
 #        define qp_setPinOutput(pin) setPinOutput(pin)
