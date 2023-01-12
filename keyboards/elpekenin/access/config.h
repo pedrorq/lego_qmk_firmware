@@ -10,9 +10,9 @@
 // #define CUSTOM_SPI_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
 #define INIT_DELAY 3000
-#define QUANTUM_PAINTER_DEBUG
-#define SIPO_PINS_DEBUG
-#define TOUCH_SCREEN_DEBUG
+// #define QUANTUM_PAINTER_DEBUG
+// #define SIPO_PINS_DEBUG
+// #define TOUCH_SCREEN_DEBUG
 
 // =======
 // Power indicator
@@ -54,7 +54,9 @@
 #define ILI9486_TOUCH_IRQ_PIN GP9
 
 // If "virtual" pins aren't enabled, use real pins
-#ifndef SIPO_PINS
+#if defined(SIPO_PINS)
+#    define DUMMY_PIN GP1
+#else
 #    define IL91874_CS_PIN GP18
 #    define IL91874_RST_PIN GP1
 

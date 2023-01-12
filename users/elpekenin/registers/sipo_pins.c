@@ -16,11 +16,11 @@ void set_register_pin(uint8_t  position, bool state) {
     // Check if pin already had that state
     uint8_t curr_value = (register_pin_state[byte_offset] >> bit_offset) & 1;
     if (curr_value == state) {
-        sipo_dprintf("set_register_pin: bit already had the desired value\n");
         return;
     }
 
     register_state_changed = true;
+
     if (state)
         // add data starting on the least significant bit
         register_pin_state[byte_offset] |=  (1 << bit_offset);
@@ -30,7 +30,6 @@ void set_register_pin(uint8_t  position, bool state) {
 
 void write_register_state() {
     if (!register_state_changed) {
-        sipo_dprintf("write_register_state: the value on the register(s) is already set\n");
         return;
     }
 
