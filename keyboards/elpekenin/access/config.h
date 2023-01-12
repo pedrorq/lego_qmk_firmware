@@ -11,7 +11,7 @@
 // #define DEBUG_MATRIX_SCAN_RATE
 #define INIT_DELAY 3000
 // #define QUANTUM_PAINTER_DEBUG
-// #define SIPO_PINS_DEBUG
+#define SIPO_PINS_DEBUG
 // #define TOUCH_SCREEN_DEBUG
 
 // =======
@@ -26,8 +26,6 @@
 #define SPI_SCK_PIN GP2
 #define SPI_MOSI_PIN GP3
 #define SPI_MISO_PIN GP4
-
-#define SPI_DC_PIN GP6
 #define SPI_MODE 0
 #define SPI_DIV 16
 
@@ -36,12 +34,11 @@
 #define REGISTER_SPI_SCK_PIN GP10
 #define REGISTER_SPI_MOSI_PIN GP11
 #define REGISTER_SPI_MISO_PIN GP12
-
 #define REGISTER_CS_PIN GP13
 #define REGISTER_SPI_MODE 3
 #define REGISTER_SPI_DIV 32
 
-#define REGISTER_PINS 8
+#define REGISTER_PINS 9
 
 // -- Displays
 #define IL91874_ROTATION 0
@@ -56,24 +53,8 @@
 // If "virtual" pins aren't enabled, use real pins
 #if defined(SIPO_PINS)
 #    define DUMMY_PIN GP1
-#else
-#    define IL91874_CS_PIN GP18
-#    define IL91874_RST_PIN GP1
-
-#    define ILI9163_CS_PIN GP10
-#    define ILI9163_RST_PIN GP11
-
-#    define ILI9341_CS_PIN GP12
-#    define ILI9341_RST_PIN GP13
-#    define ILI9341_TOUCH_CS_PIN GP14
-
-#    define ILI9486_CS_PIN GP5
-#    define ILI9486_RST_PIN GP7
-#    define ILI9486_TOUCH_CS_PIN GP8
-
-#    define SSD1680_CS_PIN GP18
-#    define SSD1680_RST_PIN GP1
-#    define SCREEN_SPI_DC_PIN SPI_DC_PIN
+#elif defined(QUANTUM_PAINTER_ENABLE)
+#    error "Design only supports SIPO output to control displays"
 #endif // SIPO_PINS
 
 // =======

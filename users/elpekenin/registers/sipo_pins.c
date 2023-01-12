@@ -10,7 +10,8 @@ uint8_t register_pin_state[_REGISTER_BYTES] = {[0 ... _REGISTER_BYTES-1] = 0};
 bool register_state_changed = true;
 
 void set_register_pin(uint8_t  position, bool state) {
-    uint8_t byte_offset = position / 8;
+    // this change makes position 0 to be the closest to the MCU, instead of being the 1st bit of the last byte
+    uint8_t byte_offset = _REGISTER_BYTES - 1 - (position / 8);
     uint8_t bit_offset  = position % 8;
 
     // Check if pin already had that state
@@ -47,6 +48,4 @@ void write_register_state() {
     writePinHigh(REGISTER_CS_PIN);
 
     custom_spi_stop(REGISTER_SPI_DRIVER_ID);
-
-    sipo_print_status();
 }

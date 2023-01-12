@@ -67,10 +67,10 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #    if defined (SIPO_PINS)
     configure_register_pins(
         SCREEN_SPI_DC_PIN,
-        // IL91874_CS_PIN, IL91874_RST_PIN,
-        ILI9163_CS_PIN, ILI9163_RST_PIN
-        // ILI9341_CS_PIN, ILI9341_RST_PIN, ILI9341_TOUCH_CS_PIN,
-        // ILI9486_CS_PIN, ILI9486_RST_PIN, ILI9486_TOUCH_CS_PIN
+        IL91874_CS_PIN, IL91874_RST_PIN,
+        ILI9163_CS_PIN, ILI9163_RST_PIN,
+        ILI9341_CS_PIN, ILI9341_RST_PIN, // ILI9341_TOUCH_CS_PIN,
+        ILI9486_CS_PIN, ILI9486_RST_PIN  //ILI9486_TOUCH_CS_PIN
     );
 #    endif // SIPO_PINS
 
@@ -79,26 +79,28 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREEN_SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
-    // qp_init(il91874, IL91874_ROTATION);
+    il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREEN_SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
+    qp_init(il91874, IL91874_ROTATION);
 
     ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SCREEN_SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
     qp_init(ili9163, ILI9163_ROTATION);
 
-    // ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SCREEN_SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
-    // qp_init(ili9341, ILI9341_ROTATION);
+    ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SCREEN_SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(ili9341, ILI9341_ROTATION);
 
-    // ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SCREEN_SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
-    // qp_init(ili9486, ILI9486_ROTATION);
+    ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SCREEN_SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV, SPI_MODE);
+    qp_init(ili9486, ILI9486_ROTATION);
 
     // ssd1680 = qp_ssd1680_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SCREEN_SPI_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
     // qp_init(ssd1680, SSD1680_ROTATION);
 
     // ----- Fill them black
     qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
-    // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
+    qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
     // Don't draw on eink, they have to wait until next draw
+
+    sipo_print_status();
 
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE
