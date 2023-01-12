@@ -6,7 +6,6 @@ VPATH += $(USER_PATH)/painter \
          $(USER_PATH)/touch
 
 
-QP_XAP ?= yes
 ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)  # check if QP is enabled
     mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))  # current path
 
@@ -15,12 +14,14 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)  # check if QP is enabled
     SRC += $(shell find $(dir $(mkfile_path))/painter/fonts -name "*.c")  # add fonts
 
     ifeq ($(strip $(XAP_ENABLE)), yes)  # if XAP is also enabled
+        QP_XAP ?= yes
         ifeq ($(strip $(QP_XAP)), yes)  # check if user wanted to disable QP over XAP
             OPT_DEFS += -DQP_XAP
             SRC += qp_over_xap.c
         endif
     endif
 endif
+QP_XAP ?= no
 
 # ===========================
 # ===== Custom features =====
@@ -45,3 +46,11 @@ ifeq ($(strip $(TOUCH_SCREEN)), yes)
     OPT_DEFS += -DTOUCH_SCREEN
     SRC += touch_driver.c
 endif
+
+$(info --- Custom features ---)
+$(info ONE_HAND      = $(ONE_HAND))
+$(info REGISTER_PINS = $(REGISTER_PINS))
+$(info TOUCH_SCREEN  = $(TOUCH_SCREEN))
+$(info QP_XAP        = $(QP_XAP))
+$(info -----------------------)
+$(info )
