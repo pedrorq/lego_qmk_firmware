@@ -55,7 +55,10 @@
 #if defined(SIPO_PINS_ENABLE)
 #    define DUMMY_PIN GP1
 #elif defined(QUANTUM_PAINTER_ENABLE)
-#    error "Hardware design only supports SIPO output to control displays"
+#    define SSD1680_CS_PIN GP0
+#    define SSD1680_RST_PIN GP1
+#    define SSD1680_DC_PIN GP5
+// #    error "Hardware design only supports SIPO output to control displays"
 #endif // SIPO_PINS_ENABLE
 
 // =======

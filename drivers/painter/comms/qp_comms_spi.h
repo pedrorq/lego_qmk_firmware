@@ -6,7 +6,7 @@
 
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
 
-#    ifdef SIPO_PINS
+#    ifdef SIPO_PINS_ENABLE
 #        include "custom_spi_master.h"
 #        include "sipo_pins.h"
 #        define PAINTER_SPI_DRIVER_ID 0
@@ -30,7 +30,7 @@
 #        define qp_setPinOutput(pin) setPinOutput(pin)
 #        define qp_writePinLow(pin) writePinLow(pin)
 #        define qp_writePinHigh(pin) writePinHigh(pin)
-#    endif
+#    endif // SIPO_PINS_ENABLE
 
 #    include <stdint.h>
 
