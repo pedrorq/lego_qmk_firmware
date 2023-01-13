@@ -17,7 +17,7 @@ Config:
  - You can disable it when both features are enabled by adding `QP_XAP = no`
  - Selecting a display, font or image relies on adding small changes to Quantum Painters code, such that each handle gets stored into an array we can index it from.
 
-I have a collection of converted Material Design Icons in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
+If you want some QGF images, I have a collection of converted Material Design Icons (and scripts to generate them from folders of images) in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
 
 ## Touch screen driver
 Custom code to interact with my XPT2046-based touchscreen modules, the code is designed such that other SPI sensors should be somewhat easy to integrate. In a similar philosophy to the one-hand mode, this code does the bare minimum: **read the sensor**, what to do based on it... up to your imagination.
@@ -42,6 +42,6 @@ How to use:
  - Configure the amount of pins you'll use `#define SIPO_PINS <N_Pins>`
  - Create your pin(s) name(s) using: `configure_sipo_pins(NAME1, NAME2, ...)`
  - Change a pin's state by doing:
-   - Manually set state: `set_register_pin(<pin_name>, true)` or `set_register_pin(<pin_name>, false)`
-   - Using helper macros: `register_pin_high(<pin_name>)` or `register_pin_low(<pin_name>)`
- - Send the status to the registers: `write_register_state()`
+   - Manually set state: `set_sipo_pin(<pin_name>, true)` or `set_sipo_pin(<pin_name>, false)`
+   - Using helper macros: `sipo_pin_high(<pin_name>)` or `sipo_pin_low(<pin_name>)`
+ - Send the status to the registers: `write_sipo_state()`
