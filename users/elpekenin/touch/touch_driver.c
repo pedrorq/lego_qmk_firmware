@@ -10,11 +10,11 @@ bool touch_spi_init(touch_device_t device) {
     struct spi_touch_comms_config_t comms_config = driver->spi_config;
 
     // Initialize the SPI peripheral
-    spi_init();
+    ts_spi_init();
 
     // Set up CS as output high
-    setPinOutput(comms_config.chip_select_pin);
-    writePinHigh(comms_config.chip_select_pin);
+    ts_setPinOutput(comms_config.chip_select_pin);
+    ts_writePinHigh(comms_config.chip_select_pin);
 
     // Set up IRQ as input
     setPinInput(comms_config.irq_pin);
@@ -23,12 +23,12 @@ bool touch_spi_init(touch_device_t device) {
 }
 
 bool touch_spi_start(spi_touch_comms_config_t comms_config) {
-    return spi_start(comms_config.chip_select_pin, comms_config.lsb_first, comms_config.mode, comms_config.divisor);
+    return ts_spi_start(comms_config.chip_select_pin, comms_config.lsb_first, comms_config.mode, comms_config.divisor);
 }
 
 void touch_spi_stop(spi_touch_comms_config_t comms_config) {
-    spi_stop();
-    writePinHigh(comms_config.chip_select_pin);
+    ts_spi_stop();
+    ts_writePinHigh(comms_config.chip_select_pin);
 }
 
 touch_report_t get_spi_touch_report(touch_device_t device) {
@@ -64,7 +64,7 @@ touch_report_t get_spi_touch_report(touch_device_t device) {
     // Take several measurements and then compute the mean
     for (uint8_t i=0; i<driver->measurements; i++) {
         // Send command
-        spi_write(comms_config.x_cmd);
+        ts_spi_write(comms_config.x_cmd);
         // Read answer
         x += ((spi_write(0) << 8) | spi_write(0)) >> 3;
 

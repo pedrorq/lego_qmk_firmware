@@ -17,8 +17,8 @@
 #        define qp_spi_stop() custom_spi_stop(PAINTER_SPI_DRIVER_ID)
          // only pin we need as output is REGISTER_CS and is already handled by the feature
 #        define qp_setPinOutput(pin) do { } while (0)
-#        define qp_writePinLow(pin) register_pin_low(pin); write_register_state()
-#        define qp_writePinHigh(pin) register_pin_high(pin); write_register_state()
+#        define qp_writePinLow(pin) sipo_pin_low(pin); write_sipo_state()
+#        define qp_writePinHigh(pin) sipo_pin_high(pin); write_sipo_state()
 #    else
          // regular pin handling
 #        include "spi_master.h"

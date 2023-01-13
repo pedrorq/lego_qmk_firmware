@@ -31,15 +31,15 @@
 #define SPI_DIV_9486 8 //cant handle faster speed
 
 // -- Register's data
-#define REGISTER_SPI_DRIVER SPID1
-#define REGISTER_SPI_SCK_PIN GP10
-#define REGISTER_SPI_MOSI_PIN GP11
-#define REGISTER_SPI_MISO_PIN GP12
-#define REGISTER_CS_PIN GP13
-#define REGISTER_SPI_MODE 0
-#define REGISTER_SPI_DIV  0
+#define SIPO_SPI_DRIVER SPID1
+#define SIPO_SPI_SCK_PIN GP10
+#define SIPO_SPI_MOSI_PIN GP11
+#define SIPO_SPI_MISO_PIN GP12
+#define SIPO_CS_PIN GP13
+#define SIPO_SPI_MODE 0
+#define SIPO_SPI_DIV  0
 
-#define REGISTER_PINS 9
+#define SIPO_PINS 9
 
 // -- Displays
 #define IL91874_ROTATION 0
@@ -52,11 +52,11 @@
 #define ILI9486_TOUCH_IRQ_PIN GP9
 
 // If "virtual" pins aren't enabled, use real pins
-#if defined(SIPO_PINS)
+#if defined(SIPO_PINS_ENABLE)
 #    define DUMMY_PIN GP1
 #elif defined(QUANTUM_PAINTER_ENABLE)
 #    error "Hardware design only supports SIPO output to control displays"
-#endif // SIPO_PINS
+#endif // SIPO_PINS_ENABLE
 
 // =======
 // RGB

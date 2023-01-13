@@ -4,52 +4,52 @@
 #include "sipo_pins.h"
 #include "custom_spi_master.h"
 
-#define REGISTER_SPI_DRIVER_ID 1
+#define SIPO_SPI_DRIVER_ID 1
 
-uint8_t register_pin_state[_REGISTER_BYTES] = {[0 ... _REGISTER_BYTES-1] = 0};
-bool register_state_changed = true;
+uint8_t sipo_pin_state[_SIPO_BYTES] = {[0 ... _SIPO_BYTES-1] = 0};
+bool sipo_state_changed = true;
 
-void set_register_pin(uint8_t  position, bool state) {
+void set_sipo_pin(uint8_t  position, bool state) {
     // this change makes position 0 to be the closest to the MCU, instead of being the 1st bit of the last byte
-    uint8_t byte_offset = _REGISTER_BYTES - 1 - (position / 8);
+    uint8_t byte_offset = _SIPO_BYTES - 1 - (position / 8);
     uint8_t bit_offset  = position % 8;
 
     // Check if pin already had that state
-    uint8_t curr_value = (register_pin_state[byte_offset] >> bit_offset) & 1;
+    uint8_t curr_value = (sipo_pin_state[byte_offset] >> bit_offset) & 1;
     if (curr_value == state) {
-        sipo_dprintf("set_register_pin: no changes on the desired bit, quitting\n");
+        sipo_dprintf("set_sipo_pin: no changes on the desired bit, quitting\n");
         return;
     }
 
-    register_state_changed = true;
+    sipo_state_changed = true;
 
     if (state)
         // add data starting on the least significant bit
-        register_pin_state[byte_offset] |=  (1 << bit_offset);
+        sipo_pin_state[byte_offset] |=  (1 << bit_offset);
     else
-        register_pin_state[byte_offset] &= ~(1 << bit_offset);
+        sipo_pin_state[byte_offset] &= ~(1 << bit_offset);
 }
 
-void write_register_state() {
-    if (!register_state_changed) {
-        sipo_dprintf("write_register_state: no changes on the desired output, quitting\n");
+void write_sipo_state() {
+    if (!sipo_state_changed) {
+        sipo_dprintf("write_sipo_state: no changes on the desired output, quitting\n");
         return;
     }
 
-    register_state_changed = false;
+    sipo_state_changed = false;
 
-    custom_spi_init(REGISTER_SPI_DRIVER_ID);
+    custom_spi_init(SIPO_SPI_DRIVER_ID);
 
-    if(!custom_spi_start(REGISTER_CS_PIN, false, REGISTER_SPI_MODE, REGISTER_SPI_DIV, REGISTER_SPI_DRIVER_ID)) {
+    if(!custom_spi_start(SIPO_CS_PIN, false, SIPO_SPI_MODE, SIPO_SPI_DIV, SIPO_SPI_DRIVER_ID)) {
         sipo_dprintf("Couldn't start SPI for SIPO\n");
         return;
     }
 
-    writePinLow(REGISTER_CS_PIN);
-    custom_spi_transmit(register_pin_state, _REGISTER_BYTES, REGISTER_SPI_DRIVER_ID);
-    writePinHigh(REGISTER_CS_PIN);
+    writePinLow(SIPO_CS_PIN);
+    custom_spi_transmit(sipo_pin_state, _SIPO_BYTES, SIPO_SPI_DRIVER_ID);
+    writePinHigh(SIPO_CS_PIN);
 
-    custom_spi_stop(REGISTER_SPI_DRIVER_ID);
+    custom_spi_stop(SIPO_SPI_DRIVER_ID);
 
     sipo_print_status();
 }

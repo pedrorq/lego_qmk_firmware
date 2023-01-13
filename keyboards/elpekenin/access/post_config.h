@@ -3,26 +3,26 @@
 
 // =======
 // Multi-SPI driver config
-#if defined(REGISTER_SPI_DRIVER)
-#    define SPI_DRIVERS SPI_DRIVER, REGISTER_SPI_DRIVER
+#if defined(SIPO_SPI_DRIVER)
+#    define SPI_DRIVERS SPI_DRIVER, SIPO_SPI_DRIVER
 #else
 #    define SPI_DRIVERS SPI_DRIVER
 #endif
 
-#if defined(REGISTER_SPI_SCK_PIN)
-#    define SPI_SCK_PINS SPI_SCK_PIN, REGISTER_SPI_SCK_PIN
+#if defined(SIPO_SPI_SCK_PIN)
+#    define SPI_SCK_PINS SPI_SCK_PIN, SIPO_SPI_SCK_PIN
 #else
 #    define SPI_SCK_PINS SPI_SCK_PIN
 #endif
 
-#if defined(REGISTER_SPI_MOSI_PIN)
-#    define SPI_MOSI_PINS SPI_MOSI_PIN, REGISTER_SPI_MOSI_PIN
+#if defined(SIPO_SPI_MOSI_PIN)
+#    define SPI_MOSI_PINS SPI_MOSI_PIN, SIPO_SPI_MOSI_PIN
 #else
 #    define SPI_MOSI_PINS SPI_MOSI_PIN
 #endif
 
-#if defined(REGISTER_SPI_MISO_PIN)
-#    define SPI_MISO_PINS SPI_MISO_PIN, REGISTER_SPI_MISO_PIN
+#if defined(SIPO_SPI_MISO_PIN)
+#    define SPI_MISO_PINS SPI_MISO_PIN, SIPO_SPI_MISO_PIN
 #else
 #    define SPI_MISO_PINS SPI_MISO_PIN
 #endif

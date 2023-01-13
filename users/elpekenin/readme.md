@@ -15,6 +15,7 @@ XAP bindings that expose Quantum Painter's drawing and `get_geometry` functions.
 Config:
  - Will automatically get added if you have both XAP and Quantum Painter enabled
  - You can disable it when both features are enabled by adding `QP_XAP = no`
+ - Selecting a display, font or image relies on adding small changes to Quantum Painters code, such that each handle gets stored into an array we can index it from.
 
 I have a collection of converted Material Design Icons in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
 
@@ -25,22 +26,21 @@ Config:
  - Add `TOUCH_SCREEN = yes` to your **rules.mk**
 
 ## Shift register "pins"
-**WIP**
-A set of macros and functions that allow using a SerialIn-ParallelOut(SIPO) shift register to control several signals, or even chain several together, so that you can generate *virtually* infinite outputs using 3 GPIOs on the MCU.
+**Seems to work OK-ish, more testing needed**
+A set of macros and functions that allow using a SerialIn-ParallelOut(SIPO) shift register to control several signals, or even chain several together, so that you can generate *virtually* infinite output signals using 3 GPIOs on the MCU.
  - SCK
  - MOSI
  - CS
 
-My use case for this feature is to drive a multi-screen setup, where I use shared SCK/MISO/MOSI and DC + several CS and RST pins, as each screen has its own.
-This has a drawback however, we need a dedicated SPI driver because we have to change pins(CS/DC) controlling the screens while a data transmision is going, so updating those outputs requires sending data to the register(s) via SPI, which would also be received by the screens in an un-desirable way.
+My use case for this feature is to drive a multi-SPI-screen setup. This has a drawback however, we need a dedicated SPI driver because we have to change pins(CS/DC) controlling the screens while a data transmision is going, so updating those outputs requires sending data to the register(s) via SPI, which would also be received by the screens in an un-desirable way.
 Thus, I've made some patches to both `qp_comms_spi.c` and created a `custom_spi_master.h` to get things working.
 
 Code so far expects the screens to use the "tradicional" names, like `SPI_SCK_PIN` and the register ones prepend `REGISTER_` to those names, they then get merged into an array such that screen's use the driver with index 0 and register has id 1.
 
 How to use:
- - Add `REGISTER_PINS = yes` to your **rules.mk**
- - Configure the amount of pins you'll use `#define REGISTER_PINS <N_Pins>`
- - Create your pin(s) name(s) using: `configure_register_pins(NAME1, NAME2, ...)`
+ - Add `SIPO_PINS = yes` to your **rules.mk**
+ - Configure the amount of pins you'll use `#define SIPO_PINS <N_Pins>`
+ - Create your pin(s) name(s) using: `configure_sipo_pins(NAME1, NAME2, ...)`
  - Change a pin's state by doing:
    - Manually set state: `set_register_pin(<pin_name>, true)` or `set_register_pin(<pin_name>, false)`
    - Using helper macros: `register_pin_high(<pin_name>)` or `register_pin_low(<pin_name>)`

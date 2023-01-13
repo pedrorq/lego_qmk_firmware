@@ -435,11 +435,11 @@ int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, pai
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Export arrays to be used by XAP
-#if defined(QP_XAP)
+#if defined(QP_XAP_ENABLE)
 painter_device_t qp_xap_displays[QUANTUM_PAINTER_NUM_DISPLAYS];
 painter_image_handle_t qp_xap_images[QUANTUM_PAINTER_NUM_IMAGES];
 painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS];
-#endif // QP_XAP
+#endif // QP_XAP_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter Drivers

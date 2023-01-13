@@ -25,12 +25,12 @@ extern uint8_t one_hand_row;
 extern one_hand_movement_t one_hand_movement;
 #endif // RGB_MATRIX_ENABLE && ONE_HAND_ENABLE
 
-#if defined (TOUCH_SCREEN)
+#if defined (TOUCH_SCREEN_ENABLE)
 #    include "touch_driver.h"
 extern touch_device_t ili9341_touch;
 extern touch_device_t ili9486_touch;
 #    if defined(ONE_HAND_ENABLE)
 void screen_one_hand(touch_report_t touch_report);
 #    endif // ONE_HAND_ENABLE
-#endif // TOUCH_SCREEN
+#endif // TOUCH_SCREEN_ENABLE
 

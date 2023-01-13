@@ -5,9 +5,9 @@
 #include "access.h"
 #include "version.h"
 
-#if defined(SIPO_PINS)
+#if defined(SIPO_PINS_ENABLE)
 #    include "sipo_pins.h"
-#endif // SIPO_PINS
+#endif // SIPO_PINS_ENABLE
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "color.h"
@@ -30,11 +30,11 @@ uint8_t one_hand_row;
 one_hand_movement_t one_hand_movement;
 #endif // ONE_HAND_ENABLE
 
-#if defined (TOUCH_SCREEN)
+#if defined (TOUCH_SCREEN_ENABLE)
 #    include "touch_driver.h"
 touch_device_t ili9341_touch;
 touch_device_t ili9486_touch;
-#endif // TOUCH_SCREEN
+#endif // TOUCH_SCREEN_ENABLE
 
 // Version info
 char build_date [] = QMK_BUILDDATE;
@@ -64,8 +64,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 #if defined(QUANTUM_PAINTER_ENABLE)
     // Virtual pins names
-#    if defined (SIPO_PINS)
-    configure_register_pins(
+#    if defined (SIPO_PINS_ENABLE)
+    configure_sipo_pins(
         SCREEN_SPI_DC_PIN,
         IL91874_CS_PIN, IL91874_RST_PIN,
         ILI9163_CS_PIN, ILI9163_RST_PIN,
@@ -74,7 +74,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
         // touch screen code isn't adjusted for SIPO yet
         // ,ILI9341_TOUCH_CS_PIN, ILI9486_TOUCH_CS_PIN
     );
-#    endif // SIPO_PINS
+#    endif // SIPO_PINS_ENABLE
 
     load_qp_resources();
 
@@ -113,7 +113,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE
 
-#if defined (TOUCH_SCREEN)
+#if defined (TOUCH_SCREEN_ENABLE)
     // Calibration isn't very precise
     static touch_driver_t ili9341_touch_driver = {
         .width = _ILI9341_WIDTH,
@@ -162,7 +162,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     touch_spi_init(ili9486_touch);
 
     dprint("Touch devices ready\n");
-#endif // TOUCH_SCREEN
+#endif // TOUCH_SCREEN_ENABLE
 
     dprint("\n---------- User code ----------\n");
 
@@ -184,7 +184,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 
 #if defined(ONE_HAND_ENABLE)
-#    if defined (TOUCH_SCREEN)
+#    if defined (TOUCH_SCREEN_ENABLE)
 void screen_one_hand(touch_report_t touch_report) {
     if (!touch_report.pressed) {
         return;
@@ -226,5 +226,5 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 
     return previous != current_matrix[one_hand_row];
 }
-#    endif // TOUCH_SCREEN
+#    endif // TOUCH_SCREEN_ENABLE
 #endif // ONE_HAND_ENABLE

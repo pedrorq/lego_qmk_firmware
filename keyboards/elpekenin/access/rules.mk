@@ -13,4 +13,4 @@ XAP_ENABLE = yes
 # Custom features
 TOUCH_SCREEN    = no
 ONE_HAND_ENABLE = no
-REGISTER_PINS   = yes
+SIPO_PINS       = yes
