@@ -24,30 +24,46 @@ eink_panel_dc_reset_painter_device_t ssd1680_drivers[SSD1680_NUM_DEVICES] = {0};
 bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
+    uint8_t width_lsb = (driver->base.panel_width-1) & 0xFF;
+    uint8_t width_msb = ((driver->base.panel_width-1) >> 8) & 0xFF;
+    // it makes a weird division by 8
+    // uint8_t height    = (driver->base.panel_height/8 - 1) & 0xFF;
+
+    /*
+     * Values that change based on the variant (BW/3C, partial/full, MCU/builtin RAM)
+     * - 2 color code based of: https://github.com/ZinggJM/GxEPD2/blob/master/src/epd/GxEPD2_213_BN.cpp
+     * - 3 color code based of: https://github.com/adafruit/Adafruit_CircuitPython_SSD1680/blob/main/adafruit_ssd1680.py
+     */
+    bool is_bw = (driver->red_surface == NULL);
+    uint8_t update_mode = is_bw ? 0xF8 : 0xF4;
+
     // clang-format off
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                 Delay, N, Data[N]
-        SSD1680_SOFT_RESET,           120, 1, 0x14,
+        SSD1680_SOFT_RESET,           120, 0,
+        SSD1680_RESOLUTION,             0, 3, width_lsb, width_msb, 0x00,
         SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
         SSD1680_BORDER_CONTROL,         0, 1, 0x05,
-        // SSD1680_DISPLAY_UPDATE_CONTROL, 0, 2, 0x00, 0x80,
-        // SSD1680_TEMP_SENSOR,            0, 1, 0x80,
-        SSD1680_VCOM_VOLTAGE,           0, 1, 0x36,
-        SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
-        SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
-        // SSD1680_RAM_X_SIZE,             0, 2, 0x00, (driver->base.panel_height/8 - 1) & 0xFF,
-        SSD1680_RAM_X_COUNTER,          0, 1, 0x01,
-        // SSD1680_RAM_Y_SIZE,             0, 4, (driver->base.panel_width-1) & 0xFF, ((driver->base.panel_width-1) >> 8) & 0xFF, 0x00, 0x00,
-        SSD1680_RAM_Y_COUNTER,          0, 2, (driver->base.panel_width-1) & 0xFF, ((driver->base.panel_width-1) >> 8) & 0xFF,
-        SSD1680_RESOLUTION,             0, 3, (driver->base.panel_width-1) & 0xFF, ((driver->base.panel_width-1) >> 8) & 0xFF, 0x00,
-        SSD1680_UPDATE_MODE,            0, 1, 0xF4
+        SSD1680_DISPLAY_UPDATE_CONTROL, 0, 2, 0x00, 0x80,
+        SSD1680_TEMP_SENSOR,            0, 1, 0x80,
+        SSD1680_UPDATE_MODE,            0, 1, update_mode,
+        // SSD1680_VCOM_VOLTAGE,           0, 1, 0x36,
+        // SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
+        // SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
+        // SSD1680_RAM_X_SIZE,             0, 2, 0x00, height,
+        // SSD1680_RAM_X_COUNTER,          0, 1, 0x01,
+        // SSD1680_RAM_Y_SIZE,             0, 4, width_lsb, width_msb, 0x00, 0x00,
+        // SSD1680_RAM_Y_COUNTER,          0, 2, width_lsb, width_msb,
     };
     // clang-format on
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
 
     qp_init(driver->black_surface, rotation);
-    qp_init(driver->red_surface,  rotation);
+
+    if (driver->red_surface != NULL) {
+        qp_init(driver->red_surface, rotation);
+    }
 
     return true;
 }
@@ -85,13 +101,19 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable =
 #ifdef QUANTUM_PAINTER_SSD1680_SPI_ENABLE
 
 // Factory function for creating a handle to the SSD1680 device
-painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
+painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
     for (uint32_t i = 0; i < SSD1680_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &ssd1680_drivers[i];
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&ssd1680_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
-            driver->base.native_bits_per_pixel = 8; // Black and red channels
+            /*
+             * FIXME: May need an adjustment as each bit is really stored in 2 bits for 3-color displays
+             *
+             * However, this is fine (for now?) as the bits_per_pixel is only used on the underlying surface drivers
+             * to memeset the buffer to 0, where 1 bit on each surface is still correct
+             */
+            driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
             driver->base.rotation              = QP_ROTATION_0;
@@ -99,7 +121,7 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
+            driver->red_surface   = NULL;
 
             driver->timeout   = 2 * 60 * 1000; // 2 minutes as seen on WeAct
             driver->can_flush = true;
@@ -122,6 +144,14 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
     return NULL;
 }
 
+painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
+    painter_device_t device = qp_ssd1680_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr);
+    if (device) {
+        eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+        driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+EINK_BW_BYTES_REQD(panel_width, panel_height));
+    }
+    return device;
+}
 #endif // QUANTUM_PAINTER_SSD1680_SPI_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,8 +20,8 @@ painter_device_t ili9163;
 painter_device_t ili9341;
 painter_device_t ili9486;
 painter_device_t ssd1680;
-uint8_t il91874_buffer[EINK_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
-uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
+uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)];
+uint8_t ssd1680_buffer[EINK_BW_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(ONE_HAND_ENABLE)
@@ -79,7 +79,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREEN_SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
+    // il91874 = qp_il91874_3c_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREEN_SPI_DC_PIN, IL91874_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
     // qp_init(il91874, IL91874_ROTATION);
 
     // ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SCREEN_SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
@@ -91,7 +91,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SCREEN_SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV_9486, SPI_MODE);
     // qp_init(ili9486, ILI9486_ROTATION);
 
-    ssd1680 = qp_ssd1680_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SSD1680_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SSD1680_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
     qp_init(ssd1680, SSD1680_ROTATION);
 
     // ----- Fill them black

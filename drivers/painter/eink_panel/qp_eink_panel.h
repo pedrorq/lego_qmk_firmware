@@ -8,7 +8,8 @@
 #    include "qp_comms_spi.h"
 #endif // QUANTUM_PAINTER_SPI_ENABLE
 
-#define EINK_BYTES_REQD(w, h) (2 * SURFACE_REQUIRED_BUFFER_BYTE_SIZE(w, h, 1))
+#define EINK_BW_BYTES_REQD(w, h) (SURFACE_REQUIRED_BUFFER_BYTE_SIZE(w, h, 1))
+#define EINK_3C_BYTES_REQD(w, h) (2 * EINK_BW_BYTES_REQD(w, h))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common TFT panel implementation using D/C, and RST pins.

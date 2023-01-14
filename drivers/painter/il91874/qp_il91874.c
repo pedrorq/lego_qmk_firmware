@@ -24,6 +24,13 @@ eink_panel_dc_reset_painter_device_t il91874_drivers[IL91874_NUM_DEVICES] = {0};
 bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
+    uint8_t width_lsb  = (driver->base.panel_width) & 0xFF;
+    uint8_t width_msb  = (driver->base.panel_width >> 8) & 0xFF;
+    uint8_t height_lsb = (driver->base.panel_height) & 0xFF;
+    uint8_t height_msb = (driver->base.panel_height >> 8) & 0xFF;
+
+    // TODO: Add config changes for BW variant (if needed), this is 3color init
+
     // clang-format off
     const uint8_t il91874_init_sequence[] = {
         // Command,                 Delay,  N, Data[N]
@@ -44,7 +51,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
         IL91874_LUTBW,                  0, 42, 0xA0, 0x1A, 0x1A, 0x0, 0x0, 0x1, 0x0, 0xA, 0xA, 0x0, 0x0, 0x8, 0x84, 0xE, 0x1, 0xE, 0x1, 0x10, 0x90, 0xA, 0xA, 0x0, 0x0, 0x8, 0xB0, 0x4, 0x10, 0x0, 0x0, 0x5, 0xB0, 0x3, 0xE, 0x0, 0x0, 0xA, 0xC0, 0x23, 0x0, 0x0, 0x0, 0x1,
         IL91874_LUTWB,                  0, 42, 0x90, 0x1A, 0x1A, 0x0, 0x0, 0x1, 0x40, 0xA, 0xA, 0x0, 0x0, 0x8, 0x84, 0xE, 0x1, 0xE, 0x1, 0x10, 0x80, 0xA, 0xA, 0x0, 0x0, 0x8, 0x0, 0x4, 0x10, 0x0, 0x0, 0x5, 0x0, 0x3, 0xE, 0x0, 0x0, 0xA, 0x0, 0x23, 0x0, 0x0, 0x0, 0x1,
         IL91874_LUTBB,                  0, 42, 0x90, 0x1a, 0x1A, 0x0, 0x0, 0x1, 0x20, 0xA, 0xA, 0x0, 0x0, 0x8, 0x84, 0xE, 0x1, 0xE, 0x1, 0x10, 0x10, 0xA, 0xA, 0x0, 0x0, 0x8, 0x0, 0x4, 0x10, 0x0, 0x0, 0x5, 0x0, 0x3, 0xE, 0x0, 0x0, 0xA, 0x0, 0x23, 0x0, 0x0, 0x0, 0x1,
-        IL91874_RESOLUTION,             0,  4, (driver->base.panel_width >> 8) & 0xFF, (driver->base.panel_width) & 0xFF, (driver->base.panel_height >> 8) & 0xFF, (driver->base.panel_height) & 0xFF,
+        IL91874_RESOLUTION,             0,  4, width_msb, width_lsb, height_msb, height_lsb,
         IL91874_PDRF,                   0,  1, 0x00
     };
     // clang-format on
@@ -52,7 +59,10 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     qp_init(driver->black_surface, rotation);
-    qp_init(driver->red_surface,   rotation);
+
+    if (driver->red_surface != NULL) {
+        qp_init(driver->red_surface, rotation);
+    }
 
     return true;
 }
@@ -90,13 +100,19 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
 
 // Factory function for creating a handle to the IL91874 device
-painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
+painter_device_t qp_il91874_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
             driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
-            driver->base.native_bits_per_pixel = 8; // Black and red channels
+            /*
+             * FIXME: May need an adjustment as each bit is really stored in 2 bits for 3-color displays
+             *
+             * However, this is fine (for now?) as the bits_per_pixel is only used on the underlying surface drivers
+             * to memeset the buffer to 0, where 1 bit on each surface is still correct
+             */
+            driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
             driver->base.rotation              = QP_ROTATION_0;
@@ -104,7 +120,7 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
+            driver->red_surface   = NULL;
 
             driver->timeout   = 3 * 60 * 1000; // 3 minutes as suggested by Adafruit
             driver->can_flush = true;
@@ -127,6 +143,14 @@ painter_device_t qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel
     return NULL;
 }
 
+painter_device_t qp_il91874_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
+    painter_device_t device = qp_il91874_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr);
+    if (device) {
+        eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+        driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+EINK_BW_BYTES_REQD(panel_width, panel_height));
+    }
+    return device;
+}
 #endif // QUANTUM_PAINTER_IL91874_SPI_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

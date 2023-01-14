@@ -22,7 +22,7 @@
 
 #ifdef QUANTUM_PAINTER_SSD1680_SPI_ENABLE
 /**
- * Factory method for an SSD1680 SPI LCD device.
+ * Factory method for an SSD1680 SPI eInk device.
  *
  * @param panel_width[in] the width of the display panel
  * @param panel_height[in] the height of the display panel
@@ -34,6 +34,21 @@
  * @param ptr[in] the array in which pixel data is stored
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+
+/**
+ * Factory method for an SSD1680 SPI eInk device.
+ *
+ * @param panel_width[in] the width of the display panel
+ * @param panel_height[in] the height of the display panel
+ * @param chip_select_pin[in] the GPIO pin used for SPI chip select
+ * @param dc_pin[in] the GPIO pin used for D/C control
+ * @param reset_pin[in] the GPIO pin used for RST
+ * @param spi_divisor[in] the SPI divisor to use when communicating with the display
+ * @param spi_mode[in] the SPI mode to use when communicating with the display
+ * @param ptr[in] the array in which pixel data is stored
+ * @return the device handle used with all drawing routines in Quantum Painter
+ */
+painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
 
 #endif // QUANTUM_PAINTER_SSD1680_SPI_ENABLE

@@ -218,35 +218,6 @@ The maximum number of displays can be configured by changing the following in yo
 #define GC9A01_NUM_DEVICES 3
 ```
 
-#### ** IL91874 **
-
-Enabling support for the IL91874 in Quantum Painter is done by adding the following to `rules.mk`:
-
-```make
-QUANTUM_PAINTER_ENABLE = yes
-QUANTUM_PAINTER_DRIVERS += il91874_spi
-```
-
-Creating a IL91874 device in firmware can then be done with the following API:
-
-```c
-// allocate a framebuffer for it
-uint8_t il91874_buffer[EINK_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
-// pass it to the next function by doing `(void *) il91874_buffer`
-
-// create the device handle
-painter_device_t qp_ili91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
-```
-
-The device handle returned from the `qp_ili91874_make_spi_device` function can be used to perform all other drawing operations.
-
-The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
-
-```c
-// 3 displays:
-#define IL91874_NUM_DEVICES 3
-```
-
 #### ** ILI9163 **
 
 Enabling support for the ILI9163 in Quantum Painter is done by adding the following to `rules.mk`:
@@ -316,7 +287,7 @@ There's another variant for this [Waveshare module](https://www.waveshare.com/wi
 painter_device_t qp_ili9486_make_spi_waveshare_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode);
 ```
 
-The device handle returned from the `qp_ili9486_make_spi_device` function can be used to perform all other drawing operations.
+The device handle returned from any of these functions can be used to perform all other drawing operations.
 
 The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
 
@@ -371,35 +342,6 @@ The maximum number of displays can be configured by changing the following in yo
 ```c
 // 3 displays:
 #define SSD1351_NUM_DEVICES 3
-```
-
-#### ** SSD1680 **
-
-Enabling support for the SSD1680 in Quantum Painter is done by adding the following to `rules.mk`:
-
-```make
-QUANTUM_PAINTER_ENABLE = yes
-QUANTUM_PAINTER_DRIVERS += ssd1680_spi
-```
-
-Creating a SSD1680 device in firmware can then be done with the following API:
-
-```c
-// allocate a framebuffer for it
-uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
-// pass it to the next function by doing `(void *) ssd1680_buffer`
-
-// create the device handle
-painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
-```
-
-The device handle returned from the `qp_ssd1680_make_spi_device` function can be used to perform all other drawing operations.
-
-The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
-
-```c
-// 3 displays:
-#define SSD1680_NUM_DEVICES 3
 ```
 
 #### ** ST7735 **
@@ -510,6 +452,105 @@ bool qp_rgb565_surface_draw(painter_device_t surface, painter_device_t display, 
 The `surface` is the surface to copy out from. The `display` is the target display to draw into. `x` and `y` are the target location to draw the surface pixel data. Under normal circumstances, the location should be consistent, as the dirty region is calculated with respect to the `x` and `y` coordinates -- changing those will result in partial, overlapping draws.
 
 ?> Calling `qp_flush()` on the surface resets its dirty region. Copying the surface contents to the display also automatically resets the dirty region.
+
+<!-- tabs:end -->
+
+### ** Common: e-Ink (SPI + D/C + RST) **
+
+Most e-Ink display panels use a 5-pin interface – SPI SCK, SPI MOSI, SPI CS, D/C, and RST pins.
+
+For these displays, QMK’s `spi_master` must already be correctly configured for the platform you’re building for.
+
+The pin assignments for SPI CS, D/C, and RST are specified during device construction.
+
+?> Each e-Ink device is a wrapper around 1(black-white) or 2(3color) `qp_surface` "displays", thus you will need to adjust `QUANTUM_PAINTER_NUM_DISPLAYS` and `SURFACE_NUM_DEVICES` according to your needs.
+
+!> Code doesn't support partial refresh (yet).
+
+!> Some modules have a built-in RAM in which you could store the buffer, however this is not yet supported. Instead, the framebuffer is stored on your controller's RAM and may not be usable on all MCUs.
+
+<!-- tabs:start -->
+#### ** IL91874 **
+
+Enabling support for the IL91874 in Quantum Painter is done by adding the following to `rules.mk`:
+
+```make
+QUANTUM_PAINTER_ENABLE = yes
+QUANTUM_PAINTER_DRIVERS += il91874_spi
+```
+
+Creating a IL91874 device in firmware can then be done with the following API:
+
+!> BW hasn't been tested
+
+```c
+/* 
+ * Allocate a framebuffer for the display
+ * Will be passed to the constructor by casting it to a void pointer: `(void *)il91874_buffer`
+ */
+// Black and white
+uint8_t il91874_buffer[EINK_BW_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
+// 3 color
+uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)] = {0};
+
+/* 
+ * Create the device handle
+ */
+// Black and white
+painter_device_t qp_il91874_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+// 3 color
+painter_device_t qp_il91874_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+```
+
+The device handle returned from any of these functions can be used to perform all other drawing operations.
+
+The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
+
+```c
+// 3 displays:
+#define IL91874_NUM_DEVICES 3
+```
+
+#### ** SSD1680 **
+
+Enabling support for the SSD1680 in Quantum Painter is done by adding the following to `rules.mk`:
+
+```make
+QUANTUM_PAINTER_ENABLE = yes
+QUANTUM_PAINTER_DRIVERS += ssd1680_spi
+```
+
+Creating a SSD1680 device in firmware can then be done with the following APIs:
+
+!> 3 color hasn't been tested
+
+```c
+/* 
+ * Allocate a framebuffer for the display
+ * Will be passed to the constructor by casting it to a void pointer: `(void *)ssd1680_buffer`
+ */
+// Black and white
+uint8_t ssd1680_buffer[EINK_BW_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
+// 3 color
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
+
+/* 
+ * Create the device handle
+ */
+// Black and white
+painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+// 3 color
+painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+```
+
+The device handle returned from any of these functions can be used to perform all other drawing operations.
+
+The maximum number of displays can be configured by changing the following in your `config.h` (default is 1):
+
+```c
+// 3 displays:
+#define SSD1680_NUM_DEVICES 3
+```
 
 <!-- tabs:end -->
 
