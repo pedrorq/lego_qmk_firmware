@@ -88,11 +88,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // ili9341 = qp_ili9341_make_spi_device(_ILI9341_WIDTH, _ILI9341_HEIGHT, ILI9341_CS_PIN, SCREEN_SPI_DC_PIN, ILI9341_RST_PIN, SPI_DIV, SPI_MODE);
     // qp_init(ili9341, ILI9341_ROTATION);
 
-    // ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, ILI9486_CS_PIN, SCREEN_SPI_DC_PIN, ILI9486_RST_PIN, SPI_DIV_9486, SPI_MODE);
-    // qp_init(ili9486, ILI9486_ROTATION);
+    ili9486 = qp_ili9486_make_spi_waveshare_device(_ILI9486_WIDTH, _ILI9486_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV_9486, SPI_MODE);
+    qp_init(ili9486, ILI9486_ROTATION);
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SSD1680_CS_PIN, SSD1680_DC_PIN, SSD1680_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
-    qp_init(ssd1680, SSD1680_ROTATION);
+    // ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
+    // qp_init(ssd1680, SSD1680_ROTATION);
 
     // ----- Fill them black
     // qp_rect(il91874, 0, 0, IL91874_WIDTH, IL91874_HEIGHT, HSV_WHITE, true);
@@ -105,11 +105,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     // qp_drawimage(ili9341, 0, 0, qp_xap_images[2]);
 
-    // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
-    // qp_drawimage(ili9486, 0, 0, qp_xap_images[3]);
-
-    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_BLACK, true);
-    qp_flush(ssd1680);
+    qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    qp_drawimage(ili9486, 0, 0, qp_xap_images[0]);
 
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE

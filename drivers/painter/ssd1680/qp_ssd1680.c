@@ -61,7 +61,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 
     qp_init(driver->black_surface, rotation);
 
-    if (driver->red_surface != NULL) {
+    if (!is_bw) {
         qp_init(driver->red_surface, rotation);
     }
 

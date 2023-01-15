@@ -10,7 +10,7 @@
 // #define CUSTOM_SPI_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
 #define INIT_DELAY 3000
-// #define QUANTUM_PAINTER_DEBUG
+#define QUANTUM_PAINTER_DEBUG
 // #define SIPO_PINS_DEBUG
 // #define TOUCH_SCREEN_DEBUG
 
@@ -28,7 +28,8 @@
 #define SPI_MISO_PIN GP4
 #define SPI_MODE 0
 #define SPI_DIV 0
-#define SPI_DIV_9486 8 //cant handle faster speed
+//cant handle faster speed
+#define SPI_DIV_9486 32
 
 // -- Register's data
 #define SIPO_SPI_DRIVER SPID1
@@ -55,9 +56,9 @@
 #if defined(SIPO_PINS_ENABLE)
 #    define DUMMY_PIN GP1
 #elif defined(QUANTUM_PAINTER_ENABLE)
-#    define SSD1680_CS_PIN GP0
-#    define SSD1680_RST_PIN GP1
-#    define SSD1680_DC_PIN GP5
+#    define TESTS_CS_PIN GP0
+#    define TESTS_RST_PIN GP1
+#    define TESTS_DC_PIN GP5
 // #    error "Hardware design only supports SIPO output to control displays"
 #endif // SIPO_PINS_ENABLE
 

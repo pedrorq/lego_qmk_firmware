@@ -72,7 +72,7 @@ bool qp_eink_panel_flush(painter_device_t device) {
 
     // Set device on can't flush mode and schedule a function to clean the flag after timeout
     driver->can_flush = false;
-    defer_exec(driver->timeout, can_flush_callback, (void *) device);
+    defer_exec(driver->timeout, can_flush_callback, (void *)device);
 
     return true;
 }
