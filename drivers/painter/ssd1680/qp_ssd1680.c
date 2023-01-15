@@ -35,7 +35,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
      * - 3 color code based of: https://github.com/adafruit/Adafruit_CircuitPython_SSD1680/blob/main/adafruit_ssd1680.py
      */
     bool is_bw = (driver->red_surface == NULL);
-    uint8_t update_mode = is_bw ? 0xF8 : 0xF4;
+    uint8_t update_mode = is_bw ? 0xF8 : 0xF4; // 0xCC for partial (?)
 
     // clang-format off
     const uint8_t ssd1680_init_sequence[] = {
@@ -47,6 +47,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         SSD1680_DISPLAY_UPDATE_CONTROL, 0, 2, 0x00, 0x80,
         SSD1680_TEMP_SENSOR,            0, 1, 0x80,
         SSD1680_UPDATE_MODE,            0, 1, update_mode,
+
         // SSD1680_VCOM_VOLTAGE,           0, 1, 0x36,
         // SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
         // SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
