@@ -33,7 +33,7 @@
         sipo_dprintf("< Chain end\n")
 
 // compute the amount of bytes needed
-#define _SIPO_BYTES ((SIPO_PINS+7)/8)
+#define _SIPO_BYTES ((N_SIPO_PINS+7)/8)
 
 extern uint8_t sipo_pin_state[_SIPO_BYTES];
 
@@ -42,7 +42,7 @@ extern uint8_t sipo_pin_state[_SIPO_BYTES];
         setPinOutput(SIPO_CS_PIN);         \
         writePinHigh(SIPO_CS_PIN);         \
         enum { __VA_ARGS__, __SIPO_PINS }; \
-        _Static_assert(__SIPO_PINS <= SIPO_PINS, "Defined more pin names than the amount configured")
+        _Static_assert(__SIPO_PINS <= N_SIPO_PINS, "Defined more pin names than the amount configured")
 
 // control pins
 #define sipo_pin_high(v) set_sipo_pin(v, true)

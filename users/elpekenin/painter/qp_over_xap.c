@@ -4,6 +4,7 @@
 // TODO
 // - Maybe the XAP answer should be success/failure based on the output from QP functions, returning success for now as in "your request has been handled"
 
+#include "graphics.h"
 #include "qp.h"
 #include "xap.h"
 
@@ -26,15 +27,15 @@ uint8_t get_u8(const uint8_t *data, uint8_t *i) {
 }
 
 painter_device_t get_display(const uint8_t *data, uint8_t *i) {
-    return qp_xap_displays[get_u8(data, i)];
+    return qp_displays[get_u8(data, i)];
 }
 
 painter_image_handle_t get_image(const uint8_t *data, uint8_t *i) {
-    return qp_xap_images[get_u8(data, i)];
+    return qp_images[get_u8(data, i)];
 }
 
 painter_font_handle_t get_font(const uint8_t *data, uint8_t *i) {
-    return qp_xap_fonts[get_u8(data, i)];
+    return qp_fonts[get_u8(data, i)];
 }
 
 bool xap_respond_success(xap_token_t token); // Weird stuff to get the function imported

@@ -72,27 +72,27 @@ bool qp_comms_spi_dc_reset_init(painter_device_t device) {
     struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     // Set up D/C as output low, if specified
-#ifndef SIPO_PINS
+#ifndef SIPO_PINS_ENABLE
     if (comms_config->dc_pin != NO_PIN) {
-#endif
+#endif // SIPO_PINS_ENABLE
         qp_setPinOutput(comms_config->dc_pin);
         qp_writePinLow(comms_config->dc_pin);
-#ifndef SIPO_PINS
+#ifndef SIPO_PINS_ENABLE
     }
-#endif
+#endif // SIPO_PINS_ENABLE
 
     // Set up RST as output, if specified, performing a reset in the process
-#ifndef SIPO_PINS
+#ifndef SIPO_PINS_ENABLE
     if (comms_config->reset_pin != NO_PIN) {
-#endif
+#endif // SIPO_PINS_ENABLE
         qp_setPinOutput(comms_config->reset_pin);
         qp_writePinLow(comms_config->reset_pin);
         wait_ms(20);
         qp_writePinHigh(comms_config->reset_pin);
         wait_ms(20);
-#ifndef SIPO_PINS
+#ifndef SIPO_PINS_ENABLE
     }
-#endif
+#endif // SIPO_PINS_ENABLE
 
     return true;
 }
@@ -103,15 +103,15 @@ uint32_t qp_comms_spi_dc_reset_send_data(painter_device_t device, const void *da
 
     qp_writePinHigh(comms_config->dc_pin);
 
-#ifdef SIPO_PINS
+#ifdef SIPO_PINS_ENABLE
     qp_writePinLow(comms_config->spi_config.chip_select_pin);
-#endif
+#endif // SIPO_PINS_ENABLE
 
     uint32_t ret = qp_comms_spi_send_data(device, data, byte_count);
 
-#ifdef SIPO_PINS
+#ifdef SIPO_PINS_ENABLE
     qp_writePinHigh(comms_config->spi_config.chip_select_pin);
-#endif
+#endif // SIPO_PINS_ENABLE
 
     return ret;
 }
@@ -122,15 +122,15 @@ void qp_comms_spi_dc_reset_send_command(painter_device_t device, uint8_t cmd) {
 
     qp_writePinLow(comms_config->dc_pin);
 
-#ifdef SIPO_PINS
+#ifdef SIPO_PINS_ENABLE
     qp_writePinLow(comms_config->spi_config.chip_select_pin);
-#endif
+#endif // SIPO_PINS_ENABLE
 
     qp_spi_write(cmd);
 
-#ifdef SIPO_PINS
+#ifdef SIPO_PINS_ENABLE
     qp_writePinHigh(comms_config->spi_config.chip_select_pin);
-#endif
+#endif // SIPO_PINS_ENABLE
 }
 
 void qp_comms_spi_dc_reset_bulk_command_sequence(painter_device_t device, const uint8_t *sequence, size_t sequence_len) {
@@ -167,8 +167,10 @@ const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
 void qp_comms_spi_dc_reset_single_byte_send_command(painter_device_t device, uint8_t cmd) {
     struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
     struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+
+    qp_writePinLow(comms_config->dc_pin);
     qp_writePinLow(comms_config->spi_config.chip_select_pin);
-    qp_comms_spi_dc_reset_send_command(device, cmd);
+    qp_spi_write(cmd);
     qp_writePinHigh(comms_config->spi_config.chip_select_pin);
 }
 

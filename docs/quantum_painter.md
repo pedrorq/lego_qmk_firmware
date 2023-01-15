@@ -463,7 +463,7 @@ For these displays, QMK’s `spi_master` must already be correctly configured fo
 
 The pin assignments for SPI CS, D/C, and RST are specified during device construction.
 
-?> Each e-Ink device is a wrapper around 1(black-white) or 2(3color) `qp_surface` "displays", thus you will need to adjust `QUANTUM_PAINTER_NUM_DISPLAYS` and `SURFACE_NUM_DEVICES` according to your needs.
+?> Each e-Ink device is a wrapper around 1(black-white) or 2(3color) `qp_surface` "displays", thus you will need to adjust `SURFACE_NUM_DEVICES` according to your needs.
 
 !> Code doesn't support partial refresh (yet).
 

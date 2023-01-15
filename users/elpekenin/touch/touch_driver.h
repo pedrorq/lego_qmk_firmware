@@ -11,7 +11,7 @@
 #    define ts_dprintf(...) do { } while (0)
 #endif
 
-#    ifdef SIPO_PINS
+#    ifdef SIPO_PINS_ENABLE
 #        include "custom_spi_master.h"
 #        include "sipo_pins.h"
 #        define TOUCH_SPI_DRIVER_ID 0

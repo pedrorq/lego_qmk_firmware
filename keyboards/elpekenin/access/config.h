@@ -28,8 +28,6 @@
 #define SPI_MISO_PIN GP4
 #define SPI_MODE 0
 #define SPI_DIV 0
-//cant handle faster speed
-#define SPI_DIV_9486 32
 
 // -- Register's data
 #define SIPO_SPI_DRIVER SPID1
@@ -40,7 +38,7 @@
 #define SIPO_SPI_MODE 0
 #define SIPO_SPI_DIV  0
 
-#define SIPO_PINS 9
+#define N_SIPO_PINS 9
 
 // -- Displays
 #define IL91874_ROTATION 0

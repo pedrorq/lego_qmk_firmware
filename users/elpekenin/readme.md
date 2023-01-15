@@ -3,7 +3,7 @@
 **Examples for all if these features can be found at `keyboards/elpekenin/access`**
 
 ## One Hand Mode
-**WIP**
+### **WIP**
 The goal for this feature is to add a new *RGB Matrix* animation which only lights a single LED, used as a "marker" so that you can then virtually press the selected key. This will allow for accessibility, because the direction in which the LED moves and the trigger of the press is completely customizable (code does just the bare minimum), thus you can change which events trigger moving around and pressing, eg using different pointing devices, or a set of keys(arrows).
 
 Config:
@@ -15,18 +15,19 @@ XAP bindings that expose Quantum Painter's drawing and `get_geometry` functions.
 Config:
  - Will automatically get added if you have both XAP and Quantum Painter enabled
  - You can disable it when both features are enabled by adding `QP_XAP = no`
- - Selecting a display, font or image relies on adding small changes to Quantum Painters code, such that each handle gets stored into an array we can index it from.
+ - Selecting a display, font or image relies on doing `load_display(device_handle)` for every screen, load and fonts are added to an array when loaded in `graphics.c`
 
-If you want some QGF images, I have a collection of converted Material Design Icons (and scripts to generate them from folders of images) in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
+If you want some QGF images, I have a collection of converted Material Design Icons (and scripts to generate them from folders) in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
 
 ## Touch screen driver
+### Needs to be re-written for SIPO control, but "regular" mode has been tested already
 Custom code to interact with my XPT2046-based touchscreen modules, the code is designed such that other SPI sensors should be somewhat easy to integrate. In a similar philosophy to the one-hand mode, this code does the bare minimum: **read the sensor**, what to do based on it... up to your imagination.
 
 Config:
  - Add `TOUCH_SCREEN = yes` to your **rules.mk**
 
 ## Shift register "pins"
-**Seems to work OK-ish, more testing needed**
+### **Seems to work OK, more testing needed**
 A set of macros and functions that allow using a SerialIn-ParallelOut(SIPO) shift register to control several signals, or even chain several together, so that you can generate *virtually* infinite output signals using 3 GPIOs on the MCU.
  - SCK
  - MOSI
@@ -39,7 +40,7 @@ Code so far expects the screens to use the "tradicional" names, like `SPI_SCK_PI
 
 How to use:
  - Add `SIPO_PINS = yes` to your **rules.mk**
- - Configure the amount of pins you'll use `#define SIPO_PINS <N_Pins>`
+ - Configure the amount of pins you'll use `#define N_SIPO_PINS <N_Pins>`
  - Create your pin(s) name(s) using: `configure_sipo_pins(NAME1, NAME2, ...)`
  - Change a pin's state by doing:
    - Manually set state: `set_sipo_pin(<pin_name>, true)` or `set_sipo_pin(<pin_name>, false)`

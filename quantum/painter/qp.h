@@ -11,10 +11,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter global configurables (add to your keyboard's config.h)
 
-#ifndef QUANTUM_PAINTER_NUM_DISPLAYS
-#    define QUANTUM_PAINTER_NUM_DISPLAYS 1
-#endif
-
 #ifndef QUANTUM_PAINTER_NUM_IMAGES
 /**
  * @def This controls the maximum number of images that Quantum Painter can load at any one time. Images can be loaded
@@ -432,14 +428,6 @@ int16_t qp_drawtext(painter_device_t device, uint16_t x, uint16_t y, painter_fon
  * @return the width (in pixels) used when drawing the specified string
  */
 int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, painter_font_handle_t font, const char *str, uint8_t hue_fg, uint8_t sat_fg, uint8_t val_fg, uint8_t hue_bg, uint8_t sat_bg, uint8_t val_bg);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Export arrays to be used by XAP
-#if defined(QP_XAP_ENABLE)
-painter_device_t qp_xap_displays[QUANTUM_PAINTER_NUM_DISPLAYS];
-painter_image_handle_t qp_xap_images[QUANTUM_PAINTER_NUM_IMAGES];
-painter_font_handle_t qp_xap_fonts[QUANTUM_PAINTER_NUM_FONTS];
-#endif // QP_XAP_ENABLE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter Drivers

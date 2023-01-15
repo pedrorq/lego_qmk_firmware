@@ -26,21 +26,7 @@ static bool validate_driver_integrity(struct painter_driver_t *driver) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter External API: qp_init
 
-#if defined(QP_XAP_ENABLE)
-painter_device_t qp_xap_displays[QUANTUM_PAINTER_NUM_DISPLAYS] = {};
-#endif // QP_XAP_ENABLE
-
 bool qp_init(painter_device_t device, painter_rotation_t rotation) {
-#if defined(QP_XAP_ENABLE)
-    static uint8_t i = 0;
-    if (i < QUANTUM_PAINTER_NUM_DISPLAYS) {
-        qp_xap_displays[i] = device;
-        i++;
-    } else {
-        qp_dprintf("Couldn't load display into XAP array as it is already full, you might want to increase QUANTUM_PAINTER_NUM_DISPLAYS\n");
-    }
-#endif // QP_XAP_ENABLE
-
     qp_dprintf("qp_init: entry\n");
     struct painter_driver_t *driver = (struct painter_driver_t *)device;
 
