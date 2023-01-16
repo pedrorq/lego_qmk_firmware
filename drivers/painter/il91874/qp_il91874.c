@@ -79,8 +79,8 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = qp_eink_panel_viewport,
-            .palette_convert = qp_eink_panel_palette_convert_eink3,
-            .append_pixels   = qp_eink_panel_append_pixels_eink3,
+            .palette_convert = qp_eink_panel_palette_convert_eink,
+            .append_pixels   = qp_eink_panel_append_pixels_eink,
         },
     .num_window_bytes   = 2,
     .swap_window_coords = false,
@@ -122,6 +122,10 @@ painter_device_t qp_il91874_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             driver->red_surface   = NULL;
 
+            driver->has_3color  = false;
+            driver->has_ram     = false;
+            driver->has_partial = false;
+
             driver->timeout   = 3 * 60 * 1000; // 3 minutes as suggested by Adafruit
             driver->can_flush = true;
 
@@ -147,6 +151,7 @@ painter_device_t qp_il91874_3c_make_spi_device(uint16_t panel_width, uint16_t pa
     painter_device_t device = qp_il91874_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr);
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+        driver->has_3color  = true;
         driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+EINK_BW_BYTES_REQD(panel_width, panel_height));
     }
     return device;

@@ -8,6 +8,8 @@
 #    include "qp_comms_spi.h"
 #endif // QUANTUM_PAINTER_SPI_ENABLE
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helpers to create buffers with the apropiate size
 #define EINK_BW_BYTES_REQD(w, h) (SURFACE_REQUIRED_BUFFER_BYTE_SIZE(w, h, 1))
 #define EINK_3C_BYTES_REQD(w, h) (2 * EINK_BW_BYTES_REQD(w, h))
 
@@ -42,11 +44,31 @@ typedef struct eink_panel_dc_reset_painter_device_t {
     painter_device_t black_surface;
     painter_device_t red_surface;
 
-    uint32_t timeout; // time to wait between flushes to avoid damaging the screen, in ms
+    /** Information about the display
+     *
+     * TODO: not implemented yet
+     * has_partial: whether the display supports partial refresing -- this driver wouldn't make much sense for them
+     *
+     * TODO: not implemented yet
+     * has_ram: whether it has a built-in RAM in which to store the buffer, instead of using the MCU's -- this driver wouldn't make much sense for them
+     *
+     * has_3color: whether it's black/white or black/white/red
+     */
+    bool     has_partial;
+    bool     has_ram;
+    bool     has_3color;
+
+    // have to wait between flushes to avoid damaging the screen, time in ms
+    uint32_t timeout;
     bool     can_flush;
 
-    bool     invert_black; // by default, 1=black, 0=white
-    bool     invert_red;   // by default, 1=red,   0=black/white
+    /** Information about the pixel format used, default values (non-inverted, aka false) are
+     *
+     * Black bit: 0 for white / 1 for black
+     * Red bit: 0 for white or black / 1 for red
+     */
+    bool     invert_black;
+    bool     invert_red;
 
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
@@ -67,6 +89,6 @@ bool qp_eink_panel_flush(painter_device_t device);
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom);
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count);
 
-bool qp_eink_panel_palette_convert_eink3(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
+bool qp_eink_panel_palette_convert_eink(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
 
-bool qp_eink_panel_append_pixels_eink3(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices);
+bool qp_eink_panel_append_pixels_eink(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices);

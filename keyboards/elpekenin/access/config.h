@@ -37,7 +37,6 @@
 #define SIPO_CS_PIN GP13
 #define SIPO_SPI_MODE 0
 #define SIPO_SPI_DIV  0
-
 #define N_SIPO_PINS 9
 
 // -- Displays
