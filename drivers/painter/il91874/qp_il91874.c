@@ -59,9 +59,17 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     qp_init(driver->black_surface, rotation);
+    qp_init(driver->red_surface, rotation);
 
-    if (driver->has_3color) {
-        qp_init(driver->red_surface, rotation);
+    // memset according to invert flags
+    if (driver->invert_black) {
+        struct surface_painter_device_t *black = (struct surface_painter_device_t *)driver->black_surface;
+        memset(black->buffer, 1, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
+    }
+
+    if (driver->invert_red) {
+        struct surface_painter_device_t *red = (struct surface_painter_device_t *)driver->red_surface;
+        memset(red->buffer, 1, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
     }
 
     return true;
