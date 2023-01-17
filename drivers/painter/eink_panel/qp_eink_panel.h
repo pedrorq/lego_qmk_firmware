@@ -54,9 +54,9 @@ typedef struct eink_panel_dc_reset_painter_device_t {
      *
      * has_3color: whether it's black/white or black/white/red
      */
-    bool     has_partial;
-    bool     has_ram;
-    bool     has_3color;
+    bool has_partial;
+    bool has_ram;
+    bool has_3color;
 
     // have to wait between flushes to avoid damaging the screen, time in ms
     uint32_t timeout;
@@ -67,8 +67,8 @@ typedef struct eink_panel_dc_reset_painter_device_t {
      * Black bit: 0 for white / 1 for black
      * Red bit: 0 for white or black / 1 for red
      */
-    bool     invert_black;
-    bool     invert_red;
+    bool invert_black;
+    bool invert_red;
 
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
@@ -89,6 +89,7 @@ bool qp_eink_panel_flush(painter_device_t device);
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom);
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count);
 
-bool qp_eink_panel_palette_convert_eink(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
+bool qp_eink_panel_palette_convert_eink_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
+bool qp_eink_panel_palette_convert_eink_3c(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
 
 bool qp_eink_panel_append_pixels_eink(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices);

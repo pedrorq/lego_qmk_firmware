@@ -6,10 +6,6 @@
 #include QMK_KEYBOARD_H
 #include "qp.h"
 
-#if !defined(QP_XAP_ENABLE)
-#    error "Graphics code expects QP over XAP to be enabled, adapt code or dont import this file"
-#endif // QP_XAP_ENABLE
-
 #if !defined(QUANTUM_PAINTER_NUM_DISPLAYS)
 #    define QUANTUM_PAINTER_NUM_DISPLAYS 1
 #endif // QUANTUM_PAINTER_NUM_DISPLAYS

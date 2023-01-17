@@ -60,7 +60,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
 
     qp_init(driver->black_surface, rotation);
 
-    if (driver->red_surface != NULL) {
+    if (driver->has_3color) {
         qp_init(driver->red_surface, rotation);
     }
 
@@ -70,7 +70,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
 
-const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable = {
+const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_bw_driver_vtable = {
     .base =
         {
             .init            = qp_il91874_init,
@@ -79,18 +79,42 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = qp_eink_panel_viewport,
-            .palette_convert = qp_eink_panel_palette_convert_eink,
+            .palette_convert = qp_eink_panel_palette_convert_eink_bw,
             .append_pixels   = qp_eink_panel_append_pixels_eink,
         },
     .num_window_bytes   = 2,
     .swap_window_coords = false,
     .opcodes =
         {
-            .display_on  = IL91874_POWER_ON,
-            .display_off = IL91874_POWER_OFF,
+            .display_on      = IL91874_POWER_ON,
+            .display_off     = IL91874_POWER_OFF,
             .send_black_data = IL91874_SEND_BLACK,
-            .send_red_data = IL91874_SEND_RED,
-            .refresh = IL91874_DISPLAY_REFRESH,
+            .send_red_data   = IL91874_SEND_RED,
+            .refresh         = IL91874_DISPLAY_REFRESH,
+        }
+};
+
+const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_3c_driver_vtable = {
+    .base =
+        {
+            .init            = qp_il91874_init,
+            .power           = qp_eink_panel_power,
+            .clear           = qp_eink_panel_clear,
+            .flush           = qp_eink_panel_flush,
+            .pixdata         = qp_eink_panel_pixdata,
+            .viewport        = qp_eink_panel_viewport,
+            .palette_convert = qp_eink_panel_palette_convert_eink_3c,
+            .append_pixels   = qp_eink_panel_append_pixels_eink,
+        },
+    .num_window_bytes   = 2,
+    .swap_window_coords = false,
+    .opcodes =
+        {
+            .display_on      = IL91874_POWER_ON,
+            .display_off     = IL91874_POWER_OFF,
+            .send_black_data = IL91874_SEND_BLACK,
+            .send_red_data   = IL91874_SEND_RED,
+            .refresh         = IL91874_DISPLAY_REFRESH,
         }
 };
 
@@ -104,8 +128,8 @@ painter_device_t qp_il91874_bw_make_spi_device(uint16_t panel_width, uint16_t pa
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
-            driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&il91874_driver_vtable;
-            driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
+            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&il91874_bw_driver_vtable;
+            driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
             /*
              * FIXME: May need an adjustment as each bit is really stored in 2 bits for 3-color displays
              *
@@ -120,7 +144,7 @@ painter_device_t qp_il91874_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            driver->red_surface   = NULL;
+            driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
 
             driver->has_3color  = false;
             driver->has_ram     = false;
@@ -151,8 +175,8 @@ painter_device_t qp_il91874_3c_make_spi_device(uint16_t panel_width, uint16_t pa
     painter_device_t device = qp_il91874_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr);
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
-        driver->has_3color  = true;
-        driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr+EINK_BW_BYTES_REQD(panel_width, panel_height));
+        driver->base.driver_vtable                   = (const struct painter_driver_vtable_t *)&il91874_3c_driver_vtable;
+        driver->has_3color                           = true;
     }
     return device;
 }
