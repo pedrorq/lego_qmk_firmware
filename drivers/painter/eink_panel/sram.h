@@ -3,5 +3,5 @@
 
 void sram_init(painter_device_t device);
 
-bool sram_flush(painter_device_t device);
+void sram_flush(painter_device_t device);
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count);

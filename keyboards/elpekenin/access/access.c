@@ -21,7 +21,7 @@ painter_device_t ili9341;
 painter_device_t ili9486;
 painter_device_t ssd1680;
 uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)];
-uint8_t ssd1680_buffer[EINK_BW_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(ONE_HAND_ENABLE)
@@ -79,9 +79,9 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_3c_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer);
-    // load_display(il91874);
-    // qp_init(il91874, IL91874_ROTATION);
+    il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer, false, TESTS_RAM_CS_PIN);
+    load_display(il91874);
+    qp_init(il91874, IL91874_ROTATION);
 
     // ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SCREEN_SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
     // load_display(ili9163);
@@ -95,24 +95,29 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // load_display(ili9486);
     // qp_init(ili9486, ILI9486_ROTATION);
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
-    load_display(ssd1680);
-    qp_init(ssd1680, SSD1680_ROTATION);
+    // ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer);
+    // load_display(ssd1680);
+    // qp_init(ssd1680, SSD1680_ROTATION);
+
 
     // ----- Fill them black
-    // qp_rect(il91874, 0, 0, IL91874_WIDTH, IL91874_HEIGHT, HSV_WHITE, true);
-    // qp_drawimage(il91874, 0, 0, qp_images[0]);
-    // qp_flush(il91874);
-
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
     // qp_drawimage(ili9163, 0, 0, qp_images[1]);
 
     // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
     // qp_drawimage(ili9341, 0, 0, qp_images[2]);
 
-    qp_rect(ssd1680, 0, 0, SSD1680_HEIGHT, SSD1680_WIDTH, HSV_BLACK, true);
-    qp_drawimage(ssd1680, 0, 0, qp_images[2]);
-    qp_flush(ssd1680);
+    // qp_rect(il91874, 0, 0, IL91874_HEIGHT, IL91874_WIDTH, HSV_WHITE, true);
+    // qp_drawimage(il91874, 0, 0, qp_images[0]);
+    // qp_flush(il91874);
+
+    qp_rect(il91874, 0, 0, IL91874_WIDTH, IL91874_HEIGHT, HSV_RED, true);
+    qp_drawimage(il91874, 30, 40, qp_images[0]);
+    qp_flush(il91874);
+
+    // qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
+    // qp_rect(ssd1680, 0, 0, 5, 6, HSV_WHITE, true);
+    // qp_flush(ssd1680);
 
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE

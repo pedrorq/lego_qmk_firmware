@@ -18,7 +18,7 @@
         "extrakey": true,
         "nkro": false,
         "quantum_painter": true,
-        "rgb_matrix": true,
+        "rgb_matrix": false,
         "unicode": false,
         "usbpd": false,
         "wpm": false

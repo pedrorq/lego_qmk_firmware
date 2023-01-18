@@ -56,6 +56,7 @@
 #    define TESTS_CS_PIN GP0
 #    define TESTS_RST_PIN GP1
 #    define TESTS_DC_PIN GP5
+#    define TESTS_RAM_CS_PIN GP6
 // #    error "Hardware design only supports SIPO output to control displays"
 #endif // SIPO_PINS_ENABLE
 

@@ -66,10 +66,11 @@ uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *       driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
-    struct surface_painter_device_t *                   black  = (struct surface_painter_device_t *)driver->black_surface;
-    struct surface_painter_device_t *                   red    = (struct surface_painter_device_t *)driver->red_surface;
+    struct eink_panel_dc_reset_painter_device_t *       driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    struct surface_painter_device_t *                   black   = (struct surface_painter_device_t *)driver->black_surface;
+    struct surface_painter_device_t *                   red     = (struct surface_painter_device_t *)driver->red_surface;
+    uint32_t                                            n_bytes = driver->base.panel_width * driver->base.panel_height * driver->base.native_bits_per_pixel / 8;
 
     if (!(black->is_dirty || red->is_dirty)) {
         qp_dprintf("qp_eink_panel_flush: done (no changes to be sent)\n");
@@ -82,19 +83,17 @@ bool qp_eink_panel_flush(painter_device_t device) {
     }
 
     if (driver->has_ram) {
-        return sram_flush(device);
+        sram_flush(device);
+    } else {
+        qp_comms_command(device, vtable->opcodes.send_black_data);
+        qp_comms_send(device, black->buffer, n_bytes);
+
+        // On B-W displays, we need to send empty red data, or we get noise
+        qp_comms_command(device, vtable->opcodes.send_red_data);
+        qp_comms_send(device, red->buffer, n_bytes);
+
+        qp_comms_command(device, vtable->opcodes.refresh);
     }
-
-    uint32_t n_bytes = driver->base.panel_width * driver->base.panel_height * driver->base.native_bits_per_pixel / 8;
-
-    qp_comms_command(device, vtable->opcodes.send_black_data);
-    qp_comms_send(device, black->buffer, n_bytes);
-
-    // On B-W displays, we need to send empty red data, or we get noise
-    qp_comms_command(device, vtable->opcodes.send_red_data);
-    qp_comms_send(device, red->buffer, n_bytes);
-
-    qp_comms_command(device, vtable->opcodes.refresh);
 
     // Set device on cant flush mode and schedule a function to reset the flag
     driver->can_flush = false;
@@ -109,9 +108,7 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
     qp_viewport(driver->black_surface, left, top, right, bottom);
-    if (driver->has_3color) {
-        qp_viewport(driver->red_surface, left, top, right, bottom);
-    }
+    qp_viewport(driver->red_surface, left, top, right, bottom);
 
     return true;
 }
@@ -144,15 +141,13 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Convert supplied palette entries into their native equivalents
-void qp_eink_panel_palette_convert_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
+bool qp_eink_panel_palette_convert_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
     for (int16_t i = 0; i < palette_size; ++i) {
-        HSV     hsv         = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
-        uint8_t output      = (hsv.v > 127) ? 0 : 1;
-        uint8_t invert_mask = (driver->invert_black << 0);
-
-        palette[i].mono = output ^ invert_mask;
+        HSV     hsv     = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
+        uint8_t output  = (hsv.v > 127) ? 0 : 1;
+        palette[i].mono = output ^ driver->invert_black;
     }
 
     return true;
@@ -183,7 +178,7 @@ bool qp_eink_panel_palette_convert_3c(painter_device_t device, int16_t palette_s
             red = true;
 
         uint8_t output      = (red << 1) | (black << 0);
-        uint8_t invert_mask = (driver->invert_red << 1) | (driver->invert_black << 0);
+        uint8_t invert_mask = (driver->invert_red << 1) | driver->invert_black;
 
         palette[i].mono = output ^ invert_mask;
     }
