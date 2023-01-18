@@ -1,4 +1,4 @@
-// Copyright 2022 Pablo Martinez (@elpekenin)
+// Copyright 2023 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "qp_internal.h"
@@ -79,7 +79,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
 
-const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_bw_driver_vtable = {
+const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
     .base =
         {
             .init            = qp_ssd1680_init,
@@ -88,32 +88,8 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_bw_driver_vtabl
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = qp_eink_panel_viewport,
-            .palette_convert = qp_eink_panel_palette_convert_eink_bw,
-            .append_pixels   = qp_eink_panel_append_pixels_eink,
-        },
-    .num_window_bytes   = 2,
-    .swap_window_coords = false,
-    .opcodes =
-        {
-            .display_on  = SSD1680_NOP, // Couldnt find a turn-on command
-            .display_off = SSD1680_NOP, // There is a cmd to go into sleep mode, but requires HW reset in order to wake up
-            .send_black_data = SSD1680_SEND_BLACK,
-            .send_red_data = SSD1680_SEND_RED,
-            .refresh = SSD1680_DISPLAY_REFRESH,
-        }
-};
-
-const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_3c_driver_vtable = {
-    .base =
-        {
-            .init            = qp_ssd1680_init,
-            .power           = qp_eink_panel_power,
-            .clear           = qp_eink_panel_clear,
-            .flush           = qp_eink_panel_flush,
-            .pixdata         = qp_eink_panel_pixdata,
-            .viewport        = qp_eink_panel_viewport,
-            .palette_convert = qp_eink_panel_palette_convert_eink_3c,
-            .append_pixels   = qp_eink_panel_append_pixels_eink,
+            .palette_convert = qp_eink_panel_palette_convert,
+            .append_pixels   = qp_eink_panel_append_pixels,
         },
     .num_window_bytes   = 2,
     .swap_window_coords = false,
@@ -137,7 +113,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
     for (uint32_t i = 0; i < SSD1680_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &ssd1680_drivers[i];
         if (!driver->base.driver_vtable) {
-            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&ssd1680_bw_driver_vtable;
+            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&ssd1680_driver_vtable;
             driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
             /*
              * FIXME: May need an adjustment as each bit is really stored in 2 bits for 3-color displays
@@ -155,9 +131,8 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
 
-            driver->has_3color  = false;
-            driver->has_ram     = false;
-            driver->has_partial = false;
+            driver->has_3color = false;
+            driver->has_ram    = false;
 
             driver->timeout   = 2 * 60 * 1000; // 2 minutes as seen on WeAct
             driver->can_flush = true;
@@ -184,7 +159,6 @@ painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t pa
     painter_device_t device = qp_ssd1680_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr);
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
-        driver->base.driver_vtable                   = (const struct painter_driver_vtable_t *)&ssd1680_3c_driver_vtable;
         driver->has_3color                           = true;
     }
     return device;

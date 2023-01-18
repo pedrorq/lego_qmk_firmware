@@ -1,4 +1,4 @@
-// Copyright 2022 Pablo Martinez (@elpekenin)
+// Copyright 2023 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
