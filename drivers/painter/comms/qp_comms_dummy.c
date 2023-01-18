@@ -29,6 +29,7 @@ struct painter_comms_vtable_t dummy_comms_vtable = {
     .comms_init  = dummy_comms_init,
     .comms_start = dummy_comms_start,
     .comms_stop  = dummy_comms_stop,
-    .comms_send  = dummy_comms_send};
+    .comms_send  = dummy_comms_send
+};
 
 #endif // QUANTUM_PAINTER_DUMMY_COMMS_ENABLE

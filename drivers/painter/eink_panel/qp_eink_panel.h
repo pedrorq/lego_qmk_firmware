@@ -1,4 +1,4 @@
-// Copyright 2022 Pablo Martinez (@elpekenin)
+// Copyright 2023 Pablo Martinez (@elpekenin)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "color.h"
@@ -27,7 +27,7 @@ struct eink_panel_dc_reset_painter_driver_vtable_t {
     bool swap_window_coords;
 
     // Opcodes for normal display operation
-    // On/Off may not be needed, or even worse not exist on other displays
+    // some may not exist on some displays
     struct {
         uint8_t display_on;
         uint8_t display_off;
@@ -41,34 +41,39 @@ struct eink_panel_dc_reset_painter_driver_vtable_t {
 typedef struct eink_panel_dc_reset_painter_device_t {
     struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
 
-    painter_device_t black_surface;
-    painter_device_t red_surface;
-
-    /** Information about the display
-     *
-     * TODO: not implemented yet
-     * has_partial: whether the display supports partial refresing -- this driver wouldn't make much sense for them
-     *
-     * TODO: not implemented yet
-     * has_ram: whether it has a built-in RAM in which to store the buffer, instead of using the MCU's -- this driver wouldn't make much sense for them
-     *
-     * has_3color: whether it's black/white or black/white/red
-     */
-    bool has_partial;
-    bool has_ram;
+    // Information about display variants, allow functions to branch based on device specs
     bool has_3color;
+    bool has_ram;
 
     // have to wait between flushes to avoid damaging the screen, time in ms
     uint32_t timeout;
     bool     can_flush;
 
-    /** Information about the pixel format used, default values (non-inverted, aka false) are
+    /** Information about the pixel format, default values (non-inverted, aka false) are
      *
      * Black bit: 0 for white / 1 for black
      * Red bit: 0 for white or black / 1 for red
      */
     bool invert_black;
     bool invert_red;
+
+
+    // ---------------------------------------------------------
+    // ----- Variant-specific config, some may not be used -----
+    // ---------------------------------------------------------
+
+    // Virtual screens storing the 2 channels' data in MCU
+    painter_device_t black_surface;
+    painter_device_t red_surface;
+
+    // Config to interact with display's builtin RAM
+    struct {
+        uint8_t write_status;
+        uint8_t read_status;
+        uint8_t write_data;
+        uint8_t read_data;
+    } ram_opcodes;
+    pin_t ram_chip_select_pin;
 
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
@@ -89,7 +94,6 @@ bool qp_eink_panel_flush(painter_device_t device);
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom);
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count);
 
-bool qp_eink_panel_palette_convert_eink_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
-bool qp_eink_panel_palette_convert_eink_3c(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
+bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size, qp_pixel_t *palette);
 
-bool qp_eink_panel_append_pixels_eink(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices);
+bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices);
