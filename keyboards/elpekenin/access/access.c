@@ -77,8 +77,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_no_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer, true);
-    il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer, true, TESTS_RAM_CS_PIN);
+    // il91874 = qp_il91874_no_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, false, (void *)il91874_buffer);
+    il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, true, TESTS_RAM_CS_PIN);
     load_display(il91874);
     qp_init(il91874, IL91874_ROTATION);
 
@@ -105,8 +105,9 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // qp_drawimage(il91874, 0, 0, qp_images[0]);
     // qp_flush(il91874);
 
-    qp_rect(il91874, 0, 0, IL91874_WIDTH, IL91874_HEIGHT, HSV_WHITE, true);
-    qp_drawimage_recolor(il91874, 50, 70, qp_images[0], HSV_BLACK, HSV_RED);
+    qp_rect(il91874,               0, 0, IL91874_WIDTH/2, IL91874_HEIGHT, HSV_BLACK, true);
+    qp_rect(il91874, IL91874_WIDTH/2, 0,   IL91874_WIDTH, IL91874_HEIGHT, HSV_RED, true);
+    qp_drawimage_recolor(il91874, IL91874_WIDTH/2-24, IL91874_HEIGHT/2-24, qp_images[0], HSV_BLACK, HSV_WHITE);
     qp_flush(il91874);
 
     dprint("Quantum painter ready\n");

@@ -40,7 +40,7 @@
 #define N_SIPO_PINS 9
 
 // -- Displays
-#define IL91874_ROTATION 0
+#define IL91874_ROTATION 2
 #define ILI9163_ROTATION 0
 #define ILI9341_ROTATION 2
 #define ILI9486_ROTATION 1
