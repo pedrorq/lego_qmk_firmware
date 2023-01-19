@@ -34,6 +34,9 @@ uint32_t flush_display(uint32_t trigger_time, void *device) {
 painter_device_t ili9163;
 painter_device_t ili9341;
 #endif // INIT_EE_HANDS_LEFT
+//painter_device_t ssd1680;
+//uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)];
+//uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
 
 
 #if defined (TOUCH_SCREEN_ENABLE)
@@ -70,6 +73,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     il91874 = qp_il91874_no_sram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREENS_DC_PIN, IL91874_RST_PIN, SCREENS_SPI_DIV, SCREENS_SPI_MODE, true, (void *)il91874_buffer);
     load_display(il91874);
     qp_init(il91874, IL91874_ROTATION);
+    // ----- Init screens
+    // il91874 = qp_il91874_no_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer, true);
+ //   il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)il91874_buffer, true, TESTS_RAM_CS_PIN);
+ //   load_display(il91874);
+ //   qp_init(il91874, IL91874_ROTATION);
 
     // draw on it after timeout, preventing damage if replug fast
     eink_panel_dc_reset_with_sram_painter_device_t *eink = (eink_panel_dc_reset_with_sram_painter_device_t *)il91874;
@@ -116,6 +124,24 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #endif
     dprint("Quantum painter devices initialised\n");
 
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer,false);
+    load_display(ssd1680);
+    qp_init(ssd1680, SSD1680_ROTATION);
+
+    // ----- Fill them black
+    // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
+
+    // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
+
+    // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    // qp_drawimage(ili9486, 0, 0, qp_images[2]);
+
+    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_BLACK, true);
+ //   qp_drawimage_recolor(ssd1680, 50, 70, qp_images[0], HSV_BLACK, HSV_RED);
+    qp_flush(ssd1680);
+
+    dprint("Quantum painter ready\n");
+#endif // QUANTUM_PAINTER_ENABLE
 
 #if defined (TOUCH_SCREEN_ENABLE)
 #    error "touch screen code isn't adjusted for SIPO yet"

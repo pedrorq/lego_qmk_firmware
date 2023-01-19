@@ -34,7 +34,7 @@
  * @param ptr[in] the array in which pixel data is stored
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr);
+painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr, bool has_color);
 
 /**
  * Factory method for an SSD1680 SPI eInk device.
