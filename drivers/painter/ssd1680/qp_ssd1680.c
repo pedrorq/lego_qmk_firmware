@@ -40,7 +40,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                 Delay, N, Data[N]
         SSD1680_SOFT_RESET,           120, 0,
-        SSD1680_RESOLUTION,             0, 3, width_lsb, width_msb, 0x00,
+        SSD1680_RESOLUTION,             0, 3, 0x27, 0x01, 0x00,
         SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
         SSD1680_BORDER_CONTROL,         0, 1, 0x05,
         SSD1680_DISPLAY_UPDATE_CONTROL, 0, 2, 0x00, 0x80,
@@ -49,10 +49,11 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
         SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
         SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
-        SSD1680_RAM_X_SIZE,             0, 2, 0x00, height,
+        SSD1680_RAM_X_SIZE,             0, 2, 0x00, 0x10,
         SSD1680_RAM_X_COUNTER,          0, 1, 0x01,
-        SSD1680_RAM_Y_SIZE,             0, 4, width_lsb, width_msb, 0x00, 0x00,
-        SSD1680_RAM_Y_COUNTER,          0, 2, width_lsb, width_msb,
+        SSD1680_RAM_Y_SIZE,             0, 4, 0x0, 0x0, 0xfa, 0x00,
+        SSD1680_RAM_Y_COUNTER,          0, 2, 0x0, 0x0,
+        SSD1680_DISPLAY_REFRESH,        200,0,
         SSD1680_UPDATE_MODE,            0, 2, update_mode,0x20
 
     };
@@ -61,7 +62,9 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
-    return driver->base.driver_vtable->clear(driver);
+  bool ret  = driver->base.driver_vtable->clear(driver);
+    dprintf("0x%x 0x%x 0x%x 0x%x\n ",update_mode, width_lsb,width_msb, height);
+return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
