@@ -73,23 +73,23 @@ static inline void increment_pixdata_location_270(surface_painter_device_t *surf
 
 static inline void increment_pixdata_location(surface_painter_device_t *surface) {
     // split into several functions so it is easier to fix/debug them
-    switch (surface->base.rotation) {
-        case QP_ROTATION_0:
+    // switch (surface->base.rotation) {
+    //     case QP_ROTATION_0:
             increment_pixdata_location_0(surface);
-            break;
+            // break;
 
-        case QP_ROTATION_90:
-            increment_pixdata_location_90(surface);
-            break;
+    //     case QP_ROTATION_90:
+    //         increment_pixdata_location_90(surface);
+    //         break;
 
-        case QP_ROTATION_180:
-            increment_pixdata_location_180(surface);
-            break;
+    //     case QP_ROTATION_180:
+    //         increment_pixdata_location_180(surface);
+    //         break;
 
-        case QP_ROTATION_270:
-            increment_pixdata_location_270(surface);
-            break;
-    }
+    //     case QP_ROTATION_270:
+    //         increment_pixdata_location_270(surface);
+    //         break;
+    // }
 }
 
 static void update_dirty(surface_painter_device_t *surface, uint16_t x, uint16_t y) {

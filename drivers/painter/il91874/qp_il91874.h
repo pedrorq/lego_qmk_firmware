@@ -35,7 +35,7 @@
  * @param has_3color[in] whether display supports red pixels
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_il91874_no_ram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr, bool has_3color);
+painter_device_t qp_il91874_no_ram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, void *ptr);
 
 /**
  * Factory method for an IL91874 SPI eInk device.
@@ -47,10 +47,9 @@ painter_device_t qp_il91874_no_ram_make_spi_device(uint16_t panel_width, uint16_
  * @param reset_pin[in] the GPIO pin used for RST
  * @param spi_divisor[in] the SPI divisor to use when communicating with the display
  * @param spi_mode[in] the SPI mode to use when communicating with the display
- * @param ptr[in] the array in which pixel data is stored - TODO: remove
  * @param has_3color[in] whether display supports red pixels
  * @param ram_chip_select_pin[in] the GPIO used for SRAM's chip select
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_il91874_with_ram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr, bool has_3color, pin_t ram_chip_select_pin);
+painter_device_t qp_il91874_with_ram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, pin_t ram_chip_select_pin);
 #endif // QUANTUM_PAINTER_IL91874_SPI_ENABLE
