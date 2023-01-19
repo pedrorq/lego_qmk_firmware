@@ -35,7 +35,6 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 bool qp_eink_panel_clear(painter_device_t device) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
-    struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
 
     qp_init(driver->black_surface, driver->base.rotation);
     if (driver->invert_black) {
@@ -43,12 +42,13 @@ bool qp_eink_panel_clear(painter_device_t device) {
     }
 
     if (driver->has_3color) {
+        struct surface_painter_device_t * red = (struct surface_painter_device_t *)driver->red_surface;
         qp_init(driver->red_surface, driver->base.rotation);
         if (driver->invert_red) {
             memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
         }
     }
-    
+
     return true;
 }
 
