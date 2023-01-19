@@ -71,7 +71,7 @@ void sram_spi_stop(painter_device_t device) {
 
 void sram_init(painter_device_t device) {
     struct eink_panel_dc_reset_painter_device_t *driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    uint8_t                                      array[] = {driver->ram_opcodes.write_status, driver->ram_opcodes.sequential >> 8, driver->ram_opcodes.sequential & 0xFF};
+    uint8_t                                      array[] = {driver->ram_opcodes.write_status, driver->ram_opcodes.sequential};
 
     // Start SPI
     if (!sram_spi_start(device)) {
@@ -101,14 +101,14 @@ void sram_to_display(painter_device_t device, bool black) {
     uint16_t                                            address      = black ? 0 : n_bytes;
     uint8_t                                             cmd          = black ? vtable->opcodes.send_black_data : vtable->opcodes.send_red_data;
 
-    // Select SRAM and read mode
+    // Select SRAM and put in read mode
     writePinLow(driver->ram_chip_select_pin);
     uint8_t array[] = {driver->ram_opcodes.read_data, address >> 8, address & 0xFF};
     spi_transmit(array, ARRAY_SIZE(array));
 
     // Sending command to display triggers SRAM to send 1st byte over MISO
-    writePinLow(comms_config->spi_config.chip_select_pin);
     writePinLow(comms_config->dc_pin);
+    writePinLow(comms_config->spi_config.chip_select_pin);
     uint8_t byte = spi_write(cmd);
     writePinHigh(comms_config->spi_config.chip_select_pin);
 
@@ -116,11 +116,17 @@ void sram_to_display(painter_device_t device, bool black) {
     writePinHigh(comms_config->dc_pin);
     for (uint32_t i=0; i < n_bytes; ++i) {
         writePinLow(comms_config->spi_config.chip_select_pin);
+
         // red data for a display without 3 color support, empty
         if (!black && !driver->has_3color)
             spi_write(driver->invert_red ? 0xFF : 0x00);
+
+        // SRAM is on sequential mode, thus each time we send a byte
+        // to the display, as SRAM's CS is also pulled low, it
+        // will send us the next byte over MISO
         else
             byte = spi_write(byte);
+
         writePinHigh(comms_config->spi_config.chip_select_pin);
     }
     writePinHigh(driver->ram_chip_select_pin);
@@ -152,88 +158,63 @@ static inline uint32_t get_pixel(surface_painter_device_t *surface) {
 }
 
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct eink_panel_dc_reset_painter_device_t *driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct surface_painter_device_t *            black   = (struct surface_painter_device_t *)driver->black_surface;
-    uint8_t *                                    pixels  = (uint8_t *)pixel_data;
+    struct eink_panel_dc_reset_painter_device_t *driver     = (struct eink_panel_dc_reset_painter_device_t *)device;
+    struct surface_painter_device_t *            black      = (struct surface_painter_device_t *)driver->black_surface;
+    uint32_t                                     red_offset = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    uint8_t *                                    pixels     = (uint8_t *)pixel_data;
 
-    // offset between black and red data
-    uint32_t red_offset = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    // mini-buffers to send pixel data
+    uint8_t black_data;
+    uint8_t red_data;
 
-    // mini-buffers to avoid sending data in 1-byte transactions
-    uint8_t black_data[32];
-    uint8_t red_data[32];
-
-    // both displays get drawn at the same position, getting the address on one of them is enough
-    uint32_t pixel   = get_pixel(black);
-    uint16_t byte    = pixel / 8;
-    uint8_t  bit     = pixel % 8;
-    uint16_t address = byte;
+    // both displays will get drawn at the same position
+    // set/get-ting the address on one of them is enough
+    uint32_t pixel     = get_pixel(black);
+    uint16_t byte      = pixel / 8;
+    uint16_t last_byte = UINT16_MAX;
+    uint8_t  bit       = pixel % 8;
 
     if (!sram_spi_start(device)) {
         qp_dprintf("sram_pixdata: fail\n");
         return false;
     }
 
-    // if we start in the middle of a byte, read its content to only modify the bits we want
-    if (bit != 0) {
-        black_data[0] = sram_read_byte(device, address);
-
-        if (driver->has_3color) {
-            red_data[0] = sram_read_byte(device, address + red_offset);
-        }
-    }
-
     for (uint32_t i = 0; i < native_pixel_count; ++i) {
-        uint8_t index = byte - address;
+        // if we move to another byte, read its content to only modify the bits we want
+        if (byte != last_byte) {
+            black_data = sram_read_byte(device, byte);
+
+            if (driver->has_3color) {
+                red_data = sram_read_byte(device, red_offset + byte);
+            }
+
+            last_byte = byte;
+        }
 
         // add pixel info to buffer(s)
-        bool black_bit = (pixels[i] >> 0) & 1;
-        if (black_bit)
-            black_data[index] |=  (1 << bit);
+        if (pixels[i] & 1)
+            black_data |=  (1 << (7-bit));
         else
-            black_data[index] &= ~(1 << bit);
+            black_data &= ~(1 << (7-bit));
 
         if (driver->has_3color) {
-            bool red_bit = (pixels[i] >> 1) & 1;
-            if (red_bit)
-                red_data[index] |=  (1 << bit);
+            if (pixels[i] & 2)
+                red_data |=  (1 << (7-bit));
             else
-                red_data[index] &= ~(1 << bit);
+                red_data &= ~(1 << (7-bit));
         }
-
 
         // update position with dummy value, used to compute address
         black->base.driver_vtable->pixdata(black, (const void *)0, 1);
         pixel = get_pixel(black);
-
-        // check if current pixel not on same nor next byte as previous one and there's info to send
-        // code assumes always-increasing pixel position
-        if ((pixel / 8  >  byte + 1) && (pixel - address*8  !=  0)) {
-            sram_write(device, address, black_data, index);
-            if (driver->has_3color)
-                sram_write(device, address + red_offset, red_data, index);
-
-            // reset counters
-            pixel   = get_pixel(black);
-            byte    = pixel / 8;
-            address = byte;
-        }
-        // updated after pixel so we can check byte continuity
         byte  = pixel / 8;
-        index = byte - address;
+        bit   = pixel % 8;
 
-        // check if we filled the buffers
-        if (index == ARRAY_SIZE(black_data) - 1) {
-            sram_write(device, address, black_data, index);
+        // next pixel will be on another byte, send this byte
+        if (byte != last_byte) {
+            sram_write(device, byte, &black_data, 1);
             if (driver->has_3color)
-                sram_write(device, address + red_offset, red_data, index);
-
-            // reset counters
-            pixel   = get_pixel(black);
-            byte    = pixel / 8;
-            bit     = pixel % 8;
-            address = byte;
-            index   = 0;
+                sram_write(device, red_offset + byte, &red_data, 1);
         }
     }
 

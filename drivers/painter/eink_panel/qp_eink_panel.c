@@ -70,7 +70,7 @@ bool qp_eink_panel_flush(painter_device_t device) {
     struct eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
     struct surface_painter_device_t *                   black   = (struct surface_painter_device_t *)driver->black_surface;
     struct surface_painter_device_t *                   red     = (struct surface_painter_device_t *)driver->red_surface;
-    uint32_t                                            n_bytes = driver->base.panel_width * driver->base.panel_height * driver->base.native_bits_per_pixel / 8;
+    uint32_t                                            n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
 
     if (!(black->is_dirty || red->is_dirty)) {
         qp_dprintf("qp_eink_panel_flush: done (no changes to be sent)\n");

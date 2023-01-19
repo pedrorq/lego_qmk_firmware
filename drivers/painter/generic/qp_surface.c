@@ -14,11 +14,11 @@ surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES] = {0};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 
-static inline void increment_pixdata_location(surface_painter_device_t *surface) {
+static inline void increment_pixdata_location_0(surface_painter_device_t *surface) {
     // Increment the X-position
     surface->pixdata_x++;
 
-    // If the x-coord has gone past the right-side edge, loop it back around and increment the y-coord
+    // If the x-coord has gone past the right, loop it back and increment the y-coord
     if (surface->pixdata_x > surface->viewport_r) {
         surface->pixdata_x = surface->viewport_l;
         surface->pixdata_y++;
@@ -27,6 +27,68 @@ static inline void increment_pixdata_location(surface_painter_device_t *surface)
     // If the y-coord has gone past the bottom, loop it back to the top
     if (surface->pixdata_y > surface->viewport_b) {
         surface->pixdata_y = surface->viewport_t;
+    }
+}
+
+static inline void increment_pixdata_location_90(surface_painter_device_t *surface) {
+    if (surface->pixdata_y > 0)
+        surface->pixdata_y--;
+    else
+        surface->pixdata_y = surface->viewport_r;
+
+    if (surface->pixdata_y < surface->viewport_l) {
+        surface->pixdata_y = surface->viewport_r;
+        surface->pixdata_x++;
+    }
+    if (surface->pixdata_x > surface->viewport_b) {
+        surface->pixdata_x = surface->viewport_t;
+    }
+}
+
+static inline void increment_pixdata_location_180(surface_painter_device_t *surface) {
+    if (surface->pixdata_x > 0)
+        surface->pixdata_x--;
+    else
+        surface->pixdata_x = surface->viewport_r;
+
+    if (surface->pixdata_x < surface->viewport_l) {
+        surface->pixdata_x = surface->viewport_r;
+        surface->pixdata_y--;
+    }
+    if (surface->pixdata_y < surface->viewport_b) {
+        surface->pixdata_y = surface->viewport_t;
+    }
+}
+
+static inline void increment_pixdata_location_270(surface_painter_device_t *surface) {
+    surface->pixdata_y++;
+    if (surface->pixdata_y > surface->viewport_r) {
+        surface->pixdata_y = surface->viewport_l;
+        surface->pixdata_x--;
+    }
+    if (surface->pixdata_x < surface->viewport_b) {
+        surface->pixdata_x = surface->viewport_t;
+    }
+}
+
+static inline void increment_pixdata_location(surface_painter_device_t *surface) {
+    // split into several functions so it is easier to fix/debug them
+    switch (surface->base.rotation) {
+        case QP_ROTATION_0:
+            increment_pixdata_location_0(surface);
+            break;
+
+        case QP_ROTATION_90:
+            increment_pixdata_location_90(surface);
+            break;
+
+        case QP_ROTATION_180:
+            increment_pixdata_location_180(surface);
+            break;
+
+        case QP_ROTATION_270:
+            increment_pixdata_location_270(surface);
+            break;
     }
 }
 
@@ -246,6 +308,38 @@ const struct painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Driver vtable: 0bpp -- doesnt store data, just pixel location
+
+// Streaming a pixel just increments the pixdata location
+static bool qp_surface_pixdata_0bpp(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
+    struct painter_driver_t  *driver  = (struct painter_driver_t *)device;
+    surface_painter_device_t *surface = (surface_painter_device_t *)driver;
+    increment_pixdata_location(surface);
+    return true;
+}
+
+static bool qp_surface_palette_convert_0bpp(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
+    // No-op.
+    return true;
+}
+
+static bool qp_surface_append_pixels_0bpp(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
+    // No-op.
+    return true;
+}
+
+const struct painter_driver_vtable_t _0bpp_surface_driver_vtable = {
+    .init            = qp_surface_init,
+    .power           = qp_surface_power,
+    .clear           = qp_surface_clear,
+    .flush           = qp_surface_flush,
+    .pixdata         = qp_surface_pixdata_0bpp,
+    .viewport        = qp_surface_viewport,
+    .palette_convert = qp_surface_palette_convert_0bpp,
+    .append_pixels   = qp_surface_append_pixels_0bpp,
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Factory functions for creating a handle to a surface
 
 #define SURFACE_FACTORY_FUNCTION_IMPL(function_name, vtable, bpp)                                                                                                             \
@@ -273,6 +367,7 @@ const struct painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
 
 SURFACE_FACTORY_FUNCTION_IMPL(qp_make_rgb565_surface, rgb565_surface_driver_vtable, 16);
 SURFACE_FACTORY_FUNCTION_IMPL(qp_make_mono1bpp_surface, mono1bpp_surface_driver_vtable, 1);
+SURFACE_FACTORY_FUNCTION_IMPL(qp_make_0bpp_surface, _0bpp_surface_driver_vtable, 0);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Drawing routine to copy out the dirty region and send it to another device
