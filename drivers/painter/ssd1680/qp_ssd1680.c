@@ -138,6 +138,13 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->invert_black = true;
             driver->invert_red   = false;
 
+            driver->ram_opcodes.write_status = 0;
+            driver->ram_opcodes.read_status  = 0;
+            driver->ram_opcodes.write_data   = 0;
+            driver->ram_opcodes.read_data    = 0;
+            driver->ram_opcodes.sequential   = 0;
+            driver->ram_chip_select_pin      = NO_PIN;
+
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
             driver->spi_dc_reset_config.spi_config.chip_select_pin = chip_select_pin;
