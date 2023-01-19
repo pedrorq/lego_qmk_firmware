@@ -91,8 +91,6 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable =
             .palette_convert = qp_eink_panel_palette_convert,
             .append_pixels   = qp_eink_panel_append_pixels,
         },
-    .num_window_bytes   = 2,
-    .swap_window_coords = false,
     .opcodes =
         {
             .display_on  = SSD1680_NOP, // Couldnt find a turn-on command

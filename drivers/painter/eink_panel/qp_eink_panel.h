@@ -20,9 +20,6 @@
 struct eink_panel_dc_reset_painter_driver_vtable_t {
     struct painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
 
-    // Number of bytes for transmitting x/y coordinates
-    uint8_t num_window_bytes;
-
     // Whether or not the x/y coords should be swapped on 90/270 rotation
     bool swap_window_coords;
 

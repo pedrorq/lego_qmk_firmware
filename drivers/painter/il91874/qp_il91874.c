@@ -97,7 +97,6 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_driver_vtable =
             .palette_convert = qp_eink_panel_palette_convert,
             .append_pixels   = qp_eink_panel_append_pixels,
         },
-    .num_window_bytes   = 2,
     .swap_window_coords = false,
     .opcodes =
         {

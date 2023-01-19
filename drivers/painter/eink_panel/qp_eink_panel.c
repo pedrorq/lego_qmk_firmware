@@ -37,19 +37,18 @@ bool qp_eink_panel_clear(painter_device_t device) {
     struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
     struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
 
-    // Init the surfaces being wrapped, this will memset them to 0
     qp_init(driver->black_surface, driver->base.rotation);
-    qp_init(driver->red_surface, driver->base.rotation);
-
-    // memset 1s instead, if inverted format
     if (driver->invert_black) {
         memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
     }
 
-    if (driver->invert_red) {
-        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
+    if (driver->has_3color) {
+        qp_init(driver->red_surface, driver->base.rotation);
+        if (driver->invert_red) {
+            memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
+        }
     }
-
+    
     return true;
 }
 
