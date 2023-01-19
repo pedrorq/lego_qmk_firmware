@@ -59,21 +59,8 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
 
-    qp_init(driver->black_surface, rotation);
-    qp_init(driver->red_surface, rotation);
-
-    // memset according to invert flags
-    if (driver->invert_black) {
-        struct surface_painter_device_t *black = (struct surface_painter_device_t *)driver->black_surface;
-        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
-    }
-
-    if (driver->invert_red) {
-        struct surface_painter_device_t *red = (struct surface_painter_device_t *)driver->red_surface;
-        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
-    }
-
-    return true;
+    // clearing gets the buffer(s) correctly set to 0/1
+    return qp_clear(driver);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

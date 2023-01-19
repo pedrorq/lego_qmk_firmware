@@ -24,8 +24,6 @@ eink_panel_dc_reset_painter_device_t il91874_drivers[IL91874_NUM_DEVICES] = {0};
 
 bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
-    struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
 
     uint8_t width_lsb  = (driver->base.panel_width) & 0xFF;
     uint8_t width_msb  = (driver->base.panel_width >> 8) & 0xFF;
@@ -61,25 +59,12 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     qp_comms_bulk_command_sequence(device, il91874_init_sequence, sizeof(il91874_init_sequence));
     driver->base.rotation = rotation;
 
-    qp_init(driver->black_surface, rotation);
-    qp_init(driver->red_surface, rotation);
-
-    // memset according to invert flags
-    if (driver->invert_black) {
-        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
-    }
-
-    if (driver->invert_red) {
-        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
-    }
-
-    // =====
-    // SRAM init
     if (driver->has_ram) {
         sram_init(device);
     }
 
-    return true;
+    // clearing gets the buffer(s) correctly set to 0/1
+    return qp_clear(driver);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
