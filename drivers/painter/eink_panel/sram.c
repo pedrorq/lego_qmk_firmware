@@ -193,15 +193,12 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
         else
             black_data[index] &= ~(1 << bit);
 
-        qp_dprintf("black: %d ", black_bit);
-
         if (driver->has_3color) {
             bool red_bit = (pixels[i] >> 1) & 1;
             if (red_bit)
                 red_data[index] |=  (1 << bit);
             else
                 red_data[index] &= ~(1 << bit);
-            qp_dprintf("red: %d\n", red_bit);
         }
 
 
