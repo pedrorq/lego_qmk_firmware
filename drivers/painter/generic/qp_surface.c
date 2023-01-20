@@ -14,7 +14,31 @@ surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES] = {0};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 
-static inline void increment_pixdata_location_0(surface_painter_device_t *surface) {
+static inline void compute_rotated(surface_painter_device_t *surface) {
+    switch (surface->base.rotation) {
+        case QP_ROTATION_0:
+            surface->x = surface->pixdata_x;
+            surface->y = surface->pixdata_y;
+            break;
+
+        case QP_ROTATION_90:
+            surface->x = surface->base.panel_height - surface->pixdata_y;
+            surface->y = surface->pixdata_x;
+            break;
+
+        case QP_ROTATION_180:
+            surface->x = surface->base.panel_width - surface->pixdata_x;
+            surface->y = surface->base.panel_height - surface->pixdata_y;
+            break;
+
+        case QP_ROTATION_270:
+            surface->x = surface->pixdata_y;
+            surface->y = surface->base.panel_width - surface->pixdata_x;
+            break;
+    }
+}
+
+static inline void increment_pixdata_location(surface_painter_device_t *surface) {
     // Increment the X-position
     surface->pixdata_x++;
 
@@ -28,68 +52,8 @@ static inline void increment_pixdata_location_0(surface_painter_device_t *surfac
     if (surface->pixdata_y > surface->viewport_b) {
         surface->pixdata_y = surface->viewport_t;
     }
-}
 
-static inline void increment_pixdata_location_90(surface_painter_device_t *surface) {
-    if (surface->pixdata_y > 0)
-        surface->pixdata_y--;
-    else
-        surface->pixdata_y = surface->viewport_r;
-
-    if (surface->pixdata_y < surface->viewport_l) {
-        surface->pixdata_y = surface->viewport_r;
-        surface->pixdata_x++;
-    }
-    if (surface->pixdata_x > surface->viewport_b) {
-        surface->pixdata_x = surface->viewport_t;
-    }
-}
-
-static inline void increment_pixdata_location_180(surface_painter_device_t *surface) {
-    if (surface->pixdata_x > 0)
-        surface->pixdata_x--;
-    else
-        surface->pixdata_x = surface->viewport_r;
-
-    if (surface->pixdata_x < surface->viewport_l) {
-        surface->pixdata_x = surface->viewport_r;
-        surface->pixdata_y--;
-    }
-    if (surface->pixdata_y < surface->viewport_b) {
-        surface->pixdata_y = surface->viewport_t;
-    }
-}
-
-static inline void increment_pixdata_location_270(surface_painter_device_t *surface) {
-    surface->pixdata_y++;
-    if (surface->pixdata_y > surface->viewport_r) {
-        surface->pixdata_y = surface->viewport_l;
-        surface->pixdata_x--;
-    }
-    if (surface->pixdata_x < surface->viewport_b) {
-        surface->pixdata_x = surface->viewport_t;
-    }
-}
-
-static inline void increment_pixdata_location(surface_painter_device_t *surface) {
-    // split into several functions so it is easier to fix/debug them
-    // switch (surface->base.rotation) {
-    //     case QP_ROTATION_0:
-            increment_pixdata_location_0(surface);
-            // break;
-
-    //     case QP_ROTATION_90:
-    //         increment_pixdata_location_90(surface);
-    //         break;
-
-    //     case QP_ROTATION_180:
-    //         increment_pixdata_location_180(surface);
-    //         break;
-
-    //     case QP_ROTATION_270:
-    //         increment_pixdata_location_270(surface);
-    //         break;
-    // }
+    compute_rotated(surface);
 }
 
 static void update_dirty(surface_painter_device_t *surface, uint16_t x, uint16_t y) {
@@ -156,6 +120,9 @@ static bool qp_surface_viewport(painter_device_t device, uint16_t left, uint16_t
     // Reset the write location to the top left
     surface->pixdata_x = left;
     surface->pixdata_y = top;
+
+    compute_rotated(surface);
+
     return true;
 }
 
@@ -253,7 +220,7 @@ static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t
 }
 
 static inline void append_pixel_mono1bpp(surface_painter_device_t *surface, bool mono_pixel) {
-    setpixel_mono1bpp(surface, surface->pixdata_x, surface->pixdata_y, mono_pixel);
+    setpixel_mono1bpp(surface, surface->x, surface->y, mono_pixel);
     increment_pixdata_location(surface);
 }
 

@@ -96,6 +96,10 @@ typedef struct surface_painter_device_t {
     uint16_t pixdata_x;
     uint16_t pixdata_y;
 
+    // Position with rotation applied
+    uint16_t x;
+    uint16_t y;
+
     // Maintain a dirty region so we can stream only what we need
     bool     is_dirty;
     uint16_t dirty_l;

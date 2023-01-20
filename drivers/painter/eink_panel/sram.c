@@ -154,32 +154,7 @@ void sram_flush(painter_device_t device) {
 }
 
 static inline uint32_t get_pixel(surface_painter_device_t *surface) {
-    uint16_t x = 0;
-    uint16_t y = 0;
-
-    switch (surface->base.rotation) {
-        case QP_ROTATION_0:
-            x = surface->pixdata_x;
-            y = surface->pixdata_y;
-            break;
-
-        case QP_ROTATION_90:
-            x = surface->base.panel_height - surface->pixdata_y;
-            y = surface->pixdata_x;
-            break;
-
-        case QP_ROTATION_180:
-            x = surface->base.panel_width - surface->pixdata_x;
-            y = surface->base.panel_height - surface->pixdata_y;
-            break;
-
-        case QP_ROTATION_270:
-            x = surface->pixdata_y;
-            y = surface->base.panel_width - surface->pixdata_x;
-            break;
-    }
-
-    return x + y * surface->base.panel_width;
+    return surface->x + surface->y * surface->base.panel_width;
 }
 
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
