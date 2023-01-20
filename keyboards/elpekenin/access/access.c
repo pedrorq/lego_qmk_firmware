@@ -136,9 +136,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
     // qp_drawimage(ili9486, 0, 0, qp_images[2]);
 
-    qp_rect(ssd1680, 0, 0, 100, 100, HSV_BLACK, true);
-//    qp_drawtext(ssd1680, 0, 0, "Hello");
-    //qp_drawimage_recolor(ssd1680, 50, 70, qp_images[0], HSV_BLACK, HSV_BLACK);
+    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
+    qp_rect(ssd1680, 0, 10, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, true);
+    qp_drawtext(ssd1680, 0, 10, qp_fonts[0],"Hello");
+    qp_drawimage_recolor(ssd1680, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, qp_images[3], HSV_BLACK, HSV_WHITE);
+    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
     qp_flush(ssd1680);
 
     dprint("Quantum painter ready\n");
