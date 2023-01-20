@@ -59,7 +59,18 @@ typedef struct eink_panel_dc_reset_painter_device_t {
     // ----- Variant-specific config, some may not be used -----
     // ---------------------------------------------------------
 
-    // Virtual screens storing the 2 channels' data in MCU
+    /** Virtual screens storing the 2 channels' data
+     *
+     * If display has builtin RAM, the surface objects are used to store the position in which to draw, thus
+     * a 0bpp (no pixel data stored) surface is used, which can be referenced by both painter_device pointers
+     *
+     * Some screen controllers which support 3 colors may need receiving empty red-channel information to
+     * work correctly in black/white variants, if so you'd need to create a second 1bpp surface which
+     * will only be setup empty and get sent to the display when flushing, but will not be written at
+     *
+     * If your B/W display can work without that, you can make the red_surface a 0bpp buffer, which barely
+     * consumes RAM
+     */
     painter_device_t black_surface;
     painter_device_t red_surface;
 

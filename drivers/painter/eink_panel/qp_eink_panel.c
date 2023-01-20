@@ -12,10 +12,6 @@
 // Current format wastes 6 bits on each byte: | 0000 00BR | 0000 00BR | ...
 // We could represent each pixel as a single bit when has_3color == false
 
-// TODO: 0bpp surface? SRAM code uses 1bpp surfaces to store viewport
-// however, the data on the arrays is not used for anything and could be
-// skipped, checking dirtyness could be done by reading SRAM
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter API implementations
 
@@ -33,20 +29,20 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen clear
 bool qp_eink_panel_clear(painter_device_t device) {
+    // this function gets called by eink's init, we init red even if display doesn't support 3 color, as sending
+    // empty data for those bits may be needed
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
+    struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
 
     qp_init(driver->black_surface, driver->base.rotation);
     if (driver->invert_black) {
-        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
+        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, black->base.native_bits_per_pixel));
     }
 
-    if (driver->has_3color) {
-        struct surface_painter_device_t * red = (struct surface_painter_device_t *)driver->red_surface;
-        qp_init(driver->red_surface, driver->base.rotation);
-        if (driver->invert_red) {
-            memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, driver->base.native_bits_per_pixel));
-        }
+    qp_init(driver->red_surface, driver->base.rotation);
+    if (driver->invert_red) {
+        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, red->base.native_bits_per_pixel));
     }
 
     return true;
@@ -87,9 +83,13 @@ bool qp_eink_panel_flush(painter_device_t device) {
         qp_comms_command(device, vtable->opcodes.send_black_data);
         qp_comms_send(device, black->buffer, n_bytes);
 
-        // On B-W displays, we need to send empty red data, or we get noise
-        qp_comms_command(device, vtable->opcodes.send_red_data);
-        qp_comms_send(device, red->buffer, n_bytes);
+        // even if we have a B/W display, ot may need to receive empty red data
+        // to prevent noisy drawing, we check whether this is needed by looking
+        // at bits_per_pixel, should be 0 if we don't need to send and 1 if we do
+        if (red->base.native_bits_per_pixel) {
+            qp_comms_command(device, vtable->opcodes.send_red_data);
+            qp_comms_send(device, red->buffer, n_bytes);
+        }
 
         qp_comms_command(device, vtable->opcodes.refresh);
     }
@@ -107,7 +107,8 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 
     qp_viewport(driver->black_surface, left, top, right, bottom);
-    qp_viewport(driver->red_surface, left, top, right, bottom);
+    if (driver->has_3color)
+        qp_viewport(driver->red_surface, left, top, right, bottom);
 
     return true;
 }

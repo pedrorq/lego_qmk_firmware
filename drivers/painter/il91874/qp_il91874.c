@@ -63,8 +63,8 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
         sram_init(device);
     }
 
-    // clearing gets the buffer(s) correctly set to 0/1
-    return qp_clear(driver);
+    // clear gets the buffers correctly set to 0/1
+    return driver->base.driver_vtable->clear(driver);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
