@@ -74,7 +74,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 //        SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
 //        SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
         SSD1680_UPDATE_MODE,            200, 2, update_mode,0x20,
-        SSD1680_DISPLAY_REFRESH,        200,0,
+//        SSD1680_DISPLAY_REFRESH,        200,0,
 
     };
     // clang-format on
