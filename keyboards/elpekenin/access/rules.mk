@@ -11,6 +11,7 @@ QUANTUM_PAINTER_DRIVERS += il91874_spi ili9163_spi ili9341_spi ili9486_spi ssd16
 XAP_ENABLE = yes
 
 # Custom features
-TOUCH_SCREEN = no
-ONE_HAND     = no
-SIPO_PINS    = no
+CUSTOM_EEPROM = yes
+TOUCH_SCREEN  = no
+ONE_HAND      = no
+SIPO_PINS     = no

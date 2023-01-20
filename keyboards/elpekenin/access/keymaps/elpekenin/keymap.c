@@ -11,7 +11,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-#if defined (TOUCH_SCREEN)
+void keyboard_post_init_user() {
+}
+
+#if defined(TOUCH_SCREEN)
 uint32_t touch_timer = 0;
 void housekeeping_task_user(void) {
     // Wait until device is initialized

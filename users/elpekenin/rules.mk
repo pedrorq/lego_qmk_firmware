@@ -1,4 +1,5 @@
-VPATH += $(USER_PATH)/painter \
+VPATH += $(USER_PATH)/eeprom \
+         $(USER_PATH)/painter \
          $(USER_PATH)/painter/images \
          $(USER_PATH)/painter/fonts \
          $(USER_PATH)/registers \
@@ -26,6 +27,12 @@ QP_XAP ?= no
 # ===========================
 # ===== Custom features =====
 # ===========================
+CUSTOM_EEPROM ?= no
+ifeq ($(strip $(CUSTOM_EEPROM)), yes)
+    OPT_DEFS += -DCUSTOM_EEPROM_ENABLE
+    SRC += custom_eeprom.c
+endif
+
 ONE_HAND ?= no
 ifeq ($(strip $(ONE_HAND)), yes)
     OPT_DEFS += -DONE_HAND_ENABLE
@@ -48,9 +55,10 @@ ifeq ($(strip $(TOUCH_SCREEN)), yes)
 endif
 
 $(info --- Custom features ---)
-$(info ONE_HAND     = $(ONE_HAND))
-$(info SIPO_PINS    = $(SIPO_PINS))
-$(info TOUCH_SCREEN = $(TOUCH_SCREEN))
-$(info QP_XAP       = $(QP_XAP))
+$(info CUSTOM_EEPROM = $(CUSTOM_EEPROM))
+$(info ONE_HAND      = $(ONE_HAND))
+$(info SIPO_PINS     = $(SIPO_PINS))
+$(info TOUCH_SCREEN  = $(TOUCH_SCREEN))
+$(info QP_XAP        = $(QP_XAP))
 $(info -----------------------)
 $(info )

@@ -5,9 +5,15 @@
 #include "access.h"
 #include "version.h"
 
-#if defined(SIPO_PINS_ENABLE)
-#    include "sipo_pins.h"
-#endif // SIPO_PINS_ENABLE
+#if defined(CUSTOM_EEPROM_ENABLE)
+#    include "custom_eeprom.h"
+#endif // CUSTOM_EEPROM_ENABLE
+
+#if defined(ONE_HAND_ENABLE)
+uint8_t one_hand_col;
+uint8_t one_hand_row;
+one_hand_movement_t one_hand_movement;
+#endif // ONE_HAND_ENABLE
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 #    include "color.h"
@@ -20,13 +26,16 @@ painter_device_t ili9163;
 painter_device_t ili9341;
 painter_device_t ili9486;
 uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)];
+
+uint32_t flush_display(uint32_t trigger_time, void *device) {
+    qp_flush((painter_device_t *)device);
+    return 0;
+}
 #endif // QUANTUM_PAINTER_ENABLE
 
-#if defined(ONE_HAND_ENABLE)
-uint8_t one_hand_col;
-uint8_t one_hand_row;
-one_hand_movement_t one_hand_movement;
-#endif // ONE_HAND_ENABLE
+#if defined(SIPO_PINS_ENABLE)
+#    include "sipo_pins.h"
+#endif // SIPO_PINS_ENABLE
 
 #if defined (TOUCH_SCREEN_ENABLE)
 #    include "touch_driver.h"
@@ -35,25 +44,11 @@ touch_device_t ili9486_touch;
 #endif // TOUCH_SCREEN_ENABLE
 
 // Version info
-char build_date [] = QMK_BUILDDATE;
-char commit_hash [] = QMK_GIT_HASH;
-
-void keyboard_post_init_kb(void) {
-    debug_enable = true;
-
-#if defined(DEFERRED_EXEC_ENABLE)
-    // Define function so `defer_exec` doesn't crash the compiling
-    uint32_t deferred_init(uint32_t trigger_time, void *cb_arg);
-
-    // Defer init code so USB has started and we can receive console messages
-    defer_exec(INIT_DELAY, deferred_init, NULL);
-}
+char build_date[] = QMK_BUILDDATE;
+char commit_hash[] = QMK_GIT_HASH;
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
-#endif // DEFERRED_EXEC_ENABLE
-
     dprint("---------- Init phase ----------\n");
-    printf("firmware built on %s with commit: %s\n", build_date, commit_hash);
 
     // =======
     // Power indicator
@@ -77,10 +72,30 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     wait_ms(150); //Let screens draw some power
 
     // ----- Init screens
-    // il91874 = qp_il91874_no_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, false, (void *)il91874_buffer);
-    il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, true, TESTS_RAM_CS_PIN);
+    il91874 = qp_il91874_no_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, false, (void *)il91874_buffer);
+    // il91874 = qp_il91874_with_ram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, true, TESTS_RAM_CS_PIN);
     load_display(il91874);
     qp_init(il91874, IL91874_ROTATION);
+
+    // draw on it after timeout, preventing damage if replug fast
+    eink_panel_dc_reset_painter_device_t *eink = (eink_panel_dc_reset_painter_device_t *)il91874;
+    defer_exec(eink->timeout, flush_display, (void *)il91874);
+
+    painter_font_handle_t font       = qp_fonts[0];
+    int16_t               hash_width = qp_textwidth(font, commit_hash);
+    qp_drawtext_recolor(il91874, IL91874_WIDTH-hash_width, IL91874_HEIGHT-font->line_height, font, commit_hash, HSV_BLACK, HSV_WHITE);
+
+#    if defined(CUSTOM_EEPROM_ENABLE)
+    // check enabled features based on `#define`s on current firmware
+    uint32_t current_config = custom_eeprom_generate();
+
+    // if any change has ocurred
+    if (current_config != eeconfig_read_user()) {
+        dprintf("EEPROM config has changed\n");
+        eeconfig_update_user(current_config);
+        custom_eeprom_draw_config((void *)il91874);
+    }
+#    endif // CUSTOM_EEPROM_ENABLE
 
     // ili9163 = qp_ili9163_make_spi_device(ILI9163_WIDTH, ILI9163_HEIGHT, ILI9163_CS_PIN, SCREEN_SPI_DC_PIN, ILI9163_RST_PIN, SPI_DIV, SPI_MODE);
     // load_display(ili9163);
@@ -96,22 +111,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     // ----- Fill them black
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
-    // qp_drawimage(ili9163, 0, 0, qp_images[1]);
 
     // qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
-    // qp_drawimage(ili9341, 0, 0, qp_images[2]);
 
-    // qp_rect(il91874, 0, 0, IL91874_HEIGHT, IL91874_WIDTH, HSV_WHITE, true);
-    // qp_drawimage(il91874, 0, 0, qp_images[0]);
-    // qp_flush(il91874);
+    // qp_rect(ili9486, 0, 0, ILI9486_WIDTH, ILI9486_HEIGHT, HSV_BLACK, true);
+    // qp_drawimage(ili9486, 0, 0, qp_images[2]);
 
-    qp_rect(il91874,               0, 0, IL91874_WIDTH/2, IL91874_HEIGHT, HSV_BLACK, true);
-    qp_rect(il91874, IL91874_WIDTH/2, 0,   IL91874_WIDTH, IL91874_HEIGHT, HSV_RED, true);
-    qp_drawimage_recolor(il91874, IL91874_WIDTH/2-24, IL91874_HEIGHT/2-24, qp_images[0], HSV_BLACK, HSV_WHITE);
-    qp_flush(il91874);
-
-    dprint("Quantum painter ready\n");
-#endif // QUANTUM_PAINTER_ENABLE
+    dprint("Quantum painter devices initialised\n");
+#endif
 
 #if defined (TOUCH_SCREEN_ENABLE)
     // Calibration isn't very precise
@@ -161,7 +168,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     ili9486_touch = &ili9486_touch_driver;
     touch_spi_init(ili9486_touch);
 
-    dprint("Touch devices ready\n");
+    dprint("Touch devices initialised\n");
 #endif // TOUCH_SCREEN_ENABLE
 
     dprint("\n---------- User code ----------\n");
@@ -170,9 +177,14 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     // Call user code
     keyboard_post_init_user();
 
-#if defined(DEFERRED_EXEC_ENABLE)
     return 0; //don't repeat the function
-#endif // DEFERRED_EXEC_ENABLE
+}
+
+void keyboard_post_init_kb(void) {
+    debug_enable = true;
+
+    // Defer init code so USB has started and we can receive console messages
+    defer_exec(INIT_DELAY, deferred_init, NULL);
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {

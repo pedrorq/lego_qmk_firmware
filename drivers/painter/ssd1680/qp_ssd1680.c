@@ -115,11 +115,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             // 0bpp needs changes to not ask for a pointer, so far we'll just set it to NULL
-            if (has_3color)
-                driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
-            else
-                driver->red_surface = qp_make_mono0bpp_surface(panel_width, panel_height, NULL);
-
+            driver->red_surface = qp_make_0bpp_surface(panel_width, panel_height, NULL);
 
             driver->has_3color = false;
             driver->has_ram    = false;
@@ -157,6 +153,8 @@ painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t pa
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
         driver->has_3color                           = true;
+        driver->red_surface                          = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
+
     }
     return device;
 }

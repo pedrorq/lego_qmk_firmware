@@ -46,3 +46,13 @@ How to use:
    - Manually set state: `set_sipo_pin(<pin_name>, true)` or `set_sipo_pin(<pin_name>, false)`
    - Using helper macros: `sipo_pin_high(<pin_name>)` or `sipo_pin_low(<pin_name>)`
  - Send the status to the registers: `write_sipo_state()`
+
+## Custom EEPROM
+Store the current status (enabled/disabled) of some features, so we can see if they've been changed since last boot (ie: flashed differently configured firmware)
+
+Config:
+ - Add `CUSTOM_EEPROM = yes` to your **rules.mk**
+ - Call `custom_eeprom_generate()` to get current features' bitmask, and compare it with previous value (`eeconfig_read_user()`)
+ - Update your EEPROM by doing `eeconfig_update_user(current_config)`
+
+If you want some QGF images, I have a collection of converted Material Design Icons (and scripts to generate them from folders) in [this repo](https://github.com/elpekenin/mdi-icons-qgf)
