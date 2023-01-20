@@ -114,7 +114,12 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
+            // 0bpp needs changes to not ask for a pointer, so far we'll just set it to NULL
+            if (driver->has_3color)
+                driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
+            else
+                driver->red_surface = qp_make_mono0bpp_surface(panel_width, panel_height, NULL);
+
 
             driver->has_3color = false;
             driver->has_ram    = false;
