@@ -24,8 +24,8 @@ eink_panel_dc_reset_painter_device_t ssd1680_drivers[SSD1680_NUM_DEVICES] = {0};
 bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 // longest directon
-    uint8_t width_lsb = (driver->base.panel_height) ;
-    uint8_t width_msb = ((driver->base.panel_height) >> 8) ;
+    uint8_t width_lsb = (driver->base.panel_height-1) ;
+    uint8_t width_msb = ((driver->base.panel_height-1) >> 8) ;
 //shortest direction
     // it makes a weird division by 8
     uint8_t height    = ((driver->base.panel_width-1)/8) ;
@@ -59,22 +59,23 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     // clang-format off
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                 Delay, N, Data[N]
-        SSD1680_SOFT_RESET,           200, 0,
-        SSD1680_RESOLUTION,             0, 3, 0x27,0x01, 0x00,
+        SSD1680_SOFT_RESET,           250, 0,
+        SSD1680_DRIVER_OUTPUT_CONTROL,  0, 3, 0x27,0x01, 0x00,
         SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
-        SSD1680_RAM_X_SIZE, 0,2, 0x00,height,
-        SSD1680_RAM_Y_SIZE, 0,2,0x0,0x0,width_lsb,width_msb,
         SSD1680_BORDER_CONTROL,         0, 1, 0x05,
-        SSD1680_TEMP_SENSOR,           200, 1, 0x80,
+        SSD1680_TEMP_SENSOR,            0, 1, 0x80,
+        SSD1680_DISPLAY_UPDATE_CONTROL_RAM, 0, 2, 0x00, 0x88,
 
-        SSD1680_RAM_X_COUNTER,          0, 1, 0x01,
+        SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
+        SSD1680_RAM_X_SIZE,             0, 2, 0x00, height,
+        SSD1680_RAM_Y_SIZE,             0 ,2, 0x00, 0x00, width_lsb, width_msb,
+        SSD1680_RAM_X_COUNTER,          0, 1, 0x00,
         SSD1680_RAM_Y_COUNTER,          0, 2, 0x0, 0x0,
-        SSD1680_DISPLAY_UPDATE_CONTROL, 0, 2, 0x00, 0x80,
 //        SSD1680_VCOM_VOLTAGE,           0, 1, 0x36,
 //        SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
 //        SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
-        SSD1680_UPDATE_MODE,            200, 2, update_mode,0x20,
-        SSD1680_DISPLAY_REFRESH,        200,0,
+        SSD1680_DISPLAY_UPDATE_CONTROL,  0, 1, update_mode,
+        SSD1680_ACTIVATE_DISPLAY_UPDATE, 200, 0,
 
     };
     // clang-format on
@@ -108,7 +109,7 @@ const eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
             .display_off = SSD1680_NOP, // There is a cmd to go into sleep mode, but requires HW reset in order to wake up
             .send_black_data = SSD1680_SEND_BLACK,
             .send_red_data = SSD1680_SEND_RED,
-            .refresh = SSD1680_DISPLAY_REFRESH,
+            .refresh = SSD1680_ACTIVATE_DISPLAY_UPDATE,
         }
 };
 
@@ -133,13 +134,14 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->base.offset_y              = 0;
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
+            driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
             // 0bpp needs changes to not ask for a pointer, so far we'll just set it to NULL
             driver->red_surface   = qp_make_empty0bpp_surface(panel_width, panel_height);
 
             driver->has_3color = has_color;
             driver->has_ram    = false;
 
-            driver->timeout   = 2 * 60 * 1000; // 2 minutes as seen on WeAct
+            driver->timeout   = 6000; // 2 minutes as seen on WeAct
             driver->can_flush = true;
 
             driver->invert_black = true;
@@ -165,7 +167,6 @@ painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t pa
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
         driver->has_3color                           = true;
-        driver->red_surface                          = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
 
     }
     return device;
