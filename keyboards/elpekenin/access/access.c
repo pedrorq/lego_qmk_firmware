@@ -79,6 +79,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
  //   load_display(il91874);
  //   qp_init(il91874, IL91874_ROTATION);
 
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer,false);
+    load_display(ssd1680);
+    qp_init(ssd1680, SSD1680_ROTATION);
+
+
     // draw on it after timeout, preventing damage if replug fast
     eink_panel_dc_reset_with_sram_painter_device_t *eink = (eink_panel_dc_reset_with_sram_painter_device_t *)il91874;
     defer_exec(eink->eink_base.timeout, flush_display, (void *)eink);
@@ -123,10 +128,6 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     qp_rect(ili9341, 0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, HSV_BLACK, true);
 #endif
     dprint("Quantum painter devices initialised\n");
-
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer,false);
-    load_display(ssd1680);
-    qp_init(ssd1680, SSD1680_ROTATION);
 
     // ----- Fill them black
     // qp_rect(ili9163, 0, 0, ILI9163_WIDTH, ILI9163_HEIGHT, HSV_BLACK, true);
