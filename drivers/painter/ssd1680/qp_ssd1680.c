@@ -35,37 +35,14 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
      * - 2 color code based of: https://github.com/ZinggJM/GxEPD2/blob/master/src/epd/GxEPD2_213_BN.cpp
      * - 3 color code based of: https://github.com/adafruit/Adafruit_CircuitPython_SSD1680/blob/main/adafruit_ssd1680.py
      */
-    uint8_t update_mode = driver->has_3color ? 0xF4 : 0xF8;
-/*
-#define SSD1680_NOP 0x00
-#define SSD1680_RESOLUTION 0x01
-#define SSD1680_GATE_VOLTAGE 0x03
-#define SSD1680_SOURCE_VOLTAGE 0x04
-#define SSD1680_DATA_ENTRY_MODE 0x11
-#define SSD1680_SOFT_RESET 0x12
-#define SSD1680_TEMP_SENSOR 0x18
-#define SSD1680_DISPLAY_REFRESH 0x20
-#define SSD1680_DISPLAY_UPDATE_CONTROL 0x21
-#define SSD1680_UPDATE_MODE 0x22
-#define SSD1680_SEND_BLACK 0x24
-#define SSD1680_SEND_RED 0x26
-#define SSD1680_VCOM_VOLTAGE 0x2C
-#define SSD1680_BORDER_CONTROL 0x3C
-#define SSD1680_RAM_X_SIZE 0x44
-#define SSD1680_RAM_Y_SIZE 0x45
-#define SSD1680_RAM_X_COUNTER 0x4E
-#define SSD1680_RAM_Y_COUNTER 0x4F
-*/
-
-
     // clang-format off
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
         SSD1680_SOFT_RESET                , 250, 0, //0x12
         SSD1680_DRIVER_OUTPUT_CONTROL     , 0  , 3, y_lsb, 0x00, 0x01, //0x01
-        SSD1680_DATA_ENTRY_MODE           , 0  , 1, 0x01, //0x11
-        SSD1680_RAM_X_SIZE                , 0  , 2, 0x00,x    , //0x44
-        SSD1680_RAM_Y_SIZE                , 0  , 2, y_lsb, y_msb,0x0,0x0,//0x45
+        SSD1680_DATA_ENTRY_MODE           , 0  , 1, 0x03, //0x11
+        SSD1680_RAM_X_SIZE                , 0  , 2, 0x00, x    , //0x44
+        SSD1680_RAM_Y_SIZE                , 0  , 2, y_lsb, y_msb,0x00,0x00,//0x45
         SSD1680_BORDER_CONTROL            , 0  , 1, 0xC0, //0x3C
         SSD1680_TEMP_SENSOR               , 0  , 1, 0x80, //0x18
         SSD1680_WRITE_VCOM_REGISTER,        0,  1,0x70, //0x2C
@@ -91,7 +68,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
   0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0, //0x32
         SSD1680_RAM_X_COUNTER             , 0  , 1, 0x01, //0x4E
-        SSD1680_RAM_Y_COUNTER             , 0  , 2, y_lsb, 0x00, //0x4F
+        SSD1680_RAM_Y_COUNTER             , 0  , 2, 0x00, y_lsb, //0x4F
         SSD1680_DISPLAY_UPDATE_CONTROL    , 0  , 1, 0xC7, //0x22
         SSD1680_ACTIVATE_DISPLAY_UPDATE   , 200, 0, //0x20
 
@@ -107,10 +84,10 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
+  dprintf("0x%x 0x%x 0x%x\n ", y_lsb,y_msb, x);
 
     // clear gets the buffers correctly set to 0/1
   bool ret  = driver->base.driver_vtable->clear(driver);
-    dprintf("0x%x 0x%x 0x%x 0x%x\n ",update_mode, y_lsb,y_msb, x);
 return ret;
 }
 
