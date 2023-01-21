@@ -81,8 +81,8 @@ typedef struct surface_painter_device_t {
 
     // The target buffer
     union {
-        void     *buffer;
-        uint8_t  *u8buffer;
+        void *    buffer;
+        uint8_t * u8buffer;
         uint16_t *u16buffer;
     };
 
@@ -106,7 +106,6 @@ typedef struct surface_painter_device_t {
     uint16_t dirty_t;
     uint16_t dirty_r;
     uint16_t dirty_b;
-
 } surface_painter_device_t;
 
 /**

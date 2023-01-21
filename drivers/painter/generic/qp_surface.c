@@ -8,6 +8,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common
 
+struct surface_painter_driver_vtable_t {
+    struct painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
+
+    bool (*target_pixdata_transfer)(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface);
+};
+
 // Driver storage
 surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES] = {0};
 
@@ -42,7 +48,7 @@ static inline void increment_pixdata_location(surface_painter_device_t *surface)
     // Increment the X-position
     surface->pixdata_x++;
 
-    // If the x-coord has gone past the right, loop it back and increment the y-coord
+    // If the x-coord has gone past the right-side edge, loop it back around and increment the y-coord
     if (surface->pixdata_x > surface->viewport_r) {
         surface->pixdata_x = surface->viewport_l;
         surface->pixdata_y++;
@@ -99,8 +105,8 @@ static bool qp_surface_clear(painter_device_t device) {
 }
 
 static bool qp_surface_flush(painter_device_t device) {
-    struct painter_driver_t * driver    = (struct painter_driver_t *)device;
-    surface_painter_device_t *surface   = (surface_painter_device_t *)driver;
+    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
+    surface_painter_device_t *surface = (surface_painter_device_t *)driver;
     surface->dirty_l = surface->dirty_t = UINT16_MAX;
     surface->dirty_r = surface->dirty_b = 0;
     surface->is_dirty                   = false;
@@ -181,15 +187,70 @@ static bool qp_surface_append_pixels_rgb565(painter_device_t device, uint8_t *ta
     return true;
 }
 
-const struct painter_driver_vtable_t rgb565_surface_driver_vtable = {
-    .init            = qp_surface_init,
-    .power           = qp_surface_power,
-    .clear           = qp_surface_clear,
-    .flush           = qp_surface_flush,
-    .pixdata         = qp_surface_pixdata_rgb565,
-    .viewport        = qp_surface_viewport,
-    .palette_convert = qp_surface_palette_convert_rgb565_swapped,
-    .append_pixels   = qp_surface_append_pixels_rgb565,
+static bool rgb565_target_pixdata_transfer(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
+    surface_painter_device_t *surface_handle = (surface_painter_device_t *)surface_driver;
+
+    uint16_t l = entire_surface ? 0 : surface_handle->dirty_l;
+    uint16_t t = entire_surface ? 0 : surface_handle->dirty_t;
+    uint16_t r = entire_surface ? (surface_handle->base.panel_width - 1) : surface_handle->dirty_r;
+    uint16_t b = entire_surface ? (surface_handle->base.panel_height - 1) : surface_handle->dirty_b;
+
+    // Set the target drawing area
+    bool ok = qp_viewport((painter_device_t)target_driver, x + l, y + t, x + r, y + b);
+    if (!ok) {
+        qp_dprintf("rgb565_target_pixdata_transfer: fail (could not set target viewport)\n");
+        return false;
+    }
+
+    // Housekeeping of the amount of pixels to transfer
+    uint32_t  total_pixel_count = (8 * QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE) / surface_driver->native_bits_per_pixel;
+    uint32_t  pixel_counter     = 0;
+    uint16_t *target_buffer     = (uint16_t *)qp_internal_global_pixdata_buffer;
+
+    // Fill the global pixdata area so that we can start transferring to the panel
+    for (uint16_t y = t; y <= b; ++y) {
+        for (uint16_t x = l; x <= r; ++x) {
+            // Update the target buffer
+            target_buffer[pixel_counter++] = surface_handle->u16buffer[y * surface_handle->base.panel_width + x];
+
+            // If we've accumulated enough data, send it
+            if (pixel_counter == total_pixel_count) {
+                ok = qp_pixdata((painter_device_t)target_driver, qp_internal_global_pixdata_buffer, pixel_counter);
+                if (!ok) {
+                    qp_dprintf("rgb565_target_pixdata_transfer: fail (could not stream pixdata to target)\n");
+                    return false;
+                }
+                // Reset the counter
+                pixel_counter = 0;
+            }
+        }
+    }
+
+    // If there's any leftover data, send it
+    if (pixel_counter > 0) {
+        ok = qp_pixdata((painter_device_t)target_driver, qp_internal_global_pixdata_buffer, pixel_counter);
+        if (!ok) {
+            qp_dprintf("rgb565_target_pixdata_transfer: fail (could not stream pixdata to target)\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+const struct surface_painter_driver_vtable_t rgb565_surface_driver_vtable = {
+    .base =
+        {
+            .init            = qp_surface_init,
+            .power           = qp_surface_power,
+            .clear           = qp_surface_clear,
+            .flush           = qp_surface_flush,
+            .pixdata         = qp_surface_pixdata_rgb565,
+            .viewport        = qp_surface_viewport,
+            .palette_convert = qp_surface_palette_convert_rgb565_swapped,
+            .append_pixels   = qp_surface_append_pixels_rgb565,
+        },
+    .target_pixdata_transfer = rgb565_target_pixdata_transfer,
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +273,7 @@ static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t
 
         // Update the pixel data in the buffer
         if (mono_pixel) {
-            surface->u8buffer[byte_offset] |=  (1 << bit_offset);
+            surface->u8buffer[byte_offset] |= (1 << bit_offset);
         } else {
             surface->u8buffer[byte_offset] &= ~(1 << bit_offset);
         }
@@ -234,7 +295,7 @@ static inline void stream_pixdata_mono1bpp(surface_painter_device_t *surface, co
 
 // Stream pixel data to the current write position in GRAM
 static bool qp_surface_pixdata_mono1bpp(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct painter_driver_t  *driver  = (struct painter_driver_t *)device;
+    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
     surface_painter_device_t *surface = (surface_painter_device_t *)driver;
     stream_pixdata_mono1bpp(surface, (const uint8_t *)pixel_data, native_pixel_count);
     return true;
@@ -255,7 +316,7 @@ static bool qp_surface_append_pixels_mono1bpp(painter_device_t device, uint8_t *
         uint32_t byte_offset = pixel_num / 8;
         uint8_t  bit_offset  = 7 - pixel_num % 8;
         if (palette[palette_indices[i]].mono) {
-            target_buffer[byte_offset] |=  (1 << bit_offset);
+            target_buffer[byte_offset] |= (1 << bit_offset);
         } else {
             target_buffer[byte_offset] &= ~(1 << bit_offset);
         }
@@ -263,15 +324,78 @@ static bool qp_surface_append_pixels_mono1bpp(painter_device_t device, uint8_t *
     return true;
 }
 
-const struct painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
-    .init            = qp_surface_init,
-    .power           = qp_surface_power,
-    .clear           = qp_surface_clear,
-    .flush           = qp_surface_flush,
-    .pixdata         = qp_surface_pixdata_mono1bpp,
-    .viewport        = qp_surface_viewport,
-    .palette_convert = qp_surface_palette_convert_mono1bpp,
-    .append_pixels   = qp_surface_append_pixels_mono1bpp,
+static bool mono1bpp_target_pixdata_transfer(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
+    surface_painter_device_t *surface_handle = (surface_painter_device_t *)surface_driver;
+
+    uint16_t l = entire_surface ? 0 : surface_handle->dirty_l;
+    uint16_t t = entire_surface ? 0 : surface_handle->dirty_t;
+    uint16_t r = entire_surface ? (surface_handle->base.panel_width - 1) : surface_handle->dirty_r;
+    uint16_t b = entire_surface ? (surface_handle->base.panel_height - 1) : surface_handle->dirty_b;
+
+    // Move to byte-wise boundaries -- no need to modify the top/bottom, as these aren't byte-wise constrained
+    uint16_t panel_l = x + l;
+    uint16_t panel_t = y + t;
+    uint16_t panel_r = x + r;
+    uint16_t panel_b = y + b;
+    panel_l          = (panel_l / 8) * 8;
+    panel_r          = ((((panel_r + 1) + 7) / 8) * 8) - 1;
+
+    // Set the target drawing area
+    bool ok = qp_viewport((painter_device_t)target_driver, panel_l, panel_t, panel_r, panel_b);
+    if (!ok) {
+        qp_dprintf("mono1bpp_target_pixdata_transfer: fail (could not set target viewport)\n");
+        return false;
+    }
+
+    // Housekeeping of the amount of pixels to transfer
+    uint32_t total_pixel_count = (8 * QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE) / surface_driver->native_bits_per_pixel;
+    uint32_t pixel_counter     = 0;
+
+    // Fill the global pixdata area so that we can start transferring to the panel
+    for (uint16_t y = panel_t; y <= panel_b; ++y) {
+        for (uint16_t x = panel_l; x <= panel_r; x += 8) {
+            // Update the target buffer
+            qp_internal_global_pixdata_buffer[pixel_counter / 8] = surface_handle->u8buffer[(y * surface_handle->base.panel_width + x) / 8];
+            pixel_counter += 8;
+
+            // If we've accumulated enough data, send it
+            if (pixel_counter >= total_pixel_count) {
+                ok = qp_pixdata((painter_device_t)target_driver, qp_internal_global_pixdata_buffer, pixel_counter);
+                if (!ok) {
+                    qp_dprintf("mono1bpp_target_pixdata_transfer: fail (could not stream pixdata to target)\n");
+                    return false;
+                }
+                // Reset the counter
+                pixel_counter = 0;
+            }
+        }
+    }
+
+    // If there's any leftover data, send it
+    if (pixel_counter > 0) {
+        ok = qp_pixdata((painter_device_t)target_driver, qp_internal_global_pixdata_buffer, pixel_counter);
+        if (!ok) {
+            qp_dprintf("mono1bpp_target_pixdata_transfer: fail (could not stream pixdata to target)\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+const struct surface_painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
+    .base =
+        {
+            .init            = qp_surface_init,
+            .power           = qp_surface_power,
+            .clear           = qp_surface_clear,
+            .flush           = qp_surface_flush,
+            .pixdata         = qp_surface_pixdata_mono1bpp,
+            .viewport        = qp_surface_viewport,
+            .palette_convert = qp_surface_palette_convert_mono1bpp,
+            .append_pixels   = qp_surface_append_pixels_mono1bpp,
+        },
+    .target_pixdata_transfer = mono1bpp_target_pixdata_transfer,
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,7 +438,7 @@ const struct painter_driver_vtable_t _0bpp_surface_driver_vtable = {
         for (uint32_t i = 0; i < device_table_len; ++i) {                                                                                                                     \
             surface_painter_device_t *driver = &device_table[i];                                                                                                              \
             if (!driver->base.driver_vtable) {                                                                                                                                \
-                driver->base.driver_vtable         = &(vtable);                                                                                                               \
+                driver->base.driver_vtable         = (struct painter_driver_vtable_t *)&(vtable);                                                                             \
                 driver->base.native_bits_per_pixel = (bpp);                                                                                                                   \
                 driver->base.comms_vtable          = &dummy_comms_vtable;                                                                                                     \
                 driver->base.panel_width           = panel_width;                                                                                                             \
@@ -340,9 +464,9 @@ SURFACE_FACTORY_FUNCTION_IMPL(qp_make_0bpp_surface, _0bpp_surface_driver_vtable,
 // Drawing routine to copy out the dirty region and send it to another device
 
 bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t x, uint16_t y, bool entire_surface) {
-    struct painter_driver_t  *surface_driver = (struct painter_driver_t *)surface;
+    struct painter_driver_t * surface_driver = (struct painter_driver_t *)surface;
     surface_painter_device_t *surface_handle = (surface_painter_device_t *)surface_driver;
-    struct painter_driver_t  *target_driver  = (struct painter_driver_t *)target;
+    struct painter_driver_t * target_driver  = (struct painter_driver_t *)target;
 
     // If we're not dirty... we're done.
     if (!surface_handle->is_dirty) {
@@ -356,57 +480,12 @@ bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t
         return false;
     }
 
-    uint16_t l = entire_surface ? 0 : surface_handle->dirty_l;
-    uint16_t t = entire_surface ? 0 : surface_handle->dirty_t;
-    uint16_t r = entire_surface ? (surface_handle->base.panel_width - 1) : surface_handle->dirty_r;
-    uint16_t b = entire_surface ? (surface_handle->base.panel_height - 1) : surface_handle->dirty_b;
-
-    // Set the target drawing area
-    bool ok = qp_viewport(target, x + l, y + t, x + r, y + b);
+    // Offload to the pixdata transfer function
+    struct surface_painter_driver_vtable_t *vtbl = (struct surface_painter_driver_vtable_t *)surface_driver->driver_vtable;
+    bool                                    ok   = vtbl->target_pixdata_transfer(surface_driver, target_driver, x, y, entire_surface);
     if (!ok) {
-        qp_dprintf("qp_surface_draw: fail (could not set target viewport)\n");
+        qp_dprintf("qp_surface_draw: fail (could not transfer pixel data)\n");
         return false;
-    }
-
-    // Housekeeping of the amount of pixels to transfer
-    uint32_t  total_pixel_count = (8 * QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE) / surface_driver->native_bits_per_pixel;
-    uint32_t  pixel_counter     = 0;
-    uint16_t *target_buffer     = (uint16_t *)qp_internal_global_pixdata_buffer;
-
-    //////////////////////////////////////////
-    //////// TODO: Sort out non-16bpp ////////
-    //////////////////////////////////////////
-
-    // Fill the global pixdata area so that we can start transferring to the panel
-    for (uint16_t y = t; y <= b; ++y) {
-        for (uint16_t x = l; x <= r; ++x) {
-            // Update the target buffer
-            target_buffer[pixel_counter++] = surface_handle->u16buffer[y * surface_handle->base.panel_width + x];
-
-            // If we've accumulated enough data, send it
-            if (pixel_counter == total_pixel_count) {
-                ok = qp_pixdata(target, qp_internal_global_pixdata_buffer, pixel_counter);
-                if (!ok) {
-                    qp_dprintf("qp_surface_draw: fail (could not stream pixdata to target)\n");
-                    return false;
-                }
-                // Reset the counter
-                pixel_counter = 0;
-            }
-        }
-    }
-
-    //////////////////////////////////////////
-    //////// TODO: Sort out non-16bpp ////////
-    //////////////////////////////////////////
-
-    // If there's any leftover data, send it
-    if (pixel_counter > 0) {
-        ok = qp_pixdata(target, qp_internal_global_pixdata_buffer, pixel_counter);
-        if (!ok) {
-            qp_dprintf("qp_surface_draw: fail (could not stream pixdata to target)\n");
-            return false;
-        }
     }
 
     // Clear the dirty info for the surface
