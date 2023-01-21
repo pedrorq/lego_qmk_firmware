@@ -24,11 +24,11 @@ eink_panel_dc_reset_painter_device_t ssd1680_drivers[SSD1680_NUM_DEVICES] = {0};
 bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
 // longest directon
-    uint8_t width_lsb = (driver->base.panel_height-1) ;
-    uint8_t width_msb = ((driver->base.panel_height-1) >> 8) ;
+    uint8_t y_lsb = (driver->base.panel_height-1) &0xFF;
+    uint8_t y_msb = ((driver->base.panel_height-1) >> 8) & 0xFF;
 //shortest direction
     // it makes a weird division by 8
-    uint8_t height    = ((driver->base.panel_width-1)/8) ;
+    uint8_t x    = ((driver->base.panel_width-1)>>3) & 0xFF ;
 
     /*
      * Values that change based on the variant (BW/3C, partial/full, MCU/builtin RAM)
@@ -56,35 +56,61 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 #define SSD1680_RAM_X_COUNTER 0x4E
 #define SSD1680_RAM_Y_COUNTER 0x4F
 */
+
+
     // clang-format off
     const uint8_t ssd1680_init_sequence[] = {
-        // Command,                 Delay, N, Data[N]
-        SSD1680_SOFT_RESET,           250, 0,
-        SSD1680_DRIVER_OUTPUT_CONTROL,  0, 3, 0x27,0x01, 0x00,
-        SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
-        SSD1680_BORDER_CONTROL,         0, 1, 0x05,
-        SSD1680_TEMP_SENSOR,            0, 1, 0x80,
-        SSD1680_DISPLAY_UPDATE_CONTROL_RAM, 0, 2, 0x00, 0x88,
-
-        SSD1680_DATA_ENTRY_MODE,        0, 1, 0x03,
-        SSD1680_RAM_X_SIZE,             0, 2, 0x00, height,
-        SSD1680_RAM_Y_SIZE,             0 ,2, 0x00, 0x00, width_lsb, width_msb,
-        SSD1680_RAM_X_COUNTER,          0, 1, 0x00,
-        SSD1680_RAM_Y_COUNTER,          0, 2, 0x0, 0x0,
-//        SSD1680_VCOM_VOLTAGE,           0, 1, 0x36,
-//        SSD1680_GATE_VOLTAGE,           0, 1, 0x17,
-//        SSD1680_SOURCE_VOLTAGE,         0, 3, 0x41, 0x00, 0x32,
-        SSD1680_DISPLAY_UPDATE_CONTROL,  0, 1, update_mode,
-        SSD1680_ACTIVATE_DISPLAY_UPDATE, 200, 0,
+        // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
+        SSD1680_SOFT_RESET                , 250, 0, //0x12
+        SSD1680_DRIVER_OUTPUT_CONTROL     , 0  , 3, y_lsb, 0x00, 0x01, //0x01
+        SSD1680_DATA_ENTRY_MODE           , 0  , 1, 0x01, //0x11
+        SSD1680_RAM_X_SIZE                , 0  , 2, 0x00,x    , //0x44
+        SSD1680_RAM_Y_SIZE                , 0  , 2, y_lsb, y_msb,0x0,0x0,//0x45
+        SSD1680_BORDER_CONTROL            , 0  , 1, 0xC0, //0x3C
+        SSD1680_TEMP_SENSOR               , 0  , 1, 0x80, //0x18
+        SSD1680_WRITE_VCOM_REGISTER,        0,  1,0x70, //0x2C
+        SSD1680_GATE_DRIVING_VOLTAGE_CONTROL, 0, 1, 0x17,  //0x03
+        SSD1680_SOURCE_DRIVING_VOLTAGE_CONTROL,0,3,0x41,0x0,0x32, //0x04
+        SSD1680_WRITE_LUT_REGISTER, 0,153,
+  0x0, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x80, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x40, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0A, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2,
+  0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+  0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0, //0x32
+        SSD1680_RAM_X_COUNTER             , 0  , 1, 0x01, //0x4E
+        SSD1680_RAM_Y_COUNTER             , 0  , 2, y_lsb, 0x00, //0x4F
+        SSD1680_DISPLAY_UPDATE_CONTROL    , 0  , 1, 0xC7, //0x22
+        SSD1680_ACTIVATE_DISPLAY_UPDATE   , 200, 0, //0x20
 
     };
     // clang-format on
+    // this is hw reset according to the datasheet
+  writePinHigh(TESTS_RST_PIN);
+  wait_ms(200);
+  writePinLow(TESTS_RST_PIN);
+  wait_ms(200);
+  writePinHigh(TESTS_RST_PIN);
+  wait_ms(200);
+
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
   bool ret  = driver->base.driver_vtable->clear(driver);
-    dprintf("0x%x 0x%x 0x%x 0x%x\n ",update_mode, width_lsb,width_msb, height);
+    dprintf("0x%x 0x%x 0x%x 0x%x\n ",update_mode, y_lsb,y_msb, x);
 return ret;
 }
 

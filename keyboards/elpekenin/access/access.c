@@ -41,6 +41,8 @@ static painter_font_handle_t  thintel;
 //painter_device_t ssd1680;
 //uint8_t il91874_buffer[EINK_3C_BYTES_REQD(IL91874_WIDTH, IL91874_HEIGHT)];
 //uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
+//uint8_t ssd1680_buffer[EINK_BW_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)+13] = {0};
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
 
 
 #if defined (TOUCH_SCREEN_ENABLE)
@@ -60,10 +62,27 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     setPinOutput(POWER_LED_PIN);
     writePinHigh(POWER_LED_PIN);
 
-    // =======
-    // QP
+
+
+#if defined(QUANTUM_PAINTER_ENABLE)
+
+
+  setPinOutput(TESTS_RST_PIN);
+
+
+    // // Virtual pins names
+    // configure_sipo_pins(
+    //     SCREEN_SPI_DC_PIN,
+    //     IL91874_CS_PIN, IL91874_RST_PIN,
+    //     ILI9163_CS_PIN, ILI9163_RST_PIN,
+    //     ILI9341_CS_PIN, ILI9341_RST_PIN,
+    //     ILI9486_CS_PIN, ILI9486_RST_PIN
+    //     // touch screen code isn't adjusted for SIPO yet
+    //     // ,ILI9341_TOUCH_CS_PIN, ILI9486_TOUCH_CS_PIN
+    // );
+
+    wait_ms(15000); //Let screens draw some power
     load_qp_resources();
-    wait_ms(6000); //Let screens draw some power
 
 #if defined(INIT_EE_HANDS_LEFT)
     configure_sipo_pins(
@@ -144,17 +163,20 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     thintel       = qp_load_font_mem(font_thintel15);
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
-    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, true);
+    //qp_rect(ssd1680, 0, 0, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, true);
     qp_drawimage_recolor(ssd1680, 0, SSD1680_HEIGHT/2+5, qp_images[2], HSV_BLACK, HSV_WHITE);
     qp_drawimage_recolor(ssd1680, 50, 165, qp_images[3], HSV_BLACK, HSV_WHITE);
     qp_drawimage_recolor(ssd1680, 70, SSD1680_HEIGHT/2-60, qp_images[6], HSV_BLACK, HSV_WHITE);
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
-    int16_t               hello_width = qp_textwidth(qp_fonts[0], "Hello world");
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 10, qp_fonts[0],"Hello world",HSV_BLACK,HSV_WHITE);
+    char hello[] = "Hello World!";
+    int16_t               hello_width = qp_textwidth(qp_fonts[0], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,HSV_BLACK,HSV_WHITE);
     int16_t               hash_width = qp_textwidth(qp_fonts[0], commit_hash);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, SSD1680_HEIGHT-1.25*qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, 5+2*qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     int16_t               build_width = qp_textwidth(thintel, build_date);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, SSD1680_HEIGHT-2.25*thintel->line_height,thintel, build_date, HSV_BLACK, HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, 5+4*thintel->line_height,thintel, build_date, HSV_BLACK, HSV_WHITE);
     eink_panel_dc_reset_painter_device_t *eink = (eink_panel_dc_reset_painter_device_t *)ssd1680;
     defer_exec(eink->timeout, flush_display, (void *)ssd1680);
 

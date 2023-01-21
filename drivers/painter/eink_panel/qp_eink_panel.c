@@ -38,7 +38,7 @@ bool qp_eink_panel_clear(painter_device_t device) {
     qp_init(driver->black_surface, driver->base.rotation);
     if (driver->invert_black) {
         memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, black->base.native_bits_per_pixel));
-    }
+   }
 
     qp_init(driver->red_surface, driver->base.rotation);
     if (driver->invert_red) {
