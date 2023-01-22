@@ -18,6 +18,15 @@
 // Driver storage
 eink_panel_dc_reset_painter_device_t ssd1680_drivers[SSD1680_NUM_DEVICES] = {0};
 
+static inline void hw_reset(pin_t pin) {
+  writePinHigh(pin);
+  wait_ms(200);
+  writePinLow(pin);
+  wait_ms(200);
+  writePinHigh(pin);
+  wait_ms(200);
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Initialization
 
@@ -75,13 +84,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     };
     // clang-format on
     // this is hw reset according to the datasheet
-  writePinHigh(TESTS_RST_PIN);
-  wait_ms(200);
-  writePinLow(TESTS_RST_PIN);
-  wait_ms(200);
-  writePinHigh(TESTS_RST_PIN);
-  wait_ms(200);
-
+    hw_reset(TESTS_RST_PIN);
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
   dprintf("0x%x 0x%x 0x%x\n ", y_lsb,y_msb, x);
