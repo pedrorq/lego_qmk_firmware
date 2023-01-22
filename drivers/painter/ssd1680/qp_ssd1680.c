@@ -100,12 +100,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
         if (!driver->base.driver_vtable) {
             driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&ssd1680_driver_vtable;
             driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
-            /*
-             * FIXME: May need an adjustment as each bit is really stored in 2 bits for 3-color displays
-             *
-             * However, this is fine (for now?) as the bits_per_pixel is only used on the underlying surface drivers
-             * to memeset the buffer to 0, where 1 bit on each surface is still correct
-             */
+
             driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
@@ -118,20 +113,12 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->red_surface = qp_make_0bpp_surface(panel_width, panel_height, NULL);
 
             driver->has_3color = false;
-            driver->has_ram    = false;
 
             driver->timeout   = 2 * 60 * 1000; // 2 minutes as seen on WeAct
             driver->can_flush = true;
 
             driver->invert_black = true;
             driver->invert_red   = false;
-
-            driver->ram_opcodes.write_status = 0;
-            driver->ram_opcodes.read_status  = 0;
-            driver->ram_opcodes.write_data   = 0;
-            driver->ram_opcodes.read_data    = 0;
-            driver->ram_opcodes.sequential   = 0;
-            driver->ram_chip_select_pin      = NO_PIN;
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;

@@ -77,7 +77,7 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/il91874
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
-            $(DRIVER_PATH)/painter/eink_panel/sram.c \
+            $(DRIVER_PATH)/painter/il91874/sram.c \
             $(DRIVER_PATH)/painter/il91874/qp_il91874.c \
             $(DRIVER_PATH)/painter/generic/qp_surface.c
 

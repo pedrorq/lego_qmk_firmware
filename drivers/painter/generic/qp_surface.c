@@ -59,7 +59,7 @@ static inline void increment_pixdata_location(surface_painter_device_t *surface)
         surface->pixdata_y = surface->viewport_t;
     }
 
-    compute_rotated(surface);
+    // compute_rotated(surface);
 }
 
 static void update_dirty(surface_painter_device_t *surface, uint16_t x, uint16_t y) {
@@ -127,7 +127,7 @@ static bool qp_surface_viewport(painter_device_t device, uint16_t left, uint16_t
     surface->pixdata_x = left;
     surface->pixdata_y = top;
 
-    compute_rotated(surface);
+    // compute_rotated(surface);
 
     return true;
 }
@@ -281,7 +281,7 @@ static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t
 }
 
 static inline void append_pixel_mono1bpp(surface_painter_device_t *surface, bool mono_pixel) {
-    setpixel_mono1bpp(surface, surface->x, surface->y, mono_pixel);
+    setpixel_mono1bpp(surface, surface->pixdata_x, surface->pixdata_y, mono_pixel);
     increment_pixdata_location(surface);
 }
 

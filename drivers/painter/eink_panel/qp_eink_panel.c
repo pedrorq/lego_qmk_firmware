@@ -6,7 +6,6 @@
 #include "qp_eink_panel.h"
 #include "qp_internal.h"
 #include "qp_surface.h"
-#include "sram.h"
 
 // TODO: Optimize data representation
 // Current format wastes 6 bits on each byte: | 0000 00BR | 0000 00BR | ...
@@ -58,6 +57,14 @@ uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
     return 0;
 }
 
+// Set can_flush to false and schedule its cleanup
+void qp_eink_update_can_flush(painter_device_t device) {
+    struct eink_panel_dc_reset_painter_device_t *       driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
+
+    driver->can_flush = false;
+    defer_exec(driver->timeout, can_flush_callback, (void *)device);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
@@ -77,26 +84,20 @@ bool qp_eink_panel_flush(painter_device_t device) {
         return false;
     }
 
-    if (driver->has_ram) {
-        sram_flush(device);
-    } else {
-        qp_comms_command(device, vtable->opcodes.send_black_data);
-        qp_comms_send(device, black->buffer, n_bytes);
+    qp_comms_command(device, vtable->opcodes.send_black_data);
+    qp_comms_send(device, black->buffer, n_bytes);
 
-        // even if we have a B/W display, ot may need to receive empty red data
-        // to prevent noisy drawing, we check whether this is needed by looking
-        // at bits_per_pixel, should be 0 if we don't need to send and 1 if we do
-        if (red->base.native_bits_per_pixel) {
-            qp_comms_command(device, vtable->opcodes.send_red_data);
-            qp_comms_send(device, red->buffer, n_bytes);
-        }
-
-        qp_comms_command(device, vtable->opcodes.refresh);
+    // even if we have a B/W display, ot may need to receive empty red data
+    // to prevent noisy drawing, we check whether this is needed by looking
+    // at bits_per_pixel, should be 0 if we don't need to send and 1 if we do
+    if (red->base.native_bits_per_pixel) {
+        qp_comms_command(device, vtable->opcodes.send_red_data);
+        qp_comms_send(device, red->buffer, n_bytes);
     }
 
-    // Set device on cant flush mode and schedule a function to reset the flag
-    driver->can_flush = false;
-    defer_exec(driver->timeout, can_flush_callback, (void *)device);
+    qp_comms_command(device, vtable->opcodes.refresh);
+
+    qp_eink_update_can_flush(device);
 
     return true;
 }
@@ -119,10 +120,6 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct painter_driver_t *                    black  = (struct painter_driver_t *)driver->black_surface;
     uint8_t *                                    pixels = (uint8_t *)pixel_data;
-
-    if (driver->has_ram) {
-        return sram_pixdata(device, pixel_data, native_pixel_count);
-    }
 
     // Since pixel data is stored as | 0000 00RB |, we have to append the pixels
     // one by one parsing those bits on each byte
