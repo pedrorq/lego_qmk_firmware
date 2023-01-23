@@ -20,30 +20,6 @@ surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES] = {0};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 
-static inline void compute_rotated(surface_painter_device_t *surface) {
-    switch (surface->base.rotation) {
-        case QP_ROTATION_0:
-            surface->x = surface->pixdata_x;
-            surface->y = surface->pixdata_y;
-            break;
-
-        case QP_ROTATION_90:
-            surface->x = surface->base.panel_height - surface->pixdata_y;
-            surface->y = surface->pixdata_x;
-            break;
-
-        case QP_ROTATION_180:
-            surface->x = surface->base.panel_width - surface->pixdata_x;
-            surface->y = surface->base.panel_height - surface->pixdata_y;
-            break;
-
-        case QP_ROTATION_270:
-            surface->x = surface->pixdata_y;
-            surface->y = surface->base.panel_width - surface->pixdata_x;
-            break;
-    }
-}
-
 static inline void increment_pixdata_location(surface_painter_device_t *surface) {
     // Increment the X-position
     surface->pixdata_x++;
@@ -58,8 +34,6 @@ static inline void increment_pixdata_location(surface_painter_device_t *surface)
     if (surface->pixdata_y > surface->viewport_b) {
         surface->pixdata_y = surface->viewport_t;
     }
-
-    // compute_rotated(surface);
 }
 
 static void update_dirty(surface_painter_device_t *surface, uint16_t x, uint16_t y) {
@@ -126,8 +100,6 @@ static bool qp_surface_viewport(painter_device_t device, uint16_t left, uint16_t
     // Reset the write location to the top left
     surface->pixdata_x = left;
     surface->pixdata_y = top;
-
-    // compute_rotated(surface);
 
     return true;
 }
@@ -255,11 +227,40 @@ const struct surface_painter_driver_vtable_t rgb565_surface_driver_vtable = {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable: mono1bpp
+#define QP_SWAP(a, b) {   \
+    uint16_t temp = a; \
+    a = b;             \
+    b = temp;          \
+}
 
 static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t x, uint16_t y, bool mono_pixel) {
     // Skip messing with the dirty info if the original value already matches
 
-    uint32_t pixel_num   = y * surface->base.panel_width + x;
+    uint16_t width  = surface->base.panel_width;
+    uint16_t height = surface->base.panel_height;
+
+    switch (surface->base.rotation) {
+        case QP_ROTATION_0:
+            break;
+
+        case QP_ROTATION_90:
+            QP_SWAP(x, y);
+            x = width - x -1;
+            break;
+
+        case QP_ROTATION_180:
+            x = width  - x - 1;
+            y = height - y - 1;
+            break;
+
+        case QP_ROTATION_270:
+            QP_SWAP(x, y);
+            y = height - y - 1;
+            break;
+    }
+
+    uint32_t pixel_num   = x + y * width;
+    surface->index       = pixel_num;
     uint32_t byte_offset = pixel_num / 8;
     uint8_t  bit_offset  = 7 - pixel_num % 8;
     bool     curr_val    = (surface->u8buffer[byte_offset] & (1 << bit_offset)) ? true : false;
@@ -419,15 +420,25 @@ static bool qp_surface_append_pixels_0bpp(painter_device_t device, uint8_t *targ
     return true;
 }
 
-const struct painter_driver_vtable_t _0bpp_surface_driver_vtable = {
-    .init            = qp_surface_init,
-    .power           = qp_surface_power,
-    .clear           = qp_surface_clear,
-    .flush           = qp_surface_flush,
-    .pixdata         = qp_surface_pixdata_0bpp,
-    .viewport        = qp_surface_viewport,
-    .palette_convert = qp_surface_palette_convert_0bpp,
-    .append_pixels   = qp_surface_append_pixels_0bpp,
+static bool qp_surface_target_pixdata_transfer_0bpp(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
+    // No-op.
+    return true;
+}
+
+
+const struct surface_painter_driver_vtable_t _0bpp_surface_driver_vtable = {
+    .base =
+        {
+            .init            = qp_surface_init,
+            .power           = qp_surface_power,
+            .clear           = qp_surface_clear,
+            .flush           = qp_surface_flush,
+            .pixdata         = qp_surface_pixdata_0bpp,
+            .viewport        = qp_surface_viewport,
+            .palette_convert = qp_surface_palette_convert_0bpp,
+            .append_pixels   = qp_surface_append_pixels_0bpp,
+        },
+    .target_pixdata_transfer = qp_surface_target_pixdata_transfer_0bpp,
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

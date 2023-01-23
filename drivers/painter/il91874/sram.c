@@ -163,7 +163,7 @@ bool sram_flush(painter_device_t device) {
 }
 
 static inline uint32_t get_pixel(surface_painter_device_t *surface) {
-    return surface->x + surface->y * surface->base.panel_width;
+    return surface->index;
 }
 
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {

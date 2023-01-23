@@ -69,7 +69,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
-    return driver->base.driver_vtable->clear(driver);
+    return qp_eink_panel_clear(driver);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,10 +111,8 @@ bool qp_il91874_with_sram_init(painter_device_t device, painter_rotation_t rotat
 }
 
 bool qp_il91874_with_sram_clear(painter_device_t device) {
-    struct painter_driver_t *driver  = (struct painter_driver_t *)device;
-
-    // init will clear both RAM and 0bpp surfaces(pixdata/viewport), with the same rotation it had
-    return qp_il91874_with_sram_init(device, driver->rotation);
+    sram_init(device);
+    return qp_eink_panel_clear(device);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
