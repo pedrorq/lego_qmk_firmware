@@ -420,25 +420,15 @@ static bool qp_surface_append_pixels_0bpp(painter_device_t device, uint8_t *targ
     return true;
 }
 
-static bool qp_surface_target_pixdata_transfer_0bpp(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
-    // No-op.
-    return true;
-}
-
-
-const struct surface_painter_driver_vtable_t _0bpp_surface_driver_vtable = {
-    .base =
-        {
-            .init            = qp_surface_init,
-            .power           = qp_surface_power,
-            .clear           = qp_surface_clear,
-            .flush           = qp_surface_flush,
-            .pixdata         = qp_surface_pixdata_0bpp,
-            .viewport        = qp_surface_viewport,
-            .palette_convert = qp_surface_palette_convert_0bpp,
-            .append_pixels   = qp_surface_append_pixels_0bpp,
-        },
-    .target_pixdata_transfer = qp_surface_target_pixdata_transfer_0bpp,
+const struct painter_driver_vtable_t empty_0bpp_surface_driver_vtable = {
+    .init            = qp_surface_init,
+    .power           = qp_surface_power,
+    .clear           = qp_surface_clear,
+    .flush           = qp_surface_flush,
+    .pixdata         = qp_surface_pixdata_0bpp,
+    .viewport        = qp_surface_viewport,
+    .palette_convert = qp_surface_palette_convert_0bpp,
+    .append_pixels   = qp_surface_append_pixels_0bpp,
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -469,7 +459,7 @@ const struct surface_painter_driver_vtable_t _0bpp_surface_driver_vtable = {
 
 SURFACE_FACTORY_FUNCTION_IMPL(qp_make_rgb565_surface, rgb565_surface_driver_vtable, 16);
 SURFACE_FACTORY_FUNCTION_IMPL(qp_make_mono1bpp_surface, mono1bpp_surface_driver_vtable, 1);
-SURFACE_FACTORY_FUNCTION_IMPL(qp_make_0bpp_surface, _0bpp_surface_driver_vtable, 0);
+SURFACE_FACTORY_FUNCTION_IMPL(qp_make_0bpp_surface, empty_0bpp_surface_driver_vtable, 0);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Drawing routine to copy out the dirty region and send it to another device

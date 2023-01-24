@@ -69,7 +69,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
-    return qp_eink_panel_clear(driver);
+    return driver->base.driver_vtable->clear(driver);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,13 +106,15 @@ bool qp_il91874_no_sram_flush(painter_device_t device) {
 }
 
 bool qp_il91874_with_sram_init(painter_device_t device, painter_rotation_t rotation) {
+    bool ret = qp_il91874_init(device, rotation);
     sram_init(device);
-    return qp_il91874_init(device, rotation);
+    return ret;
 }
 
 bool qp_il91874_with_sram_clear(painter_device_t device) {
+    bool ret = qp_eink_panel_clear(device);
     sram_init(device);
-    return qp_eink_panel_clear(device);
+    return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
