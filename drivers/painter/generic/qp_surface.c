@@ -20,6 +20,12 @@ surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES] = {0};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 
+#define QP_SWAP(a, b) { \
+    uint16_t temp = a;  \
+    a = b;              \
+    b = temp;           \
+}
+
 static inline void increment_pixdata_location(surface_painter_device_t *surface) {
     // Increment the X-position
     surface->pixdata_x++;
@@ -34,6 +40,30 @@ static inline void increment_pixdata_location(surface_painter_device_t *surface)
     if (surface->pixdata_y > surface->viewport_b) {
         surface->pixdata_y = surface->viewport_t;
     }
+
+    // Compute rotated index
+    uint16_t x = surface->pixdata_x;
+    uint16_t y = surface->pixdata_y;
+    switch (surface->base.rotation) {
+        case QP_ROTATION_0:
+            break;
+
+        case QP_ROTATION_90:
+            QP_SWAP(x, y);
+            x = surface->base.panel_width - x -1;
+            break;
+
+        case QP_ROTATION_180:
+            x = surface->base.panel_width  - x - 1;
+            y = surface->base.panel_height - y - 1;
+            break;
+
+        case QP_ROTATION_270:
+            QP_SWAP(x, y);
+            y = surface->base.panel_height - y - 1;
+            break;
+    }
+    surface->index = x + y * surface->base.panel_width;
 }
 
 static void update_dirty(surface_painter_device_t *surface, uint16_t x, uint16_t y) {
@@ -227,40 +257,9 @@ const struct surface_painter_driver_vtable_t rgb565_surface_driver_vtable = {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable: mono1bpp
-#define QP_SWAP(a, b) {   \
-    uint16_t temp = a; \
-    a = b;             \
-    b = temp;          \
-}
-
 static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t x, uint16_t y, bool mono_pixel) {
     // Skip messing with the dirty info if the original value already matches
-
-    uint16_t width  = surface->base.panel_width;
-    uint16_t height = surface->base.panel_height;
-
-    switch (surface->base.rotation) {
-        case QP_ROTATION_0:
-            break;
-
-        case QP_ROTATION_90:
-            QP_SWAP(x, y);
-            x = width - x -1;
-            break;
-
-        case QP_ROTATION_180:
-            x = width  - x - 1;
-            y = height - y - 1;
-            break;
-
-        case QP_ROTATION_270:
-            QP_SWAP(x, y);
-            y = height - y - 1;
-            break;
-    }
-
-    uint32_t pixel_num   = x + y * width;
-    surface->index       = pixel_num;
+    uint32_t pixel_num   = surface->index;
     uint32_t byte_offset = pixel_num / 8;
     uint8_t  bit_offset  = 7 - pixel_num % 8;
     bool     curr_val    = (surface->u8buffer[byte_offset] & (1 << bit_offset)) ? true : false;

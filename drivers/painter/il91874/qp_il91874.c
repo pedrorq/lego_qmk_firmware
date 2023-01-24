@@ -172,8 +172,7 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_with_sram_drive
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
 
 // Factory functions for creating a handle to the IL91874 device
-// No built-in RAM
-painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, void *ptr) {
+painter_device_t _qp_il91874_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color) {
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
@@ -194,11 +193,8 @@ painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16
             driver->invert_black = false;
             driver->invert_red   = false;
 
-            driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            if (has_3color)
-                driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
-            else
-                driver->red_surface = qp_make_0bpp_surface(panel_width, panel_height, NULL);
+            driver->black_surface = NULL;
+            driver->red_surface   = NULL;
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
@@ -215,9 +211,24 @@ painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16
     return NULL;
 }
 
+// No built-in RAM
+painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, void *ptr) {
+    painter_device_t device = _qp_il91874_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, has_3color);
+    if (device) {
+        eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+
+        driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
+        if (has_3color)
+            driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
+        else
+            driver->red_surface = qp_make_0bpp_surface(panel_width, panel_height, NULL);
+    }
+    return device;
+}
+
 // Built-in RAM
 painter_device_t qp_il91874_with_sram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, pin_t sram_chip_select_pin) {
-    painter_device_t device = qp_il91874_no_sram_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, has_3color, NULL);
+    painter_device_t device = _qp_il91874_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, has_3color);
     if (device) {
         eink_panel_dc_reset_with_sram_painter_device_t *drv   = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
         eink_panel_dc_reset_painter_device_t *         driver = (eink_panel_dc_reset_painter_device_t *)device;
