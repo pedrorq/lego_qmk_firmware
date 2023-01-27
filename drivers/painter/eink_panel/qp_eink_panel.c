@@ -6,6 +6,7 @@
 #include "qp_eink_panel.h"
 #include "qp_internal.h"
 #include "qp_surface.h"
+#include "qp_surface_internal.h"
 
 // TODO: Optimize data representation
 // Current format wastes 6 bits on each byte: | 0000 00BR | 0000 00BR | ...
@@ -28,11 +29,13 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen clear
 bool qp_eink_panel_clear(painter_device_t device) {
-    // this function gets called by eink's init, we init red even if display doesn't support 3 color, as sending
-    // empty data for those bits may be needed
+    // this function gets called by eink's init
+    // we init red even if display doesn't support 3 color, empty data for it may be needed
     struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
     struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
     struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
+
+    qp_dprintf("eink_clear %p\n", driver->black_surface);
 
     qp_init(driver->black_surface, driver->base.rotation);
     if (driver->invert_black) {
@@ -74,7 +77,7 @@ bool qp_eink_panel_flush(painter_device_t device) {
     struct surface_painter_device_t *                   red     = (struct surface_painter_device_t *)driver->red_surface;
     uint32_t                                            n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
 
-    if (!(black->is_dirty || red->is_dirty)) {
+    if (!(black->dirty.is_dirty || red->dirty.is_dirty)) {
         qp_dprintf("qp_eink_panel_flush: done (no changes to be sent)\n");
         return true;
     }

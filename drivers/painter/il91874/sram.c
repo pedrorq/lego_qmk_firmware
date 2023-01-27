@@ -6,6 +6,7 @@
 #include "qp_il91874_opcodes.h"
 #include "qp_internal.h"
 #include "qp_surface.h"
+#include "qp_surface_internal.h"
 #include "spi_master.h"
 
 
@@ -71,6 +72,7 @@ void sram_spi_stop(painter_device_t device) {
 }
 
 void sram_init(painter_device_t device) {
+    qp_dprintf("sram_init: entry\n");
     eink_panel_dc_reset_with_sram_painter_device_t *driver  = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
     uint8_t                                         array[] = {SRAM_23K640_WRITE_STATUS, SRAM_23K640_SEQUENTIAL_MODE};
 
@@ -92,6 +94,8 @@ void sram_init(painter_device_t device) {
     spi_transmit(array, ARRAY_SIZE(array));
 
     sram_spi_stop(device);
+
+    qp_dprintf("sram_init: ok\n");
 }
 
 void sram_to_display(painter_device_t device, bool black) {
@@ -104,8 +108,10 @@ void sram_to_display(painter_device_t device, bool black) {
     uint8_t                                             cmd          = vtable->opcodes.send_black_data;
 
     // red data on a BW display - quit
-    if (!black && !driver->has_3color)
+    if (!black && !driver->has_3color) {
+        qp_dprintf("Skipping red data\n");
         return;
+    }
 
     // black data on BW mode has to be sent with red's opcode
     if ((black && !driver->has_3color) || !black)
@@ -162,8 +168,40 @@ bool sram_flush(painter_device_t device) {
     return true;
 }
 
+#define SWAP(a, b) { \
+    uint16_t t = a;  \
+    a = b;           \
+    b = t;           \
+}
+
 static inline uint32_t get_pixel(surface_painter_device_t *surface) {
-    return surface->index;
+    uint16_t w = surface->base.panel_width;
+    uint16_t h = surface->base.panel_height;
+
+    uint16_t x = surface->viewport.pixdata_x;
+    uint16_t y = surface->viewport.pixdata_y;
+
+    switch (surface->base.rotation) {
+        case QP_ROTATION_0:
+            break;
+
+        case QP_ROTATION_90:
+            SWAP(x, y);
+            x = w - x - 1;
+            break;
+
+        case QP_ROTATION_180:
+            x = w - x - 1;
+            y = h - y - 1;
+            break;
+
+        case QP_ROTATION_270:
+            SWAP(x, y);
+            y = h - y - 1;
+            break;
+    }
+
+    return y * w + x;
 }
 
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
@@ -221,9 +259,9 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
 
         // next pixel will be on another byte, send this byte
         if (byte != last_byte) {
-            sram_write(device, byte, &black_data, 1);
+            sram_write(device, last_byte, &black_data, 1);
             if (driver->has_3color)
-                sram_write(device, red_offset + byte, &red_data, 1);
+                sram_write(device, red_offset + last_byte, &red_data, 1);
         }
     }
 

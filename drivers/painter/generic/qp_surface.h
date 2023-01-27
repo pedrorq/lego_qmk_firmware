@@ -49,14 +49,14 @@ painter_device_t qp_make_rgb565_surface(uint16_t panel_width, uint16_t panel_hei
 painter_device_t qp_make_mono1bpp_surface(uint16_t panel_width, uint16_t panel_height, void *buffer);
 
 /**
- * Factory method for a 0bpp surface (aka framebuffer).
+ * Factory method for a 0bpp monochrome surface (aka framebuffer).
  *
  * @param panel_width[in] the width of the display panel
  * @param panel_height[in] the height of the display panel
- * @param buffer[in] pointer to a preallocated uint8_t buffer of size `0`
+ * @param buffer[in] pointer to a preallocated uint8_t buffer of size `SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1)`
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_make_0bpp_surface(uint16_t panel_width, uint16_t panel_height, void *buffer);
+painter_device_t qp_make_empty0bpp_surface(uint16_t panel_width, uint16_t panel_height, void *buffer);
 
 /**
  * Helper method to draw the contents of the framebuffer to the target device.
@@ -71,62 +71,5 @@ painter_device_t qp_make_0bpp_surface(uint16_t panel_width, uint16_t panel_heigh
  * @return whether the draw operation completed successfully
  */
 bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t x, uint16_t y, bool entire_surface);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Advanced declarations
-
-// Surface struct
-typedef struct surface_painter_device_t {
-    struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
-
-    // The target buffer
-    union {
-        void *    buffer;
-        uint8_t * u8buffer;
-        uint16_t *u16buffer;
-    };
-
-    // Manually manage the viewport for streaming pixel data to the display
-    uint16_t viewport_l;
-    uint16_t viewport_t;
-    uint16_t viewport_r;
-    uint16_t viewport_b;
-
-    // Current write location to the display when streaming pixel data
-    uint16_t pixdata_x;
-    uint16_t pixdata_y;
-    uint32_t index;
-
-    // Maintain a dirty region so we can stream only what we need
-    bool     is_dirty;
-    uint16_t dirty_l;
-    uint16_t dirty_t;
-    uint16_t dirty_r;
-    uint16_t dirty_b;
-} surface_painter_device_t;
-
-/**
- * Factory method for an RGB565 surface (aka framebuffer). Accepts an external device table.
- *
- * @param device_table[in] the table of devices to use for instantiation
- * @param device_table_len[in] the length of the table of devices
- * @param panel_width[in] the width of the display panel
- * @param panel_height[in] the height of the display panel
- * @param buffer[in] pointer to a preallocated uint8_t buffer of size `SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 16)`
- * @return the device handle used with all drawing routines in Quantum Painter
- */
-painter_device_t qp_make_rgb565_surface_advanced(surface_painter_device_t *device_table, size_t device_table_len, uint16_t panel_width, uint16_t panel_height, void *buffer);
-
-/**
- * Factory method for a 1bpp monochrome surface (aka framebuffer).
- *
- * @param device_table[in] the table of devices to use for instantiation
- * @param device_table_len[in] the length of the table of devices
- * @param panel_width[in] the width of the display panel
- * @param panel_height[in] the height of the display panel
- * @param buffer[in] pointer to a preallocated uint8_t buffer of size `SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 16)`
- * @return the device handle used with all drawing routines in Quantum Painter
- */
-painter_device_t qp_make_mono1bpp_surface_advanced(surface_painter_device_t *device_table, size_t device_table_len, uint16_t panel_width, uint16_t panel_height, void *buffer);
 
 #endif // QUANTUM_PAINTER_SURFACE_ENABLE
