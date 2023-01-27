@@ -108,10 +108,8 @@ void sram_to_display(painter_device_t device, bool black) {
     uint8_t                                             cmd          = vtable->opcodes.send_black_data;
 
     // red data on a BW display - quit
-    if (!black && !driver->has_3color) {
-        qp_dprintf("Skipping red data\n");
+    if (!black && !driver->has_3color)
         return;
-    }
 
     // black data on BW mode has to be sent with red's opcode
     if ((black && !driver->has_3color) || !black)
@@ -219,7 +217,7 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
     uint32_t pixel     = get_pixel(black);
     uint16_t byte      = pixel / 8;
     uint16_t last_byte = UINT16_MAX;
-    uint8_t  bit       = pixel % 8;
+    uint8_t  bit       = 7 - (pixel % 8);
 
     if (!sram_spi_start(device)) {
         qp_dprintf("sram_pixdata: fail\n");
@@ -231,6 +229,19 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
         if (byte != last_byte) {
             black_data = sram_read_byte(device, byte);
 
+            qp_dprintf(
+                "Read %d%d%d%d%d%d%d%d from address %X, ",
+                (black_data >> 7) & 1,
+                (black_data >> 6) & 1,
+                (black_data >> 5) & 1,
+                (black_data >> 4) & 1,
+                (black_data >> 3) & 1,
+                (black_data >> 2) & 1,
+                (black_data >> 1) & 1,
+                (black_data >> 0) & 1,
+                byte
+            );
+
             if (driver->has_3color) {
                 red_data = sram_read_byte(device, red_offset + byte);
             }
@@ -240,26 +251,53 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
 
         // add pixel info to buffer(s)
         if (pixels[i] & 1)
-            black_data |=  (1 << (7-bit));
+            black_data |=  (1 << bit);
         else
-            black_data &= ~(1 << (7-bit));
+            black_data &= ~(1 << bit);
+
+        qp_dprintf(
+            "set bit %d to %d, resulting in %d%d%d%d%d%d%d%d, ",
+            bit,
+            (pixels[i] & 1) ? 1 : 0,
+            (black_data >> 7) & 1,
+            (black_data >> 6) & 1,
+            (black_data >> 5) & 1,
+            (black_data >> 4) & 1,
+            (black_data >> 3) & 1,
+            (black_data >> 2) & 1,
+            (black_data >> 1) & 1,
+            (black_data >> 0) & 1
+        );
 
         if (driver->has_3color) {
             if (pixels[i] & 2)
-                red_data |=  (1 << (7-bit));
+                red_data |=  (1 << bit);
             else
-                red_data &= ~(1 << (7-bit));
+                red_data &= ~(1 << bit);
         }
 
         // update position with dummy value, used to compute address
         black->base.driver_vtable->pixdata(black, (const void *)0, 1);
         pixel = get_pixel(black);
         byte  = pixel / 8;
-        bit   = pixel % 8;
+        bit   = 7 - (pixel % 8);
 
         // next pixel will be on another byte, send this byte
         if (byte != last_byte) {
             sram_write(device, last_byte, &black_data, 1);
+                 qp_dprintf(
+                    ". Writing %d%d%d%d%d%d%d%d at %X\n",
+                    (black_data >> 7) & 1,
+                    (black_data >> 6) & 1,
+                    (black_data >> 5) & 1,
+                    (black_data >> 4) & 1,
+                    (black_data >> 3) & 1,
+                    (black_data >> 2) & 1,
+                    (black_data >> 1) & 1,
+                    (black_data >> 0) & 1,
+                    last_byte
+                );
+
             if (driver->has_3color)
                 sram_write(device, red_offset + last_byte, &red_data, 1);
         }
