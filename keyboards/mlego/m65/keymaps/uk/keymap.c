@@ -17,9 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "keymap_uk.h"
-#ifdef CONSOLE_ENABLE
-#include "print.h"
-#endif
 
 const uint32_t unicode_map[] PROGMEM = {
     [la]  = 0x03B1 , // α
@@ -271,83 +268,3 @@ adj layer
 };
 // clang-format on
 
-bool led_update_user(led_t led_state) {
-    // Disable the default LED update code, so that lock LEDs could be reused to show layer status.
-    return false;
-}
-
-void matrix_scan_user(void) {
-
-    toggle_leds();
-
-}
-
-bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-#ifdef CONSOLE_ENABLE
-    uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed, record->event.time, record->tap.interrupted, record->tap.count);
-#endif
-
-    switch (keycode) {
-        case (TT(_LWR)):
-            if (!record->event.pressed && record->tap.count == TAPPING_TOGGLE) {
-                // This runs before the TT() handler toggles the layer state, so the current layer state is the opposite of the final one after toggle.
-                set_led_toggle(_LWR, !layer_state_is(_LWR));
-            }
-            return true;
-            break;
-        case (TT(_RSE)):
-            if (record->event.pressed && record->tap.count == TAPPING_TOGGLE) {
-                set_led_toggle(_RSE, !layer_state_is(_RSE));
-            }
-            return true;
-            break;
-        default:
-            return true;
-    }
-}
-
-layer_state_t layer_state_set_user(layer_state_t state) {
-
-    layer_state_t st = update_tri_layer_state(state, _LWR, _RSE, _ADJ);
-
-#ifdef RGBLIGHT_ENABLE
-
-   set_rgb_layers(state);
-
-#endif
-
-    return st;
-}
-
-#ifdef RGBLIGHT_ENABLE
-
-layer_state_t default_layer_state_set_user(layer_state_t state) {
-
-    set_default_rgb_layers(state);
-    return state;
-}
-
-#endif
-
-void keyboard_post_init_user(void) {
-
-#ifdef RGBLIGHT_ENABLE
-#ifdef RGB_ENABLE_PIN
-    setPinOutput(RGB_ENABLE_PIN);
-    writePinHigh(RGB_ENABLE_PIN);
-    wait_ms(30);
-#endif
-  // Enable the LED layers
-    rgblight_layers = my_rgb();
-
-#endif
-
-#ifdef OLED_ENABLE
-    init_timer();
-#endif
-#ifdef CONSOLE_ENABLE
-  debug_enable = true;
-  debug_matrix = true;
-  debug_keyboard = true;
-#endif
-}
