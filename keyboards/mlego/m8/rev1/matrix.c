@@ -21,6 +21,9 @@ static inline uint8_t read_rows(void) {
   spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
     spi_status_t read_result = spi_read();
 spi_stop();
+    if (read_result >= 1) {
+     uprintf("rows %u\n",read_result);
+    }
     if (read_result >= 0) {
        return (uint8_t) read_result;
      } else{
