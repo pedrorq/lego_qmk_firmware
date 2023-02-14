@@ -56,7 +56,7 @@ void matrix_init_custom(void) {
 
   setPinOutput(SPI_LATCH_PIN);
   matrix_io_delay();
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  //spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
   matrix_io_delay();
 }
 
