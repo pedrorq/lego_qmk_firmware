@@ -24,9 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_QW] = LAYOUT_ortho_4x2(
-       KC_1    , KC_4    ,
-       KC_2    , KC_5    ,
-       KC_3    , KC_6    ,
+       KC_1    , KC_2    ,
+       KC_3    , KC_4    ,
+       KC_5    , KC_6    ,
       TT(_LWR),  TT(_RSE)),
 
   [_LWR] = LAYOUT_ortho_4x2(
