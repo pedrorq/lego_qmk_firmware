@@ -60,13 +60,21 @@ It uses four pins from the MCU to provide 16 output pins */
 #define SPI_DIVISOR 16
 #define DEBUG_MATRIX_SCAN_RATE
 
-
+// 00000001
+// 00000010
+// 00000100
+// 00001000
+// 00010000
+// 00100000
+// 01000000
+// 10000000
 //0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000
 // 1QA     1QB     1QC     1QD     1QE     1QF     1QG     1QH     2QA     2QB     2QC     2QD     2QE     2QF     2QG     2QH
 
 //              C0      C1
-//              1QC     1QD
-#define COLS { 0x0004, 0x0008}
+//              1QC     1QB
+#define COLS { 0x0004, 0x0002}
+#define ROWS {3,2,1,0}
 
 #define   RGB_ENABLE_PIN GP11
 
