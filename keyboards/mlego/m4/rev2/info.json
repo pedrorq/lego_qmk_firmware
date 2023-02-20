@@ -29,7 +29,7 @@
         "mousekey": true,
         "nkro": true,
         "oled": false,
-        "rgblight": false,
+        "rgblight": true,
         "wpm": true
     },
     "indicators": {

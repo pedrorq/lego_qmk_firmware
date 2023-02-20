@@ -145,6 +145,12 @@ void user_oled_magic(void) {
       case UNICODE_MODE_WINCOMPOSE:
         oled_write_P(PSTR("windows c"), false);
         break;
+      case UNICODE_MODE_BSD:
+        oled_write_P(PSTR("bsd"), false);
+        break;
+      case UNICODE_MODE_EMACS:
+        oled_write_P(PSTR("emacs"), false);
+        break;
       default:
         oled_write_ln_P(PSTR("not supported"), false);
     }
