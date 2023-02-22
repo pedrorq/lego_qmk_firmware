@@ -9,18 +9,6 @@
 #    include "graphics.h"
 #endif // QUANTUM_PAINTER_ENABLE
 
-typedef union {
-    uint32_t raw;
-    struct {
-        bool audio   : 1;
-        bool matrix  : 1;
-        bool sipo    : 1;
-        bool touch   : 1;
-        bool unicode : 1;
-        bool qp_xap  : 1;
-    };
-} user_config_t;
-
 // compute the bitmask based on current `#define`s
 uint32_t custom_eeprom_generate(void) {
     uint32_t current_config = 0;
@@ -64,12 +52,12 @@ void custom_eeprom_draw_config(void *cb_arg) {
 
     int16_t width  = qp_textwidth(font, "       Audio: Off");
     int16_t offset = (width - qp_textwidth(font, "FEATURES")) / 2;
-    qp_drawtext_recolor(device, x+offset, y, font, "FEATURES", HSV_BLACK, HSV_WHITE);
+    qp_drawtext_recolor(device, x + offset, y, font, "FEATURES", HSV_BLACK, HSV_WHITE);
     y += height;
 
     if (eeprom_config.audio)   qp_drawtext_recolor(device, x, y, font, "       Audio: On",  HSV_BLACK, HSV_WHITE);
     else                       qp_drawtext_recolor(device, x, y, font, "       Audio: Off", HSV_BLACK, HSV_WHITE);
-    qp_line(device, x, y, x+width, y, HSV_BLACK);
+    qp_line(device, x, y, x+width, y, HSV_RED);
     y += height;
 
     if (eeprom_config.matrix)  qp_drawtext_recolor(device, x, y, font, "  RGB Matrix: On",  HSV_BLACK, HSV_WHITE);

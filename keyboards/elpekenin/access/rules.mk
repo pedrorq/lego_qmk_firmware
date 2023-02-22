@@ -1,12 +1,12 @@
-AUDIO_DRIVER = pwm_hardware
-
 DEFERRED_EXEC_ENABLE = yes
+
+QUANTUM_PAINTER_DRIVERS += il91874_spi ili9163_spi ili9341_spi ili9486_spi ssd1680_spi
 
 RGB_MATRIX_CUSTOM_KB = yes
 RGB_MATRIX_DRIVER = WS2812
 WS2812_DRIVER = vendor
 
-QUANTUM_PAINTER_DRIVERS += il91874_spi ili9163_spi ili9341_spi ili9486_spi ssd1680_spi
+SERIAL_DRIVER = vendor
 
 XAP_ENABLE = yes
 
@@ -14,4 +14,4 @@ XAP_ENABLE = yes
 CUSTOM_EEPROM = yes
 TOUCH_SCREEN  = no
 ONE_HAND      = no
-SIPO_PINS     = no
+SIPO_PINS     = yes

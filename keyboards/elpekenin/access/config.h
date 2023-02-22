@@ -5,11 +5,15 @@
 
 #include "config_common.h"
 
+#if !defined(INIT_EE_HANDS_LEFT) && !defined(INIT_EE_HANDS_RIGHT)
+#    error "You need to configure EE_HANDS"
+#endif
+
 // =======
 // Debugging
 // #define CUSTOM_SPI_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
-#define INIT_DELAY 3000
+// #define INIT_DELAY 3000
 #define QUANTUM_PAINTER_DEBUG
 // #define SIPO_PINS_DEBUG
 // #define TOUCH_SCREEN_DEBUG
@@ -21,44 +25,30 @@
 // =======
 // SPI config
 #define SPI_COUNT 2
-// -- Screens' data
-#define SPI_DRIVER SPID0
-#define SPI_SCK_PIN GP2
-#define SPI_MOSI_PIN GP3
-#define SPI_MISO_PIN GP4
-#define SPI_MODE 0
-#define SPI_DIV 0
 
-// -- Register's data
-#define SIPO_SPI_DRIVER SPID1
-#define SIPO_SPI_SCK_PIN GP10
-#define SIPO_SPI_MOSI_PIN GP11
-#define SIPO_SPI_MISO_PIN GP12
+#define SCREENS_SPI_DRIVER SPID1
+#define SCREENS_SCK_PIN GP10
+#define SCREENS_MOSI_PIN GP11
+#define SCREENS_MISO_PIN GP12
+#define SCREENS_SPI_MODE 0
+#define SCREENS_SPI_DIV 0
+
+#define REGISTERS_SPI_DRIVER SPID0
+#define REGISTERS_SCK_PIN GP2
+#define REGISTERS_MOSI_PIN GP3
+#define REGISTERS_MISO_PIN GP4
+#define PISO_CS_PIN GP1
 #define SIPO_CS_PIN GP13
-#define SIPO_SPI_MODE 0
-#define SIPO_SPI_DIV  0
-#define N_SIPO_PINS 9
+#define REGISTERS_SPI_MODE 0
+#define REGISTERS_SPI_DIV  0
+#define N_SIPO_PINS 8
+#define DUMMY_PIN GP14
 
-// -- Displays
+// =======
+// Displays
 #define IL91874_ROTATION 0
 #define ILI9163_ROTATION 0
 #define ILI9341_ROTATION 2
-#define ILI9486_ROTATION 1
-#define SSD1680_ROTATION 0
-
-#define ILI9341_TOUCH_IRQ_PIN GP15
-#define ILI9486_TOUCH_IRQ_PIN GP9
-
-// If "virtual" pins aren't enabled, use real pins
-#if defined(SIPO_PINS_ENABLE)
-#    define DUMMY_PIN GP1
-#elif defined(QUANTUM_PAINTER_ENABLE)
-#    define TESTS_CS_PIN GP0
-#    define TESTS_RST_PIN GP1
-#    define TESTS_DC_PIN GP5
-#    define TESTS_RAM_CS_PIN GP6
-// #    error "Hardware design only supports SIPO output to control displays"
-#endif // SIPO_PINS_ENABLE
 
 // =======
 // RGB
@@ -68,15 +58,7 @@
 #define WS2812_PIO_USE_PIO1
 
 // =======
-// Pointing device
-#define ANALOG_JOYSTICK_CLICK_PIN  GP15
-#define ANALOG_JOYSTICK_X_AXIS_PIN GP28
-#define ANALOG_JOYSTICK_Y_AXIS_PIN GP27
-
-// =======
-// Audio
-#define AUDIO_PIN GP11
-#define AUDIO_PWM_DRIVER PWMD5
-#define AUDIO_PWM_CHANNEL RP2040_PWM_CHANNEL_B
-#define AUDIO_ENABLE_TONE_MULTIPLEXING
-#define AUDIO_TONE_MULTIPLEXING_RATE_DEFAULT 10
+// Split
+#define EE_HANDS
+#define USE_SERIAL
+#define SERIAL_USART_TX_PIN GP15

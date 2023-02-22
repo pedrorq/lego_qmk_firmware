@@ -40,7 +40,7 @@ void write_sipo_state() {
 
     custom_spi_init(SIPO_SPI_DRIVER_ID);
 
-    if(!custom_spi_start(SIPO_CS_PIN, false, SIPO_SPI_MODE, SIPO_SPI_DIV, SIPO_SPI_DRIVER_ID)) {
+    if(!custom_spi_start(SIPO_CS_PIN, false, REGISTERS_SPI_MODE, REGISTERS_SPI_DIV, SIPO_SPI_DRIVER_ID)) {
         sipo_dprintf("Couldn't start SPI for SIPO\n");
         return;
     }

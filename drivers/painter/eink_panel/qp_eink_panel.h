@@ -3,6 +3,7 @@
 
 #include "color.h"
 #include "qp_internal.h"
+#include "qp_surface.h"
 
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
 #    include "qp_comms_spi.h"

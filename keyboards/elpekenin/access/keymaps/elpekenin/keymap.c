@@ -11,9 +11,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-void keyboard_post_init_user() {
-}
-
 #if defined(TOUCH_SCREEN)
 uint32_t touch_timer = 0;
 void housekeeping_task_user(void) {
