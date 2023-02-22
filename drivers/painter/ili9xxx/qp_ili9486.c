@@ -68,7 +68,7 @@ bool qp_ili9486_init(painter_device_t device, painter_rotation_t rotation) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
 
-const struct tft_panel_dc_reset_painter_driver_vtable_t ili9486_driver_vtable = {
+const tft_panel_dc_reset_painter_driver_vtable_t ili9486_driver_vtable = {
     .base =
         {
             .init            = qp_ili9486_init,
@@ -102,8 +102,8 @@ painter_device_t qp_ili9486_make_spi_device(uint16_t panel_width, uint16_t panel
     for (uint32_t i = 0; i < ILI9486_NUM_DEVICES; ++i) {
         tft_panel_dc_reset_painter_device_t *driver = &ili9486_drivers[i];
         if (!driver->base.driver_vtable) {
-            driver->base.driver_vtable         = (const struct painter_driver_vtable_t *)&ili9486_driver_vtable;
-            driver->base.comms_vtable          = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_vtable;
+            driver->base.driver_vtable         = (const painter_driver_vtable_t *)&ili9486_driver_vtable;
+            driver->base.comms_vtable          = (const painter_comms_vtable_t *)&spi_comms_with_dc_vtable;
             driver->base.native_bits_per_pixel = 16; // RGB565
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
@@ -129,7 +129,7 @@ painter_device_t qp_ili9486_make_spi_waveshare_device(uint16_t panel_width, uint
     painter_device_t device = qp_ili9486_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode);
     if (device) {
         tft_panel_dc_reset_painter_device_t *driver = (tft_panel_dc_reset_painter_device_t *)device;
-        driver->base.comms_vtable                   = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
+        driver->base.comms_vtable                   = (const painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
     }
     return device;
 }

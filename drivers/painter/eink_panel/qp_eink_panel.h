@@ -17,8 +17,8 @@
 // Common TFT panel implementation using D/C, and RST pins.
 
 // Driver vtable with extras
-struct eink_panel_dc_reset_painter_driver_vtable_t {
-    struct painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
+typedef struct eink_panel_dc_reset_painter_driver_vtable_t {
+    painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
 
     // Whether or not the x/y coords should be swapped on 90/270 rotation
     bool swap_window_coords;
@@ -32,11 +32,11 @@ struct eink_panel_dc_reset_painter_driver_vtable_t {
         uint8_t send_red_data;
         uint8_t refresh;
     } opcodes;
-};
+} eink_panel_dc_reset_painter_driver_vtable_t;
 
 // Device definition
 typedef struct eink_panel_dc_reset_painter_device_t {
-    struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
+    painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
 
     // have to wait between flushes to avoid damaging the screen, time in ms
     uint32_t timeout;
@@ -69,7 +69,7 @@ typedef struct eink_panel_dc_reset_painter_device_t {
     union {
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
         // SPI-based configurables
-        struct qp_comms_spi_dc_reset_config_t spi_dc_reset_config;
+        qp_comms_spi_dc_reset_config_t spi_dc_reset_config;
 #endif // QUANTUM_PAINTER_SPI_ENABLE
 
         // TODO: I2C/parallel etc.

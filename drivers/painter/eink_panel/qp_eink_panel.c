@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Power control
 bool qp_eink_panel_power(painter_device_t device, bool power_on) {
-    struct painter_driver_t *                           driver = (struct painter_driver_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->driver_vtable;
+    painter_driver_t *                           driver = (painter_driver_t *)device;
+    eink_panel_dc_reset_painter_driver_vtable_t *vtable = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->driver_vtable;
 
     qp_comms_command(device, power_on ? vtable->opcodes.display_on : vtable->opcodes.display_off);
 
@@ -31,11 +31,9 @@ bool qp_eink_panel_power(painter_device_t device, bool power_on) {
 bool qp_eink_panel_clear(painter_device_t device) {
     // this function gets called by eink's init
     // we init red even if display doesn't support 3 color, empty data for it may be needed
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct surface_painter_device_t *            black  = (struct surface_painter_device_t *)driver->black_surface;
-    struct surface_painter_device_t *            red    = (struct surface_painter_device_t *)driver->red_surface;
-
-    qp_dprintf("eink_clear %p\n", driver->black_surface);
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+    surface_painter_device_t *            black  = (surface_painter_device_t *)driver->black_surface;
+    surface_painter_device_t *            red    = (surface_painter_device_t *)driver->red_surface;
 
     qp_init(driver->black_surface, driver->base.rotation);
     if (driver->invert_black) {
@@ -53,7 +51,7 @@ bool qp_eink_panel_clear(painter_device_t device) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reset can_flush flag back to true after timeout
 uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)cb_arg;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)cb_arg;
 
     driver->can_flush = true;
 
@@ -62,7 +60,7 @@ uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
 
 // Set can_flush to false and schedule its cleanup
 void qp_eink_update_can_flush(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *       driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver  = (eink_panel_dc_reset_painter_device_t *)device;
 
     driver->can_flush = false;
     defer_exec(driver->timeout, can_flush_callback, (void *)device);
@@ -71,11 +69,11 @@ void qp_eink_update_can_flush(painter_device_t device) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen flush
 bool qp_eink_panel_flush(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *       driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
-    struct surface_painter_device_t *                   black   = (struct surface_painter_device_t *)driver->black_surface;
-    struct surface_painter_device_t *                   red     = (struct surface_painter_device_t *)driver->red_surface;
-    uint32_t                                            n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    eink_panel_dc_reset_painter_device_t *       driver  = (eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    surface_painter_device_t *                   black   = (surface_painter_device_t *)driver->black_surface;
+    surface_painter_device_t *                   red     = (surface_painter_device_t *)driver->red_surface;
+    uint32_t                                     n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
 
     if (!(black->dirty.is_dirty || red->dirty.is_dirty)) {
         qp_dprintf("qp_eink_panel_flush: done (no changes to be sent)\n");
@@ -108,7 +106,7 @@ bool qp_eink_panel_flush(painter_device_t device) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Viewport to draw to
 bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     qp_viewport(driver->black_surface, left, top, right, bottom);
     if (driver->has_3color)
@@ -120,9 +118,9 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Stream pixel data to the current write position
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct painter_driver_t *                    black  = (struct painter_driver_t *)driver->black_surface;
-    uint8_t *                                    pixels = (uint8_t *)pixel_data;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
+    painter_driver_t *                    black  = (painter_driver_t *)driver->black_surface;
+    uint8_t *                             pixels = (uint8_t *)pixel_data;
 
     // Since pixel data is stored as | 0000 00RB |, we have to append the pixels
     // one by one parsing those bits on each byte
@@ -131,7 +129,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
         // LOTS of qp_dprintf slowing it
         black->driver_vtable->pixdata(driver->black_surface, (const void *)(pixels[i] >> 0), 1);
         if (driver->has_3color) {
-            struct painter_driver_t *red = (struct painter_driver_t *)driver->red_surface;
+            painter_driver_t *red = (painter_driver_t *)driver->red_surface;
             red->driver_vtable->pixdata(driver->red_surface, (const void *)(pixels[i] >> 1), 1);
         }
     }
@@ -142,7 +140,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Convert supplied palette entries into their native equivalents
 bool qp_eink_panel_palette_convert_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     for (int16_t i = 0; i < palette_size; ++i) {
         HSV     hsv     = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
@@ -158,7 +156,7 @@ static inline uint32_t hsv_distance(uint8_t h, uint8_t s, uint8_t v, HSV hsv) {
 }
 
 bool qp_eink_panel_palette_convert_3c(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     for (int16_t i = 0; i < palette_size; ++i) {
         HSV      hsv            = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
@@ -187,7 +185,7 @@ bool qp_eink_panel_palette_convert_3c(painter_device_t device, int16_t palette_s
 }
 
 bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     if (driver->has_3color) {
         return qp_eink_panel_palette_convert_3c(device, palette_size, palette);

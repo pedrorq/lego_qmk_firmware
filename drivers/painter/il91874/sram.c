@@ -11,8 +11,8 @@
 
 
 bool sram_spi_start(painter_device_t device) {
-    struct eink_panel_dc_reset_with_sram_painter_device_t *driver       = (struct eink_panel_dc_reset_with_sram_painter_device_t *)device;
-    struct qp_comms_spi_config_t *                         comms_config = (struct qp_comms_spi_config_t *)driver->eink_base.base.comms_config;
+    eink_panel_dc_reset_with_sram_painter_device_t *driver       = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
+    qp_comms_spi_config_t *                         comms_config = (qp_comms_spi_config_t *)driver->eink_base.base.comms_config;
 
     spi_init();
 
@@ -32,41 +32,36 @@ bool sram_spi_start(painter_device_t device) {
 }
 
 // write/read functions assume SPI is initialized & started already
-uint8_t sram_read_byte(painter_device_t device, uint16_t address) {
-    struct eink_panel_dc_reset_with_sram_painter_device_t *driver  = (struct eink_panel_dc_reset_with_sram_painter_device_t *)device;
-    uint8_t                                                array[] = {SRAM_23K640_READ, address >> 8, address & 0xFF};
 
-    // set up read mode and address
+static inline void set_read_address(eink_panel_dc_reset_with_sram_painter_device_t *driver, uint16_t address) {
+    uint8_t array[] = {SRAM_23K640_READ, address >> 8, address & 0xFF};
     writePinLow(driver->sram_chip_select_pin);
     spi_transmit(array, ARRAY_SIZE(array));
+}
 
-    // read a byte
+uint8_t sram_read_byte(painter_device_t device, uint16_t address) {
+    eink_panel_dc_reset_with_sram_painter_device_t *driver = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
+    set_read_address(driver, address);
     uint8_t ret = spi_write(0x00);
-
-    // reset CS
     writePinHigh(driver->sram_chip_select_pin);
-
     return ret;
 }
 
-void sram_write(painter_device_t device, uint16_t address, uint8_t *data, uint16_t length) {
-    struct eink_panel_dc_reset_with_sram_painter_device_t *driver  = (struct eink_panel_dc_reset_with_sram_painter_device_t *)device;
-    uint8_t                                                array[] = {SRAM_23K640_WRITE, address >> 8, address & 0xFF};
-
-    // set up write mode and address
+static inline void set_write_address(eink_panel_dc_reset_with_sram_painter_device_t *driver, uint16_t address) {
+    uint8_t array[] = {SRAM_23K640_WRITE, address >> 8, address & 0xFF};
     writePinLow(driver->sram_chip_select_pin);
     spi_transmit(array, ARRAY_SIZE(array));
+}
 
-    // send data
+void sram_write(painter_device_t device, uint16_t address, uint8_t *data, uint16_t length) {
+    eink_panel_dc_reset_with_sram_painter_device_t *driver = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
+    set_write_address(driver, address);
     spi_transmit(data, length);
-
-    // reset CS
     writePinHigh(driver->sram_chip_select_pin);
 }
 
 void sram_spi_stop(painter_device_t device) {
-    struct eink_panel_dc_reset_with_sram_painter_device_t *driver = (struct eink_panel_dc_reset_with_sram_painter_device_t *)device;
-
+    eink_panel_dc_reset_with_sram_painter_device_t *driver = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
     writePinHigh(driver->sram_chip_select_pin);
     spi_stop();
 }
@@ -99,13 +94,14 @@ void sram_init(painter_device_t device) {
 }
 
 void sram_to_display(painter_device_t device, bool black) {
-    eink_panel_dc_reset_with_sram_painter_device_t *    drv          = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
-    eink_panel_dc_reset_painter_device_t *              driver       = (eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable       = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
-    struct qp_comms_spi_dc_reset_config_t *             comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->base.comms_config;
-    uint32_t                                            n_bytes      = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
-    uint16_t                                            address      = black ? 0 : n_bytes;
-    uint8_t                                             cmd          = vtable->opcodes.send_black_data;
+    eink_panel_dc_reset_with_sram_painter_device_t *drv          = (eink_panel_dc_reset_with_sram_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *          driver       = (eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_driver_vtable_t *   vtable       = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    qp_comms_spi_dc_reset_config_t *                comms_config = (qp_comms_spi_dc_reset_config_t *)driver->base.comms_config;
+
+    uint32_t n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    uint16_t address = black ? 0 : n_bytes;
+    uint8_t  cmd     = vtable->opcodes.send_black_data;
 
     // red data on a BW display - quit
     if (!black && !driver->has_3color)
@@ -116,9 +112,7 @@ void sram_to_display(painter_device_t device, bool black) {
         cmd = vtable->opcodes.send_red_data;
 
     // Select SRAM and put in read mode
-    writePinLow(drv->sram_chip_select_pin);
-    uint8_t array[] = {SRAM_23K640_READ, address >> 8, address & 0xFF};
-    spi_transmit(array, ARRAY_SIZE(array));
+    set_read_address(drv, address);
 
     // Sending command to display triggers SRAM to send 1st byte over MISO
     writePinLow(comms_config->dc_pin);
@@ -142,11 +136,16 @@ void sram_to_display(painter_device_t device, bool black) {
 }
 
 bool sram_flush(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *       driver = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    eink_panel_dc_reset_painter_device_t *       driver = (eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_driver_vtable_t *vtable = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
 
     if (!sram_spi_start(device)) {
         qp_dprintf("sram_flush: fail\n");
+        return false;
+    }
+
+    if (!driver->can_flush) {
+        qp_dprintf("sram_flush: fail (can_flush == false)\n");
         return false;
     }
 
@@ -203,10 +202,11 @@ static inline uint32_t get_pixel(surface_painter_device_t *surface) {
 }
 
 bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct eink_panel_dc_reset_painter_device_t *driver     = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct surface_painter_device_t *            black      = (struct surface_painter_device_t *)driver->black_surface;
-    uint32_t                                     red_offset = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
-    uint8_t *                                    pixels     = (uint8_t *)pixel_data;
+    eink_panel_dc_reset_painter_device_t *driver     = (eink_panel_dc_reset_painter_device_t *)device;
+    surface_painter_device_t *            black      = (surface_painter_device_t *)driver->black_surface;
+
+    uint32_t  red_offset = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    uint8_t * pixels     = (uint8_t *)pixel_data;
 
     // mini-buffers to send pixel data
     uint8_t black_data;
@@ -229,19 +229,6 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
         if (byte != last_byte) {
             black_data = sram_read_byte(device, byte);
 
-            qp_dprintf(
-                "Read %d%d%d%d%d%d%d%d from address %X, ",
-                (black_data >> 7) & 1,
-                (black_data >> 6) & 1,
-                (black_data >> 5) & 1,
-                (black_data >> 4) & 1,
-                (black_data >> 3) & 1,
-                (black_data >> 2) & 1,
-                (black_data >> 1) & 1,
-                (black_data >> 0) & 1,
-                byte
-            );
-
             if (driver->has_3color) {
                 red_data = sram_read_byte(device, red_offset + byte);
             }
@@ -254,20 +241,6 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
             black_data |=  (1 << bit);
         else
             black_data &= ~(1 << bit);
-
-        qp_dprintf(
-            "set bit %d to %d, resulting in %d%d%d%d%d%d%d%d, ",
-            bit,
-            (pixels[i] & 1) ? 1 : 0,
-            (black_data >> 7) & 1,
-            (black_data >> 6) & 1,
-            (black_data >> 5) & 1,
-            (black_data >> 4) & 1,
-            (black_data >> 3) & 1,
-            (black_data >> 2) & 1,
-            (black_data >> 1) & 1,
-            (black_data >> 0) & 1
-        );
 
         if (driver->has_3color) {
             if (pixels[i] & 2)
@@ -285,19 +258,6 @@ bool sram_pixdata(painter_device_t device, const void *pixel_data, uint32_t nati
         // next pixel will be on another byte, send this byte
         if (byte != last_byte) {
             sram_write(device, last_byte, &black_data, 1);
-                 qp_dprintf(
-                    ". Writing %d%d%d%d%d%d%d%d at %X\n",
-                    (black_data >> 7) & 1,
-                    (black_data >> 6) & 1,
-                    (black_data >> 5) & 1,
-                    (black_data >> 4) & 1,
-                    (black_data >> 3) & 1,
-                    (black_data >> 2) & 1,
-                    (black_data >> 1) & 1,
-                    (black_data >> 0) & 1,
-                    last_byte
-                );
-
             if (driver->has_3color)
                 sram_write(device, red_offset + last_byte, &red_data, 1);
         }

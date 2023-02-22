@@ -53,7 +53,8 @@ void qp_surface_update_dirty(surface_dirty_data_t *dirty, uint16_t x, uint16_t y
 // Driver vtable
 
 bool qp_surface_init(painter_device_t device, painter_rotation_t rotation) {
-    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
+    qp_dprintf("qp_surface_init: entry\n");
+    painter_driver_t *        driver  = (painter_driver_t *)device;
     surface_painter_device_t *surface = (surface_painter_device_t *)driver;
     memset(surface->buffer, 0, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->panel_width, driver->panel_height, driver->native_bits_per_pixel));
 
@@ -72,14 +73,14 @@ bool qp_surface_power(painter_device_t device, bool power_on) {
 }
 
 bool qp_surface_clear(painter_device_t device) {
-    struct painter_driver_t *driver = (struct painter_driver_t *)device;
+    painter_driver_t *driver = (painter_driver_t *)device;
     driver->driver_vtable->init(device, driver->rotation); // Re-init the surface
     return true;
 }
 
 bool qp_surface_flush(painter_device_t device) {
-    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
-    surface_painter_device_t *surface = (surface_painter_device_t *)driver;
+    painter_driver_t *          driver  = (painter_driver_t *)device;
+    surface_painter_device_t *  surface = (surface_painter_device_t *)driver;
     surface->dirty.l = surface->dirty.t = UINT16_MAX;
     surface->dirty.r = surface->dirty.b = 0;
     surface->dirty.is_dirty             = false;
@@ -87,7 +88,7 @@ bool qp_surface_flush(painter_device_t device) {
 }
 
 bool qp_surface_viewport(painter_device_t device, uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
+    painter_driver_t *        driver  = (painter_driver_t *)device;
     surface_painter_device_t *surface = (surface_painter_device_t *)driver;
 
     // Set the viewport locations
@@ -106,9 +107,9 @@ bool qp_surface_viewport(painter_device_t device, uint16_t left, uint16_t top, u
 // Drawing routine to copy out the dirty region and send it to another device
 
 bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t x, uint16_t y, bool entire_surface) {
-    struct painter_driver_t * surface_driver = (struct painter_driver_t *)surface;
+    painter_driver_t *        surface_driver = (painter_driver_t *)surface;
     surface_painter_device_t *surface_handle = (surface_painter_device_t *)surface_driver;
-    struct painter_driver_t * target_driver  = (struct painter_driver_t *)target;
+    painter_driver_t *        target_driver  = (painter_driver_t *)target;
 
     // If we're not dirty... we're done.
     if (!surface_handle->dirty.is_dirty) {
@@ -123,8 +124,8 @@ bool qp_surface_draw(painter_device_t surface, painter_device_t target, uint16_t
     }
 
     // Offload to the pixdata transfer function
-    struct surface_painter_driver_vtable_t *vtbl = (struct surface_painter_driver_vtable_t *)surface_driver->driver_vtable;
-    bool                                    ok   = vtbl->target_pixdata_transfer(surface_driver, target_driver, x, y, entire_surface);
+    surface_painter_driver_vtable_t *vtbl = (surface_painter_driver_vtable_t *)surface_driver->driver_vtable;
+    bool                             ok   = vtbl->target_pixdata_transfer(surface_driver, target_driver, x, y, entire_surface);
     if (!ok) {
         qp_dprintf("qp_surface_draw: fail (could not transfer pixel data)\n");
         return false;

@@ -56,7 +56,7 @@ painter_device_t qp_make_mono1bpp_surface(uint16_t panel_width, uint16_t panel_h
  * @param buffer[in] pointer to a preallocated uint8_t buffer of size `SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1)`
  * @return the device handle used with all drawing routines in Quantum Painter
  */
-painter_device_t qp_make_empty0bpp_surface(uint16_t panel_width, uint16_t panel_height, void *buffer);
+painter_device_t qp_make_empty0bpp_surface(uint16_t panel_width, uint16_t panel_height);
 
 /**
  * Helper method to draw the contents of the framebuffer to the target device.

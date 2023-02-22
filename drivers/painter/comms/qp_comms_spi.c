@@ -10,8 +10,8 @@
 // Base SPI support
 
 bool qp_comms_spi_init(painter_device_t device) {
-    struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
+    painter_driver_t *     driver       = (painter_driver_t *)device;
+    qp_comms_spi_config_t *comms_config = (qp_comms_spi_config_t *)driver->comms_config;
 
     // Initialize the SPI peripheral
     qp_spi_init();
@@ -24,8 +24,8 @@ bool qp_comms_spi_init(painter_device_t device) {
 }
 
 bool qp_comms_spi_start(painter_device_t device) {
-    struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
+    painter_driver_t *     driver       = (painter_driver_t *)device;
+    qp_comms_spi_config_t *comms_config = (qp_comms_spi_config_t *)driver->comms_config;
     return qp_spi_start(comms_config->chip_select_pin, comms_config->lsb_first, comms_config->mode, comms_config->divisor);
 }
 
@@ -45,13 +45,13 @@ uint32_t qp_comms_spi_send_data(painter_device_t device, const void *data, uint3
 }
 
 void qp_comms_spi_stop(painter_device_t device) {
-    struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_config_t *comms_config = (struct qp_comms_spi_config_t *)driver->comms_config;
+    painter_driver_t *     driver       = (painter_driver_t *)device;
+    qp_comms_spi_config_t *comms_config = (qp_comms_spi_config_t *)driver->comms_config;
     qp_spi_stop();
     qp_writePinHigh(comms_config->chip_select_pin);
 }
 
-const struct painter_comms_vtable_t spi_comms_vtable = {
+const painter_comms_vtable_t spi_comms_vtable = {
     .comms_init  = qp_comms_spi_init,
     .comms_start = qp_comms_spi_start,
     .comms_send  = qp_comms_spi_send_data,
@@ -68,8 +68,8 @@ bool qp_comms_spi_dc_reset_init(painter_device_t device) {
         return false;
     }
 
-    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    painter_driver_t *              driver       = (painter_driver_t *)device;
+    qp_comms_spi_dc_reset_config_t *comms_config = (qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     // Set up D/C as output low, if specified
 #ifndef SIPO_PINS_ENABLE
@@ -98,8 +98,8 @@ bool qp_comms_spi_dc_reset_init(painter_device_t device) {
 }
 
 uint32_t qp_comms_spi_dc_reset_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
-    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    painter_driver_t *              driver       = (painter_driver_t *)device;
+    qp_comms_spi_dc_reset_config_t *comms_config = (qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     qp_writePinHigh(comms_config->dc_pin);
 
@@ -117,8 +117,8 @@ uint32_t qp_comms_spi_dc_reset_send_data(painter_device_t device, const void *da
 }
 
 void qp_comms_spi_dc_reset_send_command(painter_device_t device, uint8_t cmd) {
-    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    painter_driver_t *              driver       = (painter_driver_t *)device;
+    qp_comms_spi_dc_reset_config_t *comms_config = (qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     qp_writePinLow(comms_config->dc_pin);
 
@@ -149,7 +149,7 @@ void qp_comms_spi_dc_reset_bulk_command_sequence(painter_device_t device, const 
     }
 }
 
-const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
+const painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
     .base =
         {
             .comms_init  = qp_comms_spi_dc_reset_init,
@@ -165,8 +165,8 @@ const struct painter_comms_with_command_vtable_t spi_comms_with_dc_vtable = {
 // SPI with D/C and RST pins but sending one byte at a time, needed for some devices
 
 void qp_comms_spi_dc_reset_single_byte_send_command(painter_device_t device, uint8_t cmd) {
-    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    painter_driver_t *              driver       = (painter_driver_t *)device;
+    qp_comms_spi_dc_reset_config_t *comms_config = (qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     qp_writePinLow(comms_config->dc_pin);
     qp_writePinLow(comms_config->spi_config.chip_select_pin);
@@ -175,8 +175,8 @@ void qp_comms_spi_dc_reset_single_byte_send_command(painter_device_t device, uin
 }
 
 uint32_t qp_comms_spi_dc_reset_single_byte_send_data(painter_device_t device, const void *data, uint32_t byte_count) {
-    struct painter_driver_t *              driver       = (struct painter_driver_t *)device;
-    struct qp_comms_spi_dc_reset_config_t *comms_config = (struct qp_comms_spi_dc_reset_config_t *)driver->comms_config;
+    painter_driver_t *              driver       = (painter_driver_t *)device;
+    qp_comms_spi_dc_reset_config_t *comms_config = (qp_comms_spi_dc_reset_config_t *)driver->comms_config;
 
     uint32_t       bytes_remaining = byte_count;
     const uint8_t *p               = (const uint8_t *)data;
@@ -211,7 +211,7 @@ void qp_comms_spi_dc_reset_single_byte_bulk_command_sequence(painter_device_t de
     }
 }
 
-const struct painter_comms_with_command_vtable_t spi_comms_with_dc_single_byte_vtable = {
+const painter_comms_with_command_vtable_t spi_comms_with_dc_single_byte_vtable = {
     .base =
         {
             .comms_init  = qp_comms_spi_dc_reset_init,

@@ -22,7 +22,7 @@ eink_panel_dc_reset_painter_device_t ssd1680_drivers[SSD1680_NUM_DEVICES] = {0};
 // Initialization
 
 bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     uint8_t width_lsb = (driver->base.panel_width - 1) & 0xFF;
     uint8_t width_msb = ((driver->base.panel_width - 1) >> 8) & 0xFF;
@@ -66,7 +66,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
 
-const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
+const eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
     .base =
         {
             .init            = qp_ssd1680_init,
@@ -98,8 +98,8 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
     for (uint32_t i = 0; i < SSD1680_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &ssd1680_drivers[i];
         if (!driver->base.driver_vtable) {
-            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&ssd1680_driver_vtable;
-            driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
+            driver->base.driver_vtable = (const painter_driver_vtable_t *)&ssd1680_driver_vtable;
+            driver->base.comms_vtable  = (const painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
 
             driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
@@ -110,7 +110,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
 
             driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
             // 0bpp needs changes to not ask for a pointer, so far we'll just set it to NULL
-            driver->red_surface = qp_make_0bpp_surface(panel_width, panel_height, NULL);
+            driver->red_surface   = qp_make_empty0bpp_surface(panel_width, panel_height);
 
             driver->has_3color = false;
 

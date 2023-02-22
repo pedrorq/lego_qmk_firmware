@@ -24,7 +24,7 @@ eink_panel_dc_reset_painter_device_t il91874_drivers[IL91874_NUM_DEVICES] = {0};
 // Initialization
 
 bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
-    struct eink_panel_dc_reset_painter_device_t *driver = (struct eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     uint16_t width    = driver->base.panel_width;
     uint16_t height   = driver->base.panel_height;
@@ -34,8 +34,8 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     uint8_t height_lsb = height & 0xFF;
     uint8_t height_msb = (height >> 8) & 0xFF;
 
-    // Panel config: no mirror + 3color + 320x300
-    uint8_t config = 0b00101111;
+    // panel config for no mirroring, 3color, 320x300
+    uint8_t config = 0x2F;
 
     // this bit controls whether display is B/W or B/W/R
     // we defaulted to 0 (BWR), set it high if BW
@@ -53,7 +53,7 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
         IL91874_MISTERY_COMMAND,        0,  2, 0x60, 0xA5,
         IL91874_MISTERY_COMMAND,        0,  2, 0x89, 0xA5,
         IL91874_MISTERY_COMMAND,        0,  2, 0x90, 0x00,
-        IL91874_MISTERY_COMMAND,        0,  2, 0x93, 0xAD,
+        IL91874_MISTERY_COMMAND,        0,  2, 0x93, 0xA2,
         IL91874_MISTERY_COMMAND,        0,  2, 0x73, 0x41,
         IL91874_VCM_DC_SETTING,         0,  1, 0x12,
         IL91874_CDI,                    0,  1, 0x87,
@@ -70,21 +70,22 @@ bool qp_il91874_init(painter_device_t device, painter_rotation_t rotation) {
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
-    qp_dprintf("ili91874_init: %p\n", driver->black_surface);
     return driver->base.driver_vtable->clear(device);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Patched functions
 bool qp_il91874_no_sram_flush(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *       driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    struct eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (struct eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
-    struct surface_painter_device_t *                   black   = (struct surface_painter_device_t *)driver->black_surface;
-    uint32_t                                            n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    eink_panel_dc_reset_painter_device_t *       driver  = (eink_panel_dc_reset_painter_device_t *)device;
+    eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
+    surface_painter_device_t *                   black   = (surface_painter_device_t *)driver->black_surface;
+    uint32_t                                     n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
 
     // 3 color is handled by default code
-    if (driver->has_3color)
+    if (driver->has_3color) {
+        qp_dprintf("qp_il91874_no_sram_flush: BWR mode, fallback to qp_eink_panel_flush\n");
         return qp_eink_panel_flush(device);
+    }
 
     // else, we need to send black data with the red_data opcode
     if (!black->dirty.is_dirty) {
@@ -108,16 +109,12 @@ bool qp_il91874_no_sram_flush(painter_device_t device) {
 }
 
 bool qp_il91874_with_sram_init(painter_device_t device, painter_rotation_t rotation) {
-    struct eink_panel_dc_reset_painter_device_t *driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    qp_dprintf("with_sram_init %p\n", driver->black_surface);
     bool ret = qp_il91874_init(device, rotation);
     sram_init(device);
     return ret;
 }
 
 bool qp_il91874_with_sram_clear(painter_device_t device) {
-    struct eink_panel_dc_reset_painter_device_t *driver  = (struct eink_panel_dc_reset_painter_device_t *)device;
-    qp_dprintf("with_sram_clear %p\n", driver->black_surface);
     bool ret = qp_eink_panel_clear(device);
     sram_init(device);
     return ret;
@@ -126,7 +123,7 @@ bool qp_il91874_with_sram_clear(painter_device_t device) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
 
-const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_no_sram_driver_vtable = {
+const eink_panel_dc_reset_painter_driver_vtable_t il91874_no_sram_driver_vtable = {
     .base =
         {
             .init            = qp_il91874_init,
@@ -149,7 +146,7 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_no_sram_driver_
         }
 };
 
-const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_with_sram_driver_vtable = {
+const eink_panel_dc_reset_painter_driver_vtable_t il91874_with_sram_driver_vtable = {
     .base =
         {
             .init            = qp_il91874_with_sram_init,
@@ -178,13 +175,14 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t il91874_with_sram_drive
 #ifdef QUANTUM_PAINTER_IL91874_SPI_ENABLE
 
 // Factory functions for creating a handle to the IL91874 device
+
 // No built-in RAM
 painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, void *ptr) {
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
         if (!driver->base.driver_vtable) {
-            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&il91874_no_sram_driver_vtable;
-            driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
+            driver->base.driver_vtable = (const painter_driver_vtable_t *)&il91874_no_sram_driver_vtable;
+            driver->base.comms_vtable  = (const painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
 
             driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
@@ -200,11 +198,11 @@ painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16
             driver->invert_black = false;
             driver->invert_red   = false;
 
-            driver->black_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
-            if (has_3color)
+            driver->black_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr);
+            if (driver->has_3color)
                 driver->red_surface = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + EINK_BW_BYTES_REQD(panel_width, panel_height));
             else
-                driver->red_surface = qp_make_empty0bpp_surface(panel_width, panel_height, NULL);
+                driver->red_surface = qp_make_empty0bpp_surface(panel_width, panel_height);
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
@@ -224,12 +222,11 @@ painter_device_t qp_il91874_no_sram_make_spi_device(uint16_t panel_width, uint16
 // Built-in RAM
 painter_device_t qp_il91874_with_sram_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_3color, pin_t sram_chip_select_pin) {
     for (uint32_t i = 0; i < IL91874_NUM_DEVICES; ++i) {
-        eink_panel_dc_reset_painter_device_t *driver = &il91874_drivers[i];
+        eink_panel_dc_reset_painter_device_t *          driver = &il91874_drivers[i];
+        eink_panel_dc_reset_with_sram_painter_device_t *drv    = (eink_panel_dc_reset_with_sram_painter_device_t *)driver;
         if (!driver->base.driver_vtable) {
-            eink_panel_dc_reset_with_sram_painter_device_t *drv = (eink_panel_dc_reset_with_sram_painter_device_t *)&il91874_drivers[i];
-
-            driver->base.driver_vtable = (const struct painter_driver_vtable_t *)&il91874_with_sram_driver_vtable;
-            driver->base.comms_vtable  = (const struct painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
+            driver->base.driver_vtable = (const painter_driver_vtable_t *)&il91874_with_sram_driver_vtable;
+            driver->base.comms_vtable  = (const painter_comms_vtable_t *)&spi_comms_with_dc_single_byte_vtable;
 
             driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
@@ -245,8 +242,10 @@ painter_device_t qp_il91874_with_sram_make_spi_device(uint16_t panel_width, uint
             driver->invert_black = false;
             driver->invert_red   = false;
 
-            driver->black_surface = qp_make_empty0bpp_surface(panel_width, panel_height, NULL);
-            driver->red_surface   = qp_make_empty0bpp_surface(panel_width, panel_height, NULL);
+            // We dont store pixels on the MCU's RAM, we simply want to keep track of the position in which to draw
+            // Since each pixel will be drawn on the same position for both color channels, one surface is enough
+            driver->black_surface = qp_make_empty0bpp_surface(panel_width, panel_height);
+            driver->red_surface   = driver->black_surface;
 
             // SPI and other pin configuration
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
@@ -256,8 +255,7 @@ painter_device_t qp_il91874_with_sram_make_spi_device(uint16_t panel_width, uint
             driver->spi_dc_reset_config.spi_config.mode            = spi_mode;
             driver->spi_dc_reset_config.dc_pin                     = dc_pin;
             driver->spi_dc_reset_config.reset_pin                  = reset_pin;
-
-            drv->sram_chip_select_pin  = sram_chip_select_pin;
+            drv->sram_chip_select_pin                              = sram_chip_select_pin;
 
             return (painter_device_t)driver;
         }

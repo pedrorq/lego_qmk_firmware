@@ -12,7 +12,7 @@
 // Stream pixel data to the current write position in GRAM
 static bool qp_surface_pixdata_empty0bpp(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     // Just increment position.
-    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
+    painter_driver_t *        driver  = (painter_driver_t *)device;
     surface_painter_device_t *surface = (surface_painter_device_t *)driver;
     qp_surface_increment_pixdata_location(&surface->viewport);
     return true;
@@ -30,12 +30,12 @@ static bool qp_surface_append_pixels_empty0bpp(painter_device_t device, uint8_t 
     return true;
 }
 
-static bool empty0bpp_target_pixdata_transfer(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
+static bool empty0bpp_target_pixdata_transfer(painter_driver_t *surface_driver, painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
     // No-op.
     return true;
 }
 
-const struct surface_painter_driver_vtable_t empty0bpp_surface_driver_vtable = {
+const surface_painter_driver_vtable_t empty0bpp_surface_driver_vtable = {
     .base =
         {
             .init            = qp_surface_init,
@@ -50,4 +50,8 @@ const struct surface_painter_driver_vtable_t empty0bpp_surface_driver_vtable = {
     .target_pixdata_transfer = empty0bpp_target_pixdata_transfer,
 };
 
-SURFACE_FACTORY_FUNCTION_IMPL(qp_make_empty0bpp_surface, empty0bpp_surface_driver_vtable, 0);
+SURFACE_FACTORY_FUNCTION_IMPL(qp_make_empty0bpp_surface_internal, empty0bpp_surface_driver_vtable, 0);
+
+painter_device_t qp_make_empty0bpp_surface(uint16_t panel_width, uint16_t panel_height) {
+    return qp_make_empty0bpp_surface_internal(panel_width, panel_height, NULL);
+}

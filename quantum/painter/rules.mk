@@ -43,8 +43,9 @@ ifeq ($(strip $(QUANTUM_PAINTER_ANIMATIONS_ENABLE)), yes)
 endif
 
 # Comms flags
-QUANTUM_PAINTER_NEEDS_COMMS_SPI ?= no
 QUANTUM_PAINTER_NEEDS_COMMS_DUMMY ?= no
+QUANTUM_PAINTER_NEEDS_COMMS_SPI ?= no
+QUANTUM_PAINTER_NEEDS_COMMS_I2C ?= no
 
 # Handler for each driver
 define handle_quantum_painter_driver
@@ -66,20 +67,17 @@ define handle_quantum_painter_driver
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),il91874_spi)
         DEFERRED_EXEC_ENABLE := yes # for timeout that prevents damaging screen
+        QUANTUM_PAINTER_NEEDS_SURFACE := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
-        QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
-        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG := yes
         OPT_DEFS += -DQUANTUM_PAINTER_IL91874_ENABLE -DQUANTUM_PAINTER_IL91874_SPI_ENABLE -DQUANTUM_PAINTER_SURFACE_ENABLE
         COMMON_VPATH += \
             $(DRIVER_PATH)/painter/eink_panel \
-            $(DRIVER_PATH)/painter/generic \
             $(DRIVER_PATH)/painter/il91874
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
             $(DRIVER_PATH)/painter/il91874/sram.c \
-            $(DRIVER_PATH)/painter/il91874/qp_il91874.c \
-            $(DRIVER_PATH)/painter/generic/qp_surface.c
+            $(DRIVER_PATH)/painter/il91874/qp_il91874.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ili9163_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -138,20 +136,17 @@ define handle_quantum_painter_driver
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ssd1680_spi)
         DEFERRED_EXEC_ENABLE := yes # for timeout that prevents damaging screen
+        QUANTUM_PAINTER_NEEDS_SURFACE := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
         QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
         QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET := yes
-        QUANTUM_PAINTER_NEEDS_COMMS_SPI_DC_RESET_SHIFTREG := yes
         OPT_DEFS += -DQUANTUM_PAINTER_SSD1680_ENABLE -DQUANTUM_PAINTER_SSD1680_SPI_ENABLE -DQUANTUM_PAINTER_SURFACE_ENABLE
         COMMON_VPATH += \
             $(DRIVER_PATH)/painter/eink_panel \
-            $(DRIVER_PATH)/painter/generic \
             $(DRIVER_PATH)/painter/ssd1680
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
-            $(DRIVER_PATH)/painter/ssd1680/qp_ssd1680.c \
-            $(DRIVER_PATH)/painter/generic/qp_surface.c
-
+            $(DRIVER_PATH)/painter/ssd1680/qp_ssd1680.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),st7735_spi)
         QUANTUM_PAINTER_NEEDS_COMMS_SPI := yes
@@ -188,6 +183,19 @@ endef
 
 # Iterate through the listed drivers for the build, including what's necessary
 $(foreach qp_driver,$(QUANTUM_PAINTER_DRIVERS),$(eval $(call handle_quantum_painter_driver,$(qp_driver))))
+
+# If a surface is needed, set up the required files
+ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_SURFACE)), yes)
+    QUANTUM_PAINTER_NEEDS_COMMS_DUMMY := yes
+    OPT_DEFS += -DQUANTUM_PAINTER_SURFACE_ENABLE
+    COMMON_VPATH += \
+        $(DRIVER_PATH)/painter/generic
+    SRC += \
+        $(DRIVER_PATH)/painter/generic/qp_surface_common.c \
+        $(DRIVER_PATH)/painter/generic/qp_surface_empty0bpp.c \
+        $(DRIVER_PATH)/painter/generic/qp_surface_mono1bpp.c \
+        $(DRIVER_PATH)/painter/generic/qp_surface_rgb565.c
+endif
 
 # If dummy comms is needed, set up the required files
 ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_COMMS_DUMMY)), yes)

@@ -8,11 +8,11 @@
 // Internal declarations
 
 // Surface vtable
-struct surface_painter_driver_vtable_t {
-    struct painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
+typedef struct surface_painter_driver_vtable_t {
+    painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
 
-    bool (*target_pixdata_transfer)(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface);
-};
+    bool (*target_pixdata_transfer)(painter_driver_t *surface_driver, painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface);
+} surface_painter_driver_vtable_t;
 
 typedef struct surface_dirty_data_t {
     bool     is_dirty;
@@ -36,7 +36,7 @@ typedef struct surface_viewport_data_t {
 
 // Surface struct
 typedef struct surface_painter_device_t {
-    struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
+    painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
 
     // The target buffer
     union {
@@ -76,6 +76,18 @@ painter_device_t qp_make_rgb565_surface_advanced(surface_painter_device_t *devic
  */
 painter_device_t qp_make_mono1bpp_surface_advanced(surface_painter_device_t *device_table, size_t device_table_len, uint16_t panel_width, uint16_t panel_height, void *buffer);
 
+/**
+ * Factory method for a 1bpp monochrome surface (aka framebuffer).
+ *
+ * @param device_table[in] the table of devices to use for instantiation
+ * @param device_table_len[in] the length of the table of devices
+ * @param panel_width[in] the width of the display panel
+ * @param panel_height[in] the height of the display panel
+ * @param buffer[in] pointer to a preallocated uint8_t buffer of size `SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 16)`
+ * @return the device handle used with all drawing routines in Quantum Painter
+ */
+painter_device_t qp_make_empty0bpp_surface_advanced(surface_painter_device_t *device_table, size_t device_table_len, uint16_t panel_width, uint16_t panel_height, void *buffer);
+
 // Driver storage
 extern surface_painter_device_t surface_drivers[SURFACE_NUM_DEVICES];
 
@@ -98,7 +110,7 @@ void qp_surface_update_dirty(surface_dirty_data_t *dirty, uint16_t x, uint16_t y
         for (uint32_t i = 0; i < device_table_len; ++i) {                                                                                                                     \
             surface_painter_device_t *driver = &device_table[i];                                                                                                              \
             if (!driver->base.driver_vtable) {                                                                                                                                \
-                driver->base.driver_vtable         = (struct painter_driver_vtable_t *)&(vtable);                                                                             \
+                driver->base.driver_vtable         = (painter_driver_vtable_t *)&(vtable);                                                                                    \
                 driver->base.native_bits_per_pixel = (bpp);                                                                                                                   \
                 driver->base.comms_vtable          = &dummy_comms_vtable;                                                                                                     \
                 driver->base.panel_width           = panel_width;                                                                                                             \
