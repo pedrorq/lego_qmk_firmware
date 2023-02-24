@@ -3,12 +3,13 @@
 
 #pragma once
 
-#if defined(QUANTUM_PAINTER_ENABLE)
-#    include "qp.h"
+#include "qp.h"
+
+#if defined(INIT_EE_HANDS_LEFT)
 extern painter_device_t il91874;
+#else
 extern painter_device_t ili9163;
 extern painter_device_t ili9341;
-extern painter_device_t ili9486;
 #endif // QUANTUM_PAINTER_ENABLE
 
 #if defined(RGB_MATRIX_ENABLE) && defined(ONE_HAND_ENABLE)
@@ -24,12 +25,10 @@ extern uint8_t one_hand_row;
 extern one_hand_movement_t one_hand_movement;
 #endif // RGB_MATRIX_ENABLE && ONE_HAND_ENABLE
 
-#if defined (TOUCH_SCREEN_ENABLE)
+#if defined (TOUCH_SCREEN_ENABLE) && defined(INIT_EE_HANDS_RIGHT)
 #    include "touch_driver.h"
 extern touch_device_t ili9341_touch;
-extern touch_device_t ili9486_touch;
 #    if defined(ONE_HAND_ENABLE)
 void screen_one_hand(touch_report_t touch_report);
 #    endif // ONE_HAND_ENABLE
 #endif // TOUCH_SCREEN_ENABLE
-

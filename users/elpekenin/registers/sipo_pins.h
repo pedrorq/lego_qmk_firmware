@@ -3,6 +3,9 @@
 
 #pragma once
 
+// index on the drivers' array
+#define SIPO_SPI_DRIVER_ID 1
+
 #ifdef SIPO_PINS_DEBUG
 #    include <debug.h>
 #    include <print.h>

@@ -32,14 +32,12 @@ uint32_t flush_display(uint32_t trigger_time, void *device) {
 #else
 painter_device_t ili9163;
 painter_device_t ili9341;
-painter_device_t ili9486;
 #endif // INIT_EE_HANDS_LEFT
 
 
 #if defined (TOUCH_SCREEN_ENABLE)
 #    include "touch_driver.h"
 touch_device_t ili9341_touch;
-touch_device_t ili9486_touch;
 #endif // TOUCH_SCREEN_ENABLE
 
 // Version info
@@ -61,10 +59,13 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 #if defined(INIT_EE_HANDS_LEFT)
     configure_sipo_pins(
+        __PADDING__,
+        IL91874_RST_PIN,
+        IL91874_SRAM_CS_PIN,
         SCREENS_DC_PIN,
-        IL91874_CS_PIN,
-        IL91874_RST_PIN
+        IL91874_CS_PIN
     );
+
     il91874 = qp_il91874_no_sram_make_spi_device(_IL91874_WIDTH, _IL91874_HEIGHT, IL91874_CS_PIN, SCREENS_DC_PIN, IL91874_RST_PIN, SCREENS_SPI_DIV, SCREENS_SPI_MODE, true, (void *)il91874_buffer);
     load_display(il91874);
     qp_init(il91874, IL91874_ROTATION);
@@ -73,19 +74,34 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     eink_panel_dc_reset_with_sram_painter_device_t *eink = (eink_panel_dc_reset_with_sram_painter_device_t *)il91874;
     defer_exec(eink->eink_base.timeout, flush_display, (void *)eink);
 
+    // show EEPROM state (enable features)
+#    if defined(CUSTOM_EEPROM_ENABLE)
+    // enabled features based on `#define`s on current firmware
+    uint32_t current_config = custom_eeprom_generate();
+
+    // if any change has ocurred, we could run some logic
+    if (current_config != eeconfig_read_user()) {
+        dprintf("EEPROM config has changed\n");
+        eeconfig_update_user(current_config);
+    }
+
+    custom_eeprom_draw_config((void *)il91874);
+#    endif // CUSTOM_EEPROM_ENABLE
+
+    // show commit's hash
     painter_font_handle_t font       = qp_fonts[0];
     int16_t               hash_width = qp_textwidth(font, commit_hash);
     qp_drawtext_recolor(il91874, IL91874_WIDTH-hash_width, IL91874_HEIGHT-font->line_height, font, commit_hash, HSV_BLACK, HSV_WHITE);
-#else // Right half
+#else // --------------------  Right half --------------------
     configure_sipo_pins(
+        ILI9341_TOUCH_CS_PIN,
         SCREENS_DC_PIN,
-        ILI9163_CS_PIN,
         ILI9163_RST_PIN,
-        ILI9341_CS_PIN,
-        ILI9341_RST_PIN
-        // touch screen code isn't adjusted for SIPO yet
-        // ILI9341_TOUCH_CS_PIN
+        ILI9163_CS_PIN,
+        ILI9341_RST_PIN,
+        ILI9341_CS_PIN
     );
+
     ili9163 = qp_ili9163_make_spi_device(_ILI9163_WIDTH, _ILI9163_HEIGHT, ILI9163_CS_PIN, SCREENS_DC_PIN, ILI9163_RST_PIN, SCREENS_SPI_DIV, SCREENS_SPI_MODE);
     load_display(ili9163);
     qp_init(ili9163, ILI9163_ROTATION);
@@ -101,6 +117,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 
 #if defined (TOUCH_SCREEN_ENABLE)
+#    error "touch screen code isn't adjusted for SIPO yet"
     // Calibration isn't very precise
     static touch_driver_t ili9341_touch_driver = {
         .width = _ILI9341_WIDTH,
@@ -127,21 +144,6 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     dprint("Touch devices initialised\n");
 #endif // TOUCH_SCREEN_ENABLE
-
-#    if defined(CUSTOM_EEPROM_ENABLE)
-    // enabled features based on `#define`s on current firmware
-    uint32_t current_config = custom_eeprom_generate();
-
-    // if any change has ocurred, we could run some logic
-    if (current_config != eeconfig_read_user()) {
-        dprintf("EEPROM config has changed\n");
-        eeconfig_update_user(current_config);
-    }
-
-#        if defined(INIT_EE_HANDS_LEFT)
-    custom_eeprom_draw_config((void *)il91874);
-#        endif // INIT_EE_HANDS_LEFT
-#    endif // CUSTOM_EEPROM_ENABLE
 
     dprint("\n---------- User code ----------\n");
 
@@ -173,8 +175,8 @@ void screen_one_hand(touch_report_t touch_report) {
         return;
     }
 
-    int16_t x = touch_report.x - ILI9486_WIDTH/2;
-    int16_t y = touch_report.y - ILI9486_HEIGHT/2;
+    int16_t x = touch_report.x - ILI9341_WIDTH/2;
+    int16_t y = touch_report.y - ILI9341_HEIGHT/2;
 
     if (x > 30) {
         one_hand_movement = y > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
@@ -185,15 +187,15 @@ void screen_one_hand(touch_report_t touch_report) {
 
 bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     // Wait until it is initialized
-    if (ili9486_touch == NULL){
+    if (ili9341_touch == NULL){
         return false;
     }
 
     // Get touchscreen status
-    touch_report_t touch_report = get_spi_touch_report(ili9486_touch);
+    touch_report_t touch_report = get_spi_touch_report(ili9341_touch);
 
     // Convert left-based to center-based coord
-    int16_t x = touch_report.x - ILI9486_WIDTH/2;
+    int16_t x = touch_report.x - ILI9341_WIDTH/2;
 
     // Store previous state for comparations
     matrix_row_t previous = current_matrix[one_hand_row];

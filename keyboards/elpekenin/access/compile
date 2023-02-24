@@ -16,6 +16,9 @@ for SIDE in left right
 do
     echo Compiling $SIDE
     qmk compile -kb $KB -km $KM -e MAKECMDGOALS=uf2-split-$SIDE > /dev/null 2>> $LOG
-    cp $BIN $SIDE-$BIN
-    printf "\n-----------------------\n\n" >> $LOG
+    cp $BIN /mnt/d/$SIDE-$BIN
+    rm $BIN
+    if [ $SIDE = left ]; then
+        printf "\n-----------------------\n\n" >> $LOG
+    fi
 done

@@ -7,20 +7,20 @@
 #ifdef QUANTUM_PAINTER_SPI_ENABLE
 
 #    ifdef SIPO_PINS_ENABLE
-#        include "custom_spi_master.h"
 #        include "sipo_pins.h"
+#        include "custom_spi_master.h"
+// index on the drivers' array
 #        define PAINTER_SPI_DRIVER_ID 0
 #        define qp_spi_init() custom_spi_init(PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_start(cs, lsb, mode, div) custom_spi_start(DUMMY_PIN, lsb, mode, div, PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_write(data) custom_spi_write(data, PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_transmit(ptr, bytes) custom_spi_transmit(ptr, bytes, PAINTER_SPI_DRIVER_ID)
 #        define qp_spi_stop() custom_spi_stop(PAINTER_SPI_DRIVER_ID)
-         // only pin we need as output is REGISTER_CS and is already handled by the feature
+// only pin we need as output is REGISTER_CS and is already handled by the feature
 #        define qp_setPinOutput(pin) do { } while (0)
 #        define qp_writePinLow(pin) sipo_pin_low(pin); write_sipo_state()
 #        define qp_writePinHigh(pin) sipo_pin_high(pin); write_sipo_state()
-#    else
-         // regular pin handling
+#    else // -------------------- regular pin handling
 #        include "spi_master.h"
 #        define qp_spi_init() spi_init()
 #        define qp_spi_start(cs, lsb, mode, div) spi_start(cs, lsb, mode, div)

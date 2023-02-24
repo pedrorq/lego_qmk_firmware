@@ -4,8 +4,6 @@
 #include "sipo_pins.h"
 #include "custom_spi_master.h"
 
-#define SIPO_SPI_DRIVER_ID 1
-
 uint8_t sipo_pin_state[_SIPO_BYTES] = {[0 ... _SIPO_BYTES-1] = 0};
 bool sipo_state_changed = true;
 

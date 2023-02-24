@@ -16,10 +16,11 @@
 // Debugging
 // #define CUSTOM_SPI_DEBUG
 // #define DEBUG_MATRIX_SCAN_RATE
-// #define INIT_DELAY 3000
+#define INIT_DELAY 3000
 #define QUANTUM_PAINTER_DEBUG
-// #define SIPO_PINS_DEBUG
 // #define TOUCH_SCREEN_DEBUG
+// this is slow as f
+// #define SIPO_PINS_DEBUG
 
 // =======
 // Power indicator
