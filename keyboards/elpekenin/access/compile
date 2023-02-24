@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+
+# Utility script to compile both halves at once
+
+KB=elpekenin/access
+KM=elpekenin
+BIN="${KB//\//_}_${KM}.uf2"
+
+cd $(qmk env QMK_HOME)
+QMK=$(pwd)
+LOG=$QMK/keyboards/$KB/compile.log
+
+echo -n "" > $LOG
+
+for SIDE in left right
+do
+    echo Compiling $SIDE
+    qmk compile -kb $KB -km $KM -e MAKECMDGOALS=uf2-split-$SIDE > /dev/null 2>> $LOG
+    cp $BIN $SIDE-$BIN
+    printf "\n-----------------------\n\n" >> $LOG
+done

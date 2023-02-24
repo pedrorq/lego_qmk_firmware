@@ -9,6 +9,9 @@
 #    error "You need to configure EE_HANDS"
 #endif
 
+#define MATRIX_ROWS 10
+#define MATRIX_COLS 8
+
 // =======
 // Debugging
 // #define CUSTOM_SPI_DEBUG
