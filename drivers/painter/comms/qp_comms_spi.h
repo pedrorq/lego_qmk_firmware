@@ -10,12 +10,11 @@
 #        include "sipo_pins.h"
 #        include "custom_spi_master.h"
 // index on the drivers' array
-#        define PAINTER_SPI_DRIVER_ID 0
-#        define qp_spi_init() custom_spi_init(PAINTER_SPI_DRIVER_ID)
-#        define qp_spi_start(cs, lsb, mode, div) custom_spi_start(DUMMY_PIN, lsb, mode, div, PAINTER_SPI_DRIVER_ID)
-#        define qp_spi_write(data) custom_spi_write(data, PAINTER_SPI_DRIVER_ID)
-#        define qp_spi_transmit(ptr, bytes) custom_spi_transmit(ptr, bytes, PAINTER_SPI_DRIVER_ID)
-#        define qp_spi_stop() custom_spi_stop(PAINTER_SPI_DRIVER_ID)
+#        define qp_spi_init() custom_spi_init(SCREENS_SPI_DRIVER_ID)
+#        define qp_spi_start(cs, lsb, mode, div) custom_spi_start(DUMMY_PIN, lsb, mode, div, SCREENS_SPI_DRIVER_ID)
+#        define qp_spi_write(data) custom_spi_write(data, SCREENS_SPI_DRIVER_ID)
+#        define qp_spi_transmit(ptr, bytes) custom_spi_transmit(ptr, bytes, SCREENS_SPI_DRIVER_ID)
+#        define qp_spi_stop() custom_spi_stop(SCREENS_SPI_DRIVER_ID)
 // only pin we need as output is REGISTER_CS and is already handled by the feature
 #        define qp_setPinOutput(pin) do { } while (0)
 #        define qp_writePinLow(pin) sipo_pin_low(pin); write_sipo_state()

@@ -36,18 +36,18 @@ void write_sipo_state() {
 
     sipo_state_changed = false;
 
-    custom_spi_init(SIPO_SPI_DRIVER_ID);
+    custom_spi_init(REGISTERS_SPI_DRIVER_ID);
 
-    if(!custom_spi_start(SIPO_CS_PIN, false, REGISTERS_SPI_MODE, REGISTERS_SPI_DIV, SIPO_SPI_DRIVER_ID)) {
+    if(!custom_spi_start(SIPO_CS_PIN, false, REGISTERS_SPI_MODE, REGISTERS_SPI_DIV, REGISTERS_SPI_DRIVER_ID)) {
         sipo_dprintf("Couldn't start SPI for SIPO\n");
         return;
     }
 
     writePinLow(SIPO_CS_PIN);
-    custom_spi_transmit(sipo_pin_state, _SIPO_BYTES, SIPO_SPI_DRIVER_ID);
+    custom_spi_transmit(sipo_pin_state, _SIPO_BYTES, REGISTERS_SPI_DRIVER_ID);
     writePinHigh(SIPO_CS_PIN);
 
-    custom_spi_stop(SIPO_SPI_DRIVER_ID);
+    custom_spi_stop(REGISTERS_SPI_DRIVER_ID);
 
     sipo_print_status();
 }

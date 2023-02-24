@@ -4,6 +4,7 @@
 #include QMK_KEYBOARD_H
 #include "access.h"
 #include "color.h"
+#include "custom_spi_master.h"
 #include "graphics.h"
 #include "qp.h"
 #include "sipo_pins.h"
@@ -156,6 +157,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 void keyboard_post_init_kb(void) {
     debug_enable = true;
+    debug_matrix = true;
 
     defer_exec(INIT_DELAY, deferred_init, NULL);
 }
@@ -166,6 +168,53 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
 
     return true;
+}
+
+void matrix_init_custom(void) {
+    setPinOutput(PISO_CS_PIN);
+    writePinHigh(PISO_CS_PIN);
+    custom_spi_init(REGISTERS_SPI_DRIVER_ID);
+}
+
+bool matrix_scan_custom(matrix_row_t current_matrix[]) {
+    static matrix_row_t temp_matrix[MATRIX_ROWS] = {0};
+
+    // Read matrix over SPI
+    custom_spi_start(PISO_CS_PIN, false, REGISTERS_SPI_MODE, REGISTERS_SPI_DIV, REGISTERS_SPI_DRIVER_ID);
+    custom_spi_receive((uint8_t *)temp_matrix, N_PISO_REGISTERS * sizeof(matrix_row_t), REGISTERS_SPI_DRIVER_ID);
+    custom_spi_stop(REGISTERS_SPI_DRIVER_ID);
+
+#if defined(TOUCH_SCREEN_ENABLE) && defined(ONE_HAND_MODE_ENABLE)
+    // Do nothing until sensor initialised
+    if (ili9341_touch == NULL){
+        bool changed = memcmp(current_matrix, temp_matrix, sizeof(temp_matrix)) != 0;
+        if (changed) {
+            memcpy(current_matrix, temp_matrix, sizeof(temp_matrix));
+        }
+        return changed;
+    }
+
+    touch_report_t touch_report = get_spi_touch_report(ili9341_touch);
+
+    // Convert left-based to center-based coord
+    int16_t x = touch_report.x - ILI9341_WIDTH/2;
+
+    // Screen not pressed -> Neither the key
+    if (!touch_report.pressed) {
+        current_matrix[one_hand_row] &= ~(1 << one_hand_col);
+    }
+    // Pressed within trigger zone -> "Press" key
+    else if (-30 < x && x < 30) {
+        current_matrix[one_hand_row] |= 1 << one_hand_col;
+    }
+#endif // TOUCH_SCREEN_ENABLE && ONE_HAND_MODE_ENABLE
+
+    // Check if we've changed, return the last-read data
+    bool changed = memcmp(current_matrix, temp_matrix, sizeof(temp_matrix)) != 0;
+    if (changed) {
+        memcpy(current_matrix, temp_matrix, sizeof(temp_matrix));
+    }
+    return changed;
 }
 
 #if defined(ONE_HAND_ENABLE)
@@ -183,33 +232,6 @@ void screen_one_hand(touch_report_t touch_report) {
     } else if (x < -30){
         one_hand_movement = y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
     }
-}
-
-bool matrix_scan_custom(matrix_row_t current_matrix[]) {
-    // Wait until it is initialized
-    if (ili9341_touch == NULL){
-        return false;
-    }
-
-    // Get touchscreen status
-    touch_report_t touch_report = get_spi_touch_report(ili9341_touch);
-
-    // Convert left-based to center-based coord
-    int16_t x = touch_report.x - ILI9341_WIDTH/2;
-
-    // Store previous state for comparations
-    matrix_row_t previous = current_matrix[one_hand_row];
-
-    // If screen is not pressed, neither will the key
-    if (!touch_report.pressed) {
-        current_matrix[one_hand_row] &= ~(1 << one_hand_col);
-    }
-    // If pressed and in zone, press the key
-    else if (-30 < x && x < 30) {
-        current_matrix[one_hand_row] |= 1 << one_hand_col;
-    }
-
-    return previous != current_matrix[one_hand_row];
 }
 #    endif // TOUCH_SCREEN_ENABLE
 #endif // ONE_HAND_ENABLE
