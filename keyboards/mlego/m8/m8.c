@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "qp_surface.h"
 #include "version.h"
 painter_device_t ssd1680;
-uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)]={0};
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT) + 13]={0};
 
 uint32_t flush_display(uint32_t trigger_time, void *device) {
     qp_flush((painter_device_t *)device);
@@ -118,11 +118,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
   setPinOutput(EINK_CS_PIN);
   writePinHigh(EINK_CS_PIN);
 
-    wait_ms(15000); //Let screens draw some power
+    wait_ms(1500); //Let screens draw some power
     load_qp_resources();
 
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, EINK_CS_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR/8, SPI_MODE, (void *)ssd1680_buffer,false);
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, EINK_CS_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR, SPI_MODE, (void *)ssd1680_buffer,false);
     load_display(ssd1680);
     qp_init(ssd1680, SSD1680_ROTATION);
 
