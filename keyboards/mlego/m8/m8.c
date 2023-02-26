@@ -101,9 +101,12 @@ void toggle_leds(void){
 
 }
 
+#if defined(QUANTUM_PAINTER_ENABLE)
 
 char build_date[] = QMK_BUILDDATE;
 char commit_hash[] = QMK_GIT_HASH;
+
+#endif
 
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     dprint("---------- Init phase ----------\n");
@@ -180,11 +183,12 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     return 0;
 }
 
+#if defined(QUANTUM_PAINTER_ENABLE)
 void keyboard_post_init_kb(void) {
-    debug_enable = true;
-    debug_matrix = true;
 
     defer_exec(INIT_DELAY, deferred_init, NULL);
+
 }
+#endif
 
 

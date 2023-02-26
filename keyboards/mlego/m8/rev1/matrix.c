@@ -18,7 +18,7 @@ static inline uint8_t read_rows(void) {
 //    matrix_output_select_delay();
 //    writePinHigh(SPI_LATCH_PIN);
 
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  spi_start(SPI_LATCH_PIN, true, SPI_MODE, SPI_DIVISOR);
     spi_status_t read_result = spi_read();
 spi_stop();
      if (read_result > 0) {
@@ -36,7 +36,7 @@ static inline void shift_out(uint16_t value) {
   uint8_t message[2]  = {(value >> 8) & 0xFF ,(uint8_t)(value & 0xFF) };
 
  // writePinLow(SPI_LATCH_PIN);
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  spi_start(SPI_LATCH_PIN, true, SPI_MODE, SPI_DIVISOR);
   spi_transmit(message,2);
   spi_stop();
   //writePinHigh(SPI_LATCH_PIN);
