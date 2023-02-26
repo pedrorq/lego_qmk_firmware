@@ -82,6 +82,12 @@ enum unicode_names {
     lL1,
     lk1,
     lK1,
+    lbo1,
+    lbo2,
+    lbc1,
+    lbc2,
+    ls1,
+    ls2,
     ra,
     rA,
     ra1,
@@ -99,9 +105,16 @@ enum unicode_names {
     ra2,
     rA2,
     ra3,
-    rA3
+    rA3,
+    rx,
+    rX,
+    rv,
+    rV,
+    rb,
+    rB,
+    rn,
+    rN
 };
-
 
 enum layer_names {
     _QW = 0,
@@ -117,11 +130,6 @@ void clear_screen(void);
 void init_timer(void);
 #endif
 
-#ifdef ENCODER_ENABLE
-void my_encoders(const uint8_t, const bool);
-bool encoder_update_user(uint8_t, bool);
-#endif
-
 #ifdef RGBLIGHT_ENABLE
 void set_rgb_layers(layer_state_t);
 const rgblight_segment_t * const*  my_rgb(void);
@@ -134,18 +142,26 @@ void set_led_toggle(const uint8_t, const bool);
 
 static inline void led_lwr(const bool on) {
 #ifdef LED_NUM_LOCK_PIN
-    writePin(LED_NUM_LOCK_PIN, on);
+    if (PRODUCT_ID == 0x6064) {
+       writePin(LED_NUM_LOCK_PIN, !on);
+    } else {
+       writePin(LED_NUM_LOCK_PIN, on);
+    }
 #endif
 }
 
 static inline void led_rse(const bool on) {
 #ifdef LED_SCROLL_LOCK_PIN
-    writePin(LED_SCROLL_LOCK_PIN, on);
+    if (PRODUCT_ID == 0x6064) {
+       writePin(LED_SCROLL_LOCK_PIN, !on);
+    } else {
+       writePin(LED_SCROLL_LOCK_PIN, on);
+    }
 #endif
 }
 static inline void led_caps(const bool on) {
 #ifdef LED_CAPS_LOCK_PIN
-    if ((PRODUCT_ID == 0x6061) && (DEVICE_VER == 0x0002)) {
+    if (((PRODUCT_ID == 0x6061) || (PRODUCT_ID == 0x6063)) && (DEVICE_VER == 0x0002)) {
         writePin(LED_CAPS_LOCK_PIN, on);
     } else {
         writePin(LED_CAPS_LOCK_PIN, !on);

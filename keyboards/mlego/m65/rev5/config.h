@@ -17,10 +17,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define UNICODE_SELECTED_MODES UNICODE_MODE_LINUX, UNICODE_MODE_MACOS, UNICODE_MODE_WINCOMPOSE
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET // Activates the double-tap behavior
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED_MASK 0U
 
-#ifdef WPM_ENABLE
-#define WPM_SAMPLE_SECONDS 10
-#define WPM_SAMPLE_PERIODS 100
-#define WPM_ALLOW_COUNT_REGRESSION
+#ifdef OLED_ENABLE
+#    define OLED_DISPLAY_128X32
+#define I2C1_SCL_PIN        GP3
+#define I2C1_SDA_PIN        GP2
+#define I2C_DRIVER I2CD2
+#define OLED_BRIGHTNESS 128
+#define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #endif
