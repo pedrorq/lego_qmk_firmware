@@ -111,23 +111,18 @@ char commit_hash[] = QMK_GIT_HASH;
 uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     dprint("---------- Init phase ----------\n");
 
-    // =======
-    // Power indicator
-    setPinOutput(POWER_LED_PIN);
-    writePinHigh(POWER_LED_PIN);
-
-
-
 #if defined(QUANTUM_PAINTER_ENABLE)
 
 
   setPinOutput(EINK_RST_PIN);
+  setPinOutput(EINK_CS_PIN);
+  writePinHigh(EINK_CS_PIN);
 
     wait_ms(15000); //Let screens draw some power
     load_qp_resources();
 
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SPI_LATCH_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR, SPI_MODE, (void *)ssd1680_buffer,false);
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, EINK_CS_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR/8, SPI_MODE, (void *)ssd1680_buffer,false);
     load_display(ssd1680);
     qp_init(ssd1680, SSD1680_ROTATION);
 
@@ -185,6 +180,11 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 void keyboard_post_init_kb(void) {
+#ifdef CONSOLE_ENABLE
+  debug_enable = true;
+  debug_matrix = true;
+  debug_keyboard = true;
+#endif
 
     defer_exec(INIT_DELAY, deferred_init, NULL);
 

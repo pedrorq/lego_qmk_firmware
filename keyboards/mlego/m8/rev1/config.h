@@ -53,7 +53,7 @@ It uses four pins from the MCU to provide 16 output pins */
 
 
 #define SPI_DRIVER SPID0
-#define SPI_LATCH_PIN GP1
+#define SPI_CS_PIN GP1
 #define SPI_SCK_PIN GP2
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
@@ -84,6 +84,7 @@ It uses four pins from the MCU to provide 16 output pins */
 #define QUANTUM_PAINTER_DEBUG
 
 #define EINK_RST_PIN GP6
+#define EINK_CS_PIN GP0
 #define EINK_DC_PIN GP29
 #define EINK_BUSY_PIN GP28
 
