@@ -16,24 +16,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "m8.h"
-#include "version.h"
-
-
 
 #if defined(QUANTUM_PAINTER_ENABLE)
-#    include "color.h"
-#    include "graphics.h"
-#    include "qp.h"
-#    include "qp_eink_panel.h"
-#    include "qp_surface.h"
+#include "color.h"
+#include "graphics.h"
+#include "qp.h"
+#include "qp_eink_panel.h"
+#include "qp_surface.h"
+#include "version.h"
 painter_device_t ssd1680;
-uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] {0};
-static painter_font_handle_t  thintel;
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)]={0};
 
 uint32_t flush_display(uint32_t trigger_time, void *device) {
     qp_flush((painter_device_t *)device);
     return 0;
 }
+#if defined(CUSTOM_EEPROM_ENABLE)
+#    include "custom_eeprom.h"
+#endif // CUSTOM_EEPROM_ENABLE
 #endif // QUANTUM_PAINTER_ENABLE
 
 
@@ -118,13 +118,13 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #if defined(QUANTUM_PAINTER_ENABLE)
 
 
-  setPinOutput(TESTS_RST_PIN);
+  setPinOutput(EINK_RST_PIN);
 
     wait_ms(15000); //Let screens draw some power
     load_qp_resources();
 
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, TESTS_CS_PIN, TESTS_DC_PIN, TESTS_RST_PIN, SPI_DIV, SPI_MODE, (void *)ssd1680_buffer,false);
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, SPI_LATCH_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR, SPI_MODE, (void *)ssd1680_buffer,false);
     load_display(ssd1680);
     qp_init(ssd1680, SSD1680_ROTATION);
 
@@ -143,9 +143,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 #    endif // CUSTOM_EEPROM_ENABLE
 
-    // show commit's hash
-    painter_font_handle_t font       = qp_fonts[0];
-    int16_t               hash_width = qp_textwidth(font, commit_hash);
+//    painter_font_handle_t font       = qp_fonts[0];
 
     dprint("Quantum painter devices initialised\n");
 

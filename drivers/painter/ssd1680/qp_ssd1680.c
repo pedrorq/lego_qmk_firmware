@@ -83,7 +83,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     };
     // clang-format on
     // this is hw reset according to the datasheet
-    hw_reset(TESTS_RST_PIN);
+    hw_reset(EINK_RST_PIN);
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
   dprintf("0x%x 0x%x 0x%x\n ", y_lsb,y_msb, x);

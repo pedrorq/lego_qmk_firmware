@@ -27,6 +27,7 @@
         "encoder_map": true,
         "extrakey": true,
         "mousekey": true,
+        "quantum_painter": true,
         "nkro": true,
         "oled": false,
         "rgblight": true,

@@ -58,6 +58,7 @@ It uses four pins from the MCU to provide 16 output pins */
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
 #define SPI_DIVISOR 16
+#define SPI_MODE 0
 #define DEBUG_MATRIX_SCAN_RATE
 
 // 00000001
@@ -81,6 +82,11 @@ It uses four pins from the MCU to provide 16 output pins */
 
 #define INIT_DELAY 3000
 #define QUANTUM_PAINTER_DEBUG
+
+#define EINK_RST_PIN GP6
+#define EINK_DC_PIN GP29
+#define EINK_BUSY_PIN GP28
+
 
 /* Double tap reset button to enter bootloader */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
