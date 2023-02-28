@@ -52,10 +52,10 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
         SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
-        SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x01, //0x01
-        SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x01, //0x11
+        SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , y_lsb, y_msb, 0x00, //0x01
+        SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
         SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x   , //0x44
-        SSD1680_RAM_Y_SIZE                    , 0   , 2   , 0x27, 0x01, 0x2d, 0x00, //0x45
+        SSD1680_RAM_Y_SIZE                    , 0   , 2   , 0x00, 0x00, 0x00, (driver->base.panel_height) &0xFF, //0x45
         SSD1680_BORDER_CONTROL                , 0   , 1   , 0x05, //0x3C
         SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
         SSD1680_WRITE_VCOM_REGISTER           , 0   , 1   , 0x70, //0x2C
@@ -75,8 +75,8 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
   0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
   0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
   0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0, //0x32
-        SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x01, //0x4E
-        SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x27, 0x01, //0x4F
+        SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
+        SSD1680_RAM_Y_COUNTER                 , 0   , 2   , y_lsb, y_msb, //0x4F
         SSD1680_DISPLAY_UPDATE_CONTROL        , 250 , 1   , 0xCF, //0x22
         SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
 
@@ -155,7 +155,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
             driver->spi_dc_reset_config.spi_config.chip_select_pin = chip_select_pin;
             driver->spi_dc_reset_config.spi_config.divisor         = spi_divisor;
-            driver->spi_dc_reset_config.spi_config.lsb_first       = false;
+            driver->spi_dc_reset_config.spi_config.lsb_first       = true;
             driver->spi_dc_reset_config.spi_config.mode            = spi_mode;
             driver->spi_dc_reset_config.dc_pin                     = dc_pin;
             driver->spi_dc_reset_config.reset_pin                  = reset_pin;
