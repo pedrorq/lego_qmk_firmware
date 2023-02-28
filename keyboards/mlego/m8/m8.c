@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "qp_surface.h"
 #include "version.h"
 painter_device_t ssd1680;
-uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT) + 13]={0};
+uint8_t ssd1680_buffer[EINK_3C_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
 
 uint32_t flush_display(uint32_t trigger_time, void *device) {
     qp_flush((painter_device_t *)device);
