@@ -30,6 +30,11 @@ static bool qp_surface_append_pixels_empty0bpp(painter_device_t device, uint8_t 
     return true;
 }
 
+static bool qp_surface_append_pidata_empty0bpp(painter_device_t device, uint8_t *target_buffer, uint32_t pixdata_offset, uint8_t pixdata_byte) {
+    // No-op.
+    return false;
+}
+
 static bool empty0bpp_target_pixdata_transfer(painter_driver_t *surface_driver, painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
     // No-op.
     return true;
@@ -46,6 +51,7 @@ const surface_painter_driver_vtable_t empty0bpp_surface_driver_vtable = {
             .viewport        = qp_surface_viewport,
             .palette_convert = qp_surface_palette_convert_empty0bpp,
             .append_pixels   = qp_surface_append_pixels_empty0bpp,
+            .append_pixdata  = qp_surface_append_pidata_empty0bpp
         },
     .target_pixdata_transfer = empty0bpp_target_pixdata_transfer,
 };

@@ -77,6 +77,7 @@ const eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
             .viewport        = qp_eink_panel_viewport,
             .palette_convert = qp_eink_panel_palette_convert,
             .append_pixels   = qp_eink_panel_append_pixels,
+            .append_pixdata  = qp_eink_panel_append_pixdata
         },
     .opcodes =
         {

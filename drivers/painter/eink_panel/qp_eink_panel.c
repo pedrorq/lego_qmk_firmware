@@ -203,3 +203,8 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
 
     return true;
 }
+
+bool qp_eink_panel_append_pixdata(painter_device_t device, uint8_t *target_buffer, uint32_t pixdata_offset, uint8_t pixdata_byte) {
+    // e-Ink should not receive a >8 bpp image
+    return false;
+}
