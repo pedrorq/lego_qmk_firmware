@@ -67,7 +67,7 @@ static inline void stream_pixdata_mono1bpp(surface_painter_device_t *surface, co
 
 // Stream pixel data to the current write position in GRAM
 static bool qp_surface_pixdata_mono1bpp(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
-    struct painter_driver_t * driver  = (struct painter_driver_t *)device;
+    painter_driver_t * driver  = (painter_driver_t *)device;
     surface_painter_device_t *surface = (surface_painter_device_t *)driver;
     stream_pixdata_mono1bpp(surface, (const uint8_t *)pixel_data, native_pixel_count);
     return true;
@@ -96,7 +96,7 @@ static bool qp_surface_append_pixels_mono1bpp(painter_device_t device, uint8_t *
     return true;
 }
 
-static bool mono1bpp_target_pixdata_transfer(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
+static bool mono1bpp_target_pixdata_transfer(painter_driver_t *surface_driver, painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface) {
     return false; // Not yet supported.
 }
 
@@ -104,7 +104,7 @@ static bool qp_surface_append_pixdata_mono1bpp(painter_device_t device, uint8_t 
     return false; // Just use 1bpp images.
 }
 
-const struct surface_painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
+const surface_painter_driver_vtable_t mono1bpp_surface_driver_vtable = {
     .base =
         {
             .init            = qp_surface_init,

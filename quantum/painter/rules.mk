@@ -200,6 +200,7 @@ ifeq ($(strip $(QUANTUM_PAINTER_NEEDS_SURFACE)), yes)
 		$(DRIVER_PATH)/painter/generic
 	SRC += \
 		$(DRIVER_PATH)/painter/generic/qp_surface_common.c \
+		$(DRIVER_PATH)/painter/generic/qp_surface_empty0bpp.c \
 		$(DRIVER_PATH)/painter/generic/qp_surface_mono1bpp.c \
 		$(DRIVER_PATH)/painter/generic/qp_surface_rgb565.c
 endif

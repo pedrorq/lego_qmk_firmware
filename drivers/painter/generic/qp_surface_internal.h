@@ -10,11 +10,11 @@
 // Internal declarations
 
 // Surface vtable
-struct surface_painter_driver_vtable_t {
-    struct painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
+typedef struct surface_painter_driver_vtable_t {
+    painter_driver_vtable_t base; // must be first, so it can be cast to/from the painter_driver_vtable_t* type
 
-    bool (*target_pixdata_transfer)(struct painter_driver_t *surface_driver, struct painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface);
-};
+    bool (*target_pixdata_transfer)(painter_driver_t *surface_driver, painter_driver_t *target_driver, uint16_t x, uint16_t y, bool entire_surface);
+} surface_painter_driver_vtable_t;
 
 typedef struct surface_dirty_data_t {
     bool     is_dirty;
@@ -38,7 +38,7 @@ typedef struct surface_viewport_data_t {
 
 // Surface struct
 typedef struct surface_painter_device_t {
-    struct painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
+    painter_driver_t base; // must be first, so it can be cast to/from the painter_device_t* type
 
     // The target buffer
     union {
@@ -103,7 +103,7 @@ void qp_surface_rotate_xy(painter_rotation_t rotation, uint16_t width, uint16_t 
         for (uint32_t i = 0; i < device_table_len; ++i) {                                                                                                                     \
             surface_painter_device_t *driver = &device_table[i];                                                                                                              \
             if (!driver->base.driver_vtable) {                                                                                                                                \
-                driver->base.driver_vtable         = (struct painter_driver_vtable_t *)&(vtable);                                                                             \
+                driver->base.driver_vtable         = (painter_driver_vtable_t *)&(vtable);                                                                             \
                 driver->base.native_bits_per_pixel = (bpp);                                                                                                                   \
                 driver->base.comms_vtable          = &dummy_comms_vtable;                                                                                                     \
                 driver->base.panel_width           = panel_width;                                                                                                             \

@@ -13,8 +13,8 @@ static const uint8_t cmd_byte  = 0x00;
 static const uint8_t data_byte = 0x40;
 
 static uint32_t qp_comms_i2c_send_raw(painter_device_t device, const void *data, uint32_t byte_count) {
-    struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
-    struct qp_comms_i2c_config_t *comms_config = (struct qp_comms_i2c_config_t *)driver->comms_config;
+    painter_driver_t *     driver       = (painter_driver_t *)device;
+    qp_comms_i2c_config_t *comms_config = (qp_comms_i2c_config_t *)driver->comms_config;
     i2c_status_t                  res          = i2c_transmit(comms_config->chip_address << 1, data, byte_count, I2C_TIMEOUT);
     if (res < 0) {
         return 0;
@@ -31,8 +31,8 @@ bool qp_comms_i2c_init(painter_device_t device) {
 }
 
 bool qp_comms_i2c_start(painter_device_t device) {
-    struct painter_driver_t *     driver       = (struct painter_driver_t *)device;
-    struct qp_comms_i2c_config_t *comms_config = (struct qp_comms_i2c_config_t *)driver->comms_config;
+    painter_driver_t *     driver       = (painter_driver_t *)device;
+    qp_comms_i2c_config_t *comms_config = (qp_comms_i2c_config_t *)driver->comms_config;
     return i2c_start(comms_config->chip_address << 1) == I2C_STATUS_SUCCESS;
 }
 
@@ -76,7 +76,7 @@ void qp_comms_i2c_bulk_command_sequence(painter_device_t device, const uint8_t *
     }
 }
 
-const struct painter_comms_with_command_vtable_t i2c_comms_cmddata_vtable = {
+const painter_comms_with_command_vtable_t i2c_comms_cmddata_vtable = {
     .base =
         {
             .comms_init  = qp_comms_i2c_init,

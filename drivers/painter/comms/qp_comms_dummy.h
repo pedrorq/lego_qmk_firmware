@@ -6,6 +6,6 @@
 
 #    include "qp_internal.h"
 
-extern struct painter_comms_vtable_t dummy_comms_vtable;
+extern painter_comms_vtable_t dummy_comms_vtable;
 
 #endif // QUANTUM_PAINTER_DUMMY_COMMS_ENABLE

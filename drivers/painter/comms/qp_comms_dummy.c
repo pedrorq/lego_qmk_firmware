@@ -24,7 +24,7 @@ uint32_t dummy_comms_send(painter_device_t device, const void *data, uint32_t by
     return byte_count;
 }
 
-struct painter_comms_vtable_t dummy_comms_vtable = {
+painter_comms_vtable_t dummy_comms_vtable = {
     // These are all effective no-op's because they're not actually needed.
     .comms_init  = dummy_comms_init,
     .comms_start = dummy_comms_start,
