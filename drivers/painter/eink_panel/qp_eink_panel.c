@@ -117,63 +117,73 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Stream pixel data to the current write position
+static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *black, uint8_t *red) {
+    /* Convert pixel data into convenient representation
+     *
+     * B1 R1  B2 R2  B3 R3  B4 R4 || B5 R5  B6 R6  B7 R7  B8 R8
+     * Becomes
+     * black_data: B1 B2 B3 B4 B5 B6 B7 B8
+     * red_data:   R1 R2 R3 R4 R5 R6 R7 R8
+     *
+     * Note: Will be grabbing 8 pixels at most, thus uint16_t is enough
+     * Note: Always accessing `index+1` might go out of the buffer if display's (w*h) % 8 != 0
+     */
+    uint16_t raw_data = (pixels[index] << 8) | (pixels[index+1]);
+
+    // clear data so we can simply |=
+    *black = 0;
+    *red   = 0;
+
+    uint8_t i = 7;
+    for (uint16_t bitmask = (1 << 15); i >= 0; bitmask>>=2) {
+        bool black_bit = raw_data & bitmask;
+        bool red_bit   = raw_data & (bitmask >> 1);
+
+        *black |= black_bit << i;
+        *red   |= red_bit   << i;
+        --i;
+    }
+}
+
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
     painter_driver_t *                    black  = (painter_driver_t *)driver->black_surface;
-    painter_driver_t *                    red    = (painter_driver_t *)driver->black_surface;
+    painter_driver_t *                    red    = (painter_driver_t *)driver->red_surface;
     uint8_t *                             pixels = (uint8_t *)pixel_data;
 
-    uint32_t i;
+    /* By parsing 2 bytes at a time, we can make "buffers" of 8 pixels
+     * We do this &'ing and and shifting each bit to its position
+     *
+     *
+     * - 2 bytes (8 pixels) => Increse i by that amount
+     * - We don't have to compute a bit_offset on the loop's indexing
+     *   Will always land at the start of a byte
+     * - Since each byte stores 4 pixels, byte offset is i / 4
+     * - We don't want to grab data further down on the buffer
+     *   have to check if current index + 8 goes out of bounds
+     */
+    uint32_t i; // pixel counter
     uint8_t black_data, red_data;
-    bool last_pixel_left = false;
-    for (i = 0; i < native_pixel_count - 1; i+=2) {
-        if (i == native_pixel_count - 2) {
-            last_pixel_left = true;
+    bool data_left = false;
+    for (i = 0; i < native_pixel_count; i+=8) {
+        if ((i + 8) >= native_pixel_count) {
+            data_left = true;
             break;
         }
 
-        // By parsing 2 bytes at a time, we can make "buffers" of 8 pixels
-        // By &'ing and and shifting each bit to its position
-        // B1 R1  B2 R2  B3 R3  B4 R4 || B5 R5  B6 R6  B7 R7  B8 R8
-        black_data = ((pixels[i + 0] & (1 << 7)) << 0)
-                   | ((pixels[i + 0] & (1 << 5)) << 1)
-                   | ((pixels[i + 0] & (1 << 3)) << 2)
-                   | ((pixels[i + 0] & (1 << 1)) << 3)
-                   | ((pixels[i + 1] & (1 << 7)) >> 4)
-                   | ((pixels[i + 1] & (1 << 5)) >> 3)
-                   | ((pixels[i + 1] & (1 << 3)) >> 2)
-                   | ((pixels[i + 1] & (1 << 1)) >> 1);
+        decode_bitmask(pixels, i / 4, &black_data, &red_data);
         black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, 8);
-
-        if (driver->has_3color) {
-            red_data = ((pixels[i + 0] & (1 << 6)) << 1)
-                     | ((pixels[i + 0] & (1 << 4)) << 2)
-                     | ((pixels[i + 0] & (1 << 2)) << 3)
-                     | ((pixels[i + 0] & (1 << 0)) << 4)
-                     | ((pixels[i + 1] & (1 << 6)) >> 3)
-                     | ((pixels[i + 1] & (1 << 4)) >> 2)
-                     | ((pixels[i + 1] & (1 << 2)) >> 1)
-                     | ((pixels[i + 1] & (1 << 0)) >> 0);
+        if (driver->has_3color)
             red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, 8);
-        }
     }
 
-    if (last_pixel_left) {
-        // should these be on lower half?
+    if (data_left) {
+        uint8_t n_pix = native_pixel_count - i;
+        decode_bitmask(pixels, i / 4, &black_data, &red_data);
+        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, n_pix);
+        if (driver->has_3color)
+            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, n_pix);
 
-        black_data = ((pixels[i + 0] & (1 << 7)) << 0)
-                   | ((pixels[i + 0] & (1 << 5)) << 1)
-                   | ((pixels[i + 0] & (1 << 3)) << 2)
-                   | ((pixels[i + 0] & (1 << 1)) << 3);
-        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, 4);
-
-        if (driver->has_3color) {
-            red_data = ((pixels[i + 0] & (1 << 6)) << 1)
-                     | ((pixels[i + 0] & (1 << 4)) << 2)
-                     | ((pixels[i + 0] & (1 << 2)) << 3)
-                     | ((pixels[i + 0] & (1 << 0)) << 4);
-            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, 4);
-        }
     }
 
     return true;
