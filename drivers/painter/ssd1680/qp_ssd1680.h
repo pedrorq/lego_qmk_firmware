@@ -6,6 +6,15 @@
 #include "gpio.h"
 #include "qp_internal.h"
 
+// Maximum buffer that the controler chip could need
+#define SSD1680_MAX_BUFFER_SIZE (176 * 296 * 2 / 8)
+
+#if defined(QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE) && (QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE < SSD1680_MAX_BUFFER_SIZE)
+#    undef QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE
+#    define QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE SSD1680_MAX_BUFFER_SIZE
+#    pragma message "Increased your QUANTUM_PAINTER_PIXDATA_BUFFER_SIZE to `" STR(SSD1680_MAX_BUFFER_SIZE) "` so code can work correctly"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter SSD1680_NUM_DEVICES configurables (add to your keyboard's config.h)
 

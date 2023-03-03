@@ -120,17 +120,59 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint32_t native_pixel_count) {
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
     painter_driver_t *                    black  = (painter_driver_t *)driver->black_surface;
+    painter_driver_t *                    red    = (painter_driver_t *)driver->black_surface;
     uint8_t *                             pixels = (uint8_t *)pixel_data;
 
-    // Since pixel data is stored as | 0000 00RB |, we have to append the pixels
-    // one by one parsing those bits on each byte
-    for (uint32_t i = 0; i < native_pixel_count; ++i) {
-        // Calling driver function manually over using qp_pixdata to avoid getting
-        // LOTS of qp_dprintf slowing it
-        black->driver_vtable->pixdata(driver->black_surface, (const void *)(pixels[i] >> 0), 1);
+    uint32_t i;
+    uint8_t black_data, red_data;
+    bool last_pixel_left = false;
+    for (i = 0; i < native_pixel_count - 1; i+=2) {
+        if (i == native_pixel_count - 2) {
+            last_pixel_left = true;
+            break;
+        }
+
+        // By parsing 2 bytes at a time, we can make "buffers" of 8 pixels
+        // By &'ing and and shifting each bit to its position
+        // B1 R1  B2 R2  B3 R3  B4 R4 || B5 R5  B6 R6  B7 R7  B8 R8
+        black_data = ((pixels[i + 0] & (1 << 7)) << 0)
+                   | ((pixels[i + 0] & (1 << 5)) << 1)
+                   | ((pixels[i + 0] & (1 << 3)) << 2)
+                   | ((pixels[i + 0] & (1 << 1)) << 3)
+                   | ((pixels[i + 1] & (1 << 7)) >> 4)
+                   | ((pixels[i + 1] & (1 << 5)) >> 3)
+                   | ((pixels[i + 1] & (1 << 3)) >> 2)
+                   | ((pixels[i + 1] & (1 << 1)) >> 1);
+        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, 8);
+
         if (driver->has_3color) {
-            painter_driver_t *red = (painter_driver_t *)driver->red_surface;
-            red->driver_vtable->pixdata(driver->red_surface, (const void *)(pixels[i] >> 1), 1);
+            red_data = ((pixels[i + 0] & (1 << 6)) << 1)
+                     | ((pixels[i + 0] & (1 << 4)) << 2)
+                     | ((pixels[i + 0] & (1 << 2)) << 3)
+                     | ((pixels[i + 0] & (1 << 0)) << 4)
+                     | ((pixels[i + 1] & (1 << 6)) >> 3)
+                     | ((pixels[i + 1] & (1 << 4)) >> 2)
+                     | ((pixels[i + 1] & (1 << 2)) >> 1)
+                     | ((pixels[i + 1] & (1 << 0)) >> 0);
+            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, 8);
+        }
+    }
+
+    if (last_pixel_left) {
+        // should these be on lower half?
+
+        black_data = ((pixels[i + 0] & (1 << 7)) << 0)
+                   | ((pixels[i + 0] & (1 << 5)) << 1)
+                   | ((pixels[i + 0] & (1 << 3)) << 2)
+                   | ((pixels[i + 0] & (1 << 1)) << 3);
+        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, 4);
+
+        if (driver->has_3color) {
+            red_data = ((pixels[i + 0] & (1 << 6)) << 1)
+                     | ((pixels[i + 0] & (1 << 4)) << 2)
+                     | ((pixels[i + 0] & (1 << 2)) << 3)
+                     | ((pixels[i + 0] & (1 << 0)) << 4);
+            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, 4);
         }
     }
 
@@ -198,7 +240,26 @@ bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size
 // Append pixels to the target location, keyed by the pixel index
 bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        target_buffer[pixel_offset + i] = palette[palette_indices[i]].mono;
+        uint32_t pixel_num   = pixel_offset + i;
+
+        // each pixel takes 2 bits, aka each byte holds 4 pixels, offset based on that
+        uint32_t byte_offset = pixel_num / 4;
+        uint8_t  bit_offset  = 3 - (pixel_num % 4);
+
+        bool black_bit = palette[palette_indices[i]].mono & 1;
+        bool red_bit   = palette[palette_indices[i]].mono & 2;
+
+        // data should end up arranged:
+        // B1 R1  B2 R2  B3 R3 ...
+        if (black_bit)
+            target_buffer[byte_offset] |= (1 << (2 * bit_offset + 1));
+        else
+            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 1));
+
+        if (red_bit)
+            target_buffer[byte_offset] |= (1 << (2 * bit_offset));
+        else
+            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset));
     }
 
     return true;
