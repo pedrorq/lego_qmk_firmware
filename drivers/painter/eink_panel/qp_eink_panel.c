@@ -134,14 +134,13 @@ static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *blac
     *black = 0;
     *red   = 0;
 
-    uint8_t i = 7;
-    for (uint16_t bitmask = (1 << 15); i >= 0; bitmask>>=2) {
+    for (uint8_t i = 0; i < 8; ++i) {
+        uint16_t bitmask = (1 << (2 * i + 1));
         bool black_bit = raw_data & bitmask;
         bool red_bit   = raw_data & (bitmask >> 1);
 
         *black |= black_bit << i;
         *red   |= red_bit   << i;
-        --i;
     }
 }
 
@@ -162,28 +161,20 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
      * - We don't want to grab data further down on the buffer
      *   have to check if current index + 8 goes out of bounds
      */
-    uint32_t i; // pixel counter
+    uint32_t i = 0;
     uint8_t black_data, red_data;
-    bool data_left = false;
-    for (i = 0; i < native_pixel_count; i+=8) {
-        if ((i + 8) >= native_pixel_count) {
-            data_left = true;
-            break;
-        }
+    while (i < native_pixel_count) {
+        // at most, 8 pixels per cycle
+        uint8_t pixels_this_loop = QP_MIN(native_pixel_count - i, 8);
 
+        // stream data to display
         decode_bitmask(pixels, i / 4, &black_data, &red_data);
-        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, 8);
+        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, pixels_this_loop);
         if (driver->has_3color)
-            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, 8);
-    }
+            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, pixels_this_loop);
 
-    if (data_left) {
-        uint8_t n_pix = native_pixel_count - i;
-        decode_bitmask(pixels, i / 4, &black_data, &red_data);
-        black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, n_pix);
-        if (driver->has_3color)
-            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, n_pix);
-
+        // update position
+        i += pixels_this_loop;
     }
 
     return true;
@@ -262,12 +253,12 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
         // data should end up arranged:
         // B1 R1  B2 R2  B3 R3 ...
         if (black_bit)
-            target_buffer[byte_offset] |= (1 << (2 * bit_offset + 1));
+            target_buffer[byte_offset] |=  (1 << (2 * bit_offset + 1));
         else
             target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 1));
 
         if (red_bit)
-            target_buffer[byte_offset] |= (1 << (2 * bit_offset));
+            target_buffer[byte_offset] |=  (1 << (2 * bit_offset));
         else
             target_buffer[byte_offset] &= ~(1 << (2 * bit_offset));
     }

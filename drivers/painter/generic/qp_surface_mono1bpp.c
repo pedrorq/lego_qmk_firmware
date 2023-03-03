@@ -35,7 +35,7 @@ static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t
     // Figure out which location needs to be updated
     uint32_t pixel_num = y * w + x;
     uint32_t byte_offset = pixel_num / 8;
-    uint8_t  bit_offset  = 7 - (pixel_num % 8);
+    uint8_t  bit_offset  = pixel_num % 8;
     bool     curr_val    = (surface->u8buffer[byte_offset] & (1 << bit_offset)) ? true : false;
 
     // Skip messing with the dirty info if the original value already matches
@@ -86,7 +86,7 @@ static bool qp_surface_append_pixels_mono1bpp(painter_device_t device, uint8_t *
     for (uint32_t i = 0; i < pixel_count; ++i) {
         uint32_t pixel_num   = pixel_offset + i;
         uint32_t byte_offset = pixel_num / 8;
-        uint8_t  bit_offset  = 7 - (pixel_num % 8);
+        uint8_t  bit_offset  = pixel_num % 8;
         if (palette[palette_indices[i]].mono) {
             target_buffer[byte_offset] |= (1 << bit_offset);
         } else {
