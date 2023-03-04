@@ -5,16 +5,6 @@
     "bootloader": "stm32duino",
     "debounce": 5,
     "diode_direction": "COL2ROW",
-    "encoder": {
-        "enabled": true,
-        "rotary": [
-            {
-                "pin_a": "A8",
-                "pin_b": "A9",
-                "resolution": 4
-            }
-        ]
-    },
     "features": {
         "audio": false,
         "backlight": false,
@@ -27,11 +17,6 @@
         "mousekey": true,
         "nkro": true,
         "rgblight": true
-    },
-    "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
     },
     "matrix_pins": {
         "cols": ["A10", "A15", "B3", "B4", "B5", "B9", "B8", "B7", "B6", "C15", "A0", "A7", "B10"],

@@ -6,16 +6,6 @@
     "board": "BLACKPILL_STM32_F401",
     "debounce": 5,
     "diode_direction": "COL2ROW",
-    "encoder": {
-        "enabled": true,
-        "rotary": [
-            {
-                "pin_a": "A0",
-                "pin_b": "B6",
-                "resolution": 4
-            }
-        ]
-    },
     "features": {
         "audio": false,
         "backlight": false,
@@ -30,11 +20,6 @@
         "oled": true,
         "rgblight": true,
         "wpm": true
-    },
-    "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
     },
     "matrix_pins": {
         "cols": ["B14", "A8", "A10", "A15", "B3", "B4", "B5", "B7", "A1", "A2", "A3", "A4", "B1"],

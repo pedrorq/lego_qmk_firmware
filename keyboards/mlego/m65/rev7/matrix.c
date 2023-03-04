@@ -8,7 +8,7 @@
 #endif
 
 static const uint16_t col_values[MATRIX_COLS] = COLS;
-static const uint8_t row_pins[MATRIX_ROWS] = ROWS;
+static const pin_t row_pins[MATRIX_ROWS] = ROWS;
 
 static const int msize = MATRIX_ROWS * sizeof(matrix_row_t);
 static matrix_row_t prev_matrix[MATRIX_ROWS];
@@ -49,7 +49,7 @@ void matrix_init_custom(void) {
   matrix_io_delay();
 
   setPinOutput(SPI_LATCH_PIN);
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  spi_start(SPI_LATCH_PIN, SPI_lsbFirst, SPI_MODE, SPI_DIVISOR);
   matrix_io_delay();
 }
 
