@@ -1,0 +1,54 @@
+{
+    "manufacturer": "aaa",
+    "keyboard_name": "cleo rev1",
+    "maintainer": "sss",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
+    "board":"GENERIC_RP_RP2040",
+    "debounce": 10,
+    "diode_direction": "COL2ROW",
+    "encoder": {
+        "enabled": true,
+        "rotary": [
+            {
+                "pin_a": "GP20",
+                "pin_b": "GP19",
+                "resolution": 4
+            }
+        ]
+    },
+    "features": {
+        "audio": false,
+        "backlight": false,
+        "bootmagic": true,
+        "command": false,
+        "console": true,
+        "encoder": true,
+        "encoder_map": true,
+        "extrakey": true,
+        "mousekey": true,
+        "nkro": true,
+        "oled": false,
+        "rgblight": false,
+        "wpm": true
+    },
+    "tapping": {
+        "toggle": 2
+    },
+    "url": "xxx",
+    "usb": {
+        "device_version": "0.0.1",
+        "pid": "0x6560",
+        "vid": "0xBABA"
+    },
+    "layouts": {
+        "LAYOUT_7x7": {
+            "layout": [
+                { "label": "2", "matrix": [0, 0], "w": 1, "x": 0, "y": 0 },
+                { "label": "4", "matrix": [0, 1], "w": 1, "x": 1, "y": 0 },
+                { "label": "Lower", "matrix": [1, 0], "w": 1, "x": 0, "y": 1 },
+                { "label": "Raise", "matrix": [1, 1], "w": 1, "x": 1, "y": 1 }
+            ]
+        }
+    }
+}
