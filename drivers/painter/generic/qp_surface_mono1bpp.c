@@ -35,7 +35,7 @@ static inline void setpixel_mono1bpp(surface_painter_device_t *surface, uint16_t
     // Figure out which location needs to be updated
     uint32_t pixel_num = y * w + x;
     uint32_t byte_offset = pixel_num / 8;
-    uint8_t  bit_offset  = pixel_num % 8;
+    uint8_t  bit_offset  = 7 - (pixel_num % 8);
     bool     curr_val    = (surface->u8buffer[byte_offset] & (1 << bit_offset)) ? true : false;
 
     // Skip messing with the dirty info if the original value already matches

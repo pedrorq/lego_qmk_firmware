@@ -113,7 +113,7 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Stream pixel data to the current write position
-static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *black, uint8_t *red) {
+static inline void decode_bitmask(uint8_t *pixels, uint32_t byte, uint8_t *black, uint8_t *red) {
     /* Convert pixel data into convenient representation
      *
      * B1 R1  B2 R2  B3 R3  B4 R4 || B5 R5  B6 R6  B7 R7  B8 R8
@@ -122,20 +122,26 @@ static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *blac
      * red_data:   R8 R7 R6 R5 R4 R3 R2 R1
      *
      * Note: Will be grabbing 8 pixels at most, thus uint16_t is enough
-     * Note: Always accessing `index+1` might go out of the buffer if display's (w*h) % 8 != 0
+     * Note: Always accessing `byte + 1` might go out of the buffer if display's (w*h) % 8 != 0
      */
-    uint16_t raw_data = (pixels[index] << 8) | (pixels[index+1]);
+    uint16_t raw_data = (pixels[byte] << 8) | (pixels[byte + 1]);
 
     // clear data so we can simply |=
     *black = 0;
     *red   = 0;
 
-    for (uint8_t i = 0; i < 8; ++i) {
-        bool black_bit = raw_data & (1 << (2 * i + 1));
-        bool red_bit   = raw_data & (1 << (2 * i + 0));
+    uint16_t black_mask = 1 << 15;
+    uint16_t red_mask   = 1 << 14;
 
-        *black |= black_bit << i;
-        *red   |= red_bit   << i;
+    for (uint8_t i = 0; i < 8; ++i) {
+        bool black_bit = raw_data & black_mask;
+        bool red_bit   = raw_data & red_mask;
+
+        black_mask >>= 2;
+        red_mask   >>= 2;
+
+        *black |= (black_bit << i);
+        *red   |= (red_bit   << i);
     }
 }
 
@@ -161,9 +167,10 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     while (i < native_pixel_count) {
         // at most, 8 pixels per cycle
         uint8_t pixels_this_loop = QP_MIN(native_pixel_count - i, 8);
+        uint8_t byte = i / 4;
 
         // stream data to display
-        decode_bitmask(pixels, i / 4, &black_data, &red_data);
+        decode_bitmask(pixels, byte, &black_data, &red_data);
         black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, pixels_this_loop);
         if (driver->has_3color)
             red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, pixels_this_loop);
@@ -235,6 +242,8 @@ bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Append pixels to the target location, keyed by the pixel index
 bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer, qp_pixel_t *palette, uint32_t pixel_offset, uint32_t pixel_count, uint8_t *palette_indices) {
+    // data should end up arranged:
+    // B1R1B2R2  B3R3B4R4 | ...
     for (uint32_t i = 0; i < pixel_count; ++i) {
         uint32_t pixel_num   = pixel_offset + i;
 
@@ -245,17 +254,18 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
         bool black_bit = palette[palette_indices[i]].mono & 1;
         bool red_bit   = palette[palette_indices[i]].mono & 2;
 
-        // data should end up arranged:
-        // B1 R1  B2 R2  B3 R3 ...
+        uint8_t black_mask = 1 << (2 * bit_offset + 1);
+        uint8_t red_mask   = 1 << (2 * bit_offset + 0);
+
         if (black_bit)
-            target_buffer[byte_offset] |=  (1 << (2 * bit_offset + 1));
+            target_buffer[byte_offset] |= black_mask;
         else
-            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 1));
+            target_buffer[byte_offset] &= ~black_mask;
 
         if (red_bit)
-            target_buffer[byte_offset] |=  (1 << (2 * bit_offset + 0));
+            target_buffer[byte_offset] |= red_mask;
         else
-            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 0));
+            target_buffer[byte_offset] &= ~red_mask;
     }
 
     return true;
