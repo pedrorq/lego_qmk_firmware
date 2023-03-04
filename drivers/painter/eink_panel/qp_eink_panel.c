@@ -14,16 +14,13 @@
 // Reset can_flush flag back to true after timeout
 uint32_t can_flush_callback(uint32_t trigger_time, void *cb_arg) {
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)cb_arg;
-
     driver->can_flush = true;
-
     return 0;
 }
 
 // Set can_flush to false and schedule its cleanup
 void qp_eink_update_can_flush(painter_device_t device) {
-    eink_panel_dc_reset_painter_device_t *driver  = (eink_panel_dc_reset_painter_device_t *)device;
-
+    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
     driver->can_flush = false;
     defer_exec(driver->timeout, can_flush_callback, (void *)device);
 }
@@ -166,6 +163,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 
 // Convert supplied palette entries into their native equivalents
 bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
+    // FIXME: Support for non-red 3-color displays
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     for (int16_t i = 0; i < palette_size; ++i) {
