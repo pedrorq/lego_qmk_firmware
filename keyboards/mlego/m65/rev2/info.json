@@ -5,16 +5,6 @@
     "bootloader": "stm32duino",
     "debounce": 5,
     "diode_direction": "COL2ROW",
-    "encoder": {
-        "enabled": true,
-        "rotary": [
-            {
-                "pin_a": "A8",
-                "pin_b": "A9",
-                "resolution": 4
-            }
-        ]
-    },
     "features": {
         "audio": false,
         "backlight": false,

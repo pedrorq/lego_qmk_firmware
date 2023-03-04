@@ -59,6 +59,8 @@ It uses four pins from the MCU to provide 16 output pins */
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
 #define SPI_DIVISOR 32
+#define SPI_MODE 3
+#define SPI_lsbFirst true
 #define DEBUG_MATRIX_SCAN_RATE
 
 

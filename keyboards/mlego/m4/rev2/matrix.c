@@ -8,7 +8,7 @@
 #endif
 
 static const uint16_t col_values[MATRIX_COLS] = COLS;
-static const uint8_t row_pins[MATRIX_ROWS] = ROWS;
+static const pin_t row_pins[MATRIX_ROWS] = ROWS;
 
 static const int msize = MATRIX_ROWS * sizeof(matrix_row_t);
 static matrix_row_t prev_matrix[MATRIX_ROWS];
@@ -27,11 +27,11 @@ static inline void shift_out(uint16_t value) {
   uint8_t message[2]  = {(value >> 8) & 0xFF ,(uint8_t)(value & 0xFF) };
 
 //  writePinLow(SPI_LATCH_PIN);
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  spi_start(SPI_LATCH_PIN, SPI_lsbFirst, SPI_MODE, SPI_DIVISOR);
   spi_transmit(message,2);
   spi_stop();
 //  writePinHigh(SPI_LATCH_PIN);
-  matrix_output_select_delay();
+//  matrix_output_select_delay();
 }
 
 static inline void select_col(uint8_t col) {
