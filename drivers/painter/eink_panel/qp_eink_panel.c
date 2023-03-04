@@ -8,10 +8,6 @@
 #include "qp_surface.h"
 #include "qp_surface_internal.h"
 
-// TODO: Optimize data representation
-// Current format wastes 6 bits on each byte: | 0000 00BR | 0000 00BR | ...
-// We could represent each pixel as a single bit when has_3color == false
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quantum Painter API implementations
 
@@ -122,8 +118,8 @@ static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *blac
      *
      * B1 R1  B2 R2  B3 R3  B4 R4 || B5 R5  B6 R6  B7 R7  B8 R8
      * Becomes
-     * black_data: B1 B2 B3 B4 B5 B6 B7 B8
-     * red_data:   R1 R2 R3 R4 R5 R6 R7 R8
+     * black_data: B8 B7 B6 B5 B4 B3 B2 B1
+     * red_data:   R8 R7 R6 R5 R4 R3 R2 R1
      *
      * Note: Will be grabbing 8 pixels at most, thus uint16_t is enough
      * Note: Always accessing `index+1` might go out of the buffer if display's (w*h) % 8 != 0
@@ -135,9 +131,8 @@ static inline void decode_bitmask(uint8_t *pixels, uint32_t index, uint8_t *blac
     *red   = 0;
 
     for (uint8_t i = 0; i < 8; ++i) {
-        uint16_t bitmask = (1 << (2 * i + 1));
-        bool black_bit = raw_data & bitmask;
-        bool red_bit   = raw_data & (bitmask >> 1);
+        bool black_bit = raw_data & (1 << (2 * i + 1));
+        bool red_bit   = raw_data & (1 << (2 * i + 0));
 
         *black |= black_bit << i;
         *red   |= red_bit   << i;
@@ -258,9 +253,9 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
             target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 1));
 
         if (red_bit)
-            target_buffer[byte_offset] |=  (1 << (2 * bit_offset));
+            target_buffer[byte_offset] |=  (1 << (2 * bit_offset + 0));
         else
-            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset));
+            target_buffer[byte_offset] &= ~(1 << (2 * bit_offset + 0));
     }
 
     return true;
