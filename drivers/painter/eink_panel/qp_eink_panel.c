@@ -32,13 +32,14 @@ bool qp_eink_panel_clear(painter_device_t device) {
     surface_painter_device_t *            red    = (surface_painter_device_t *)driver->red_surface;
 
     qp_init(driver->black_surface, driver->base.rotation);
-    if (driver->invert_black) {
-        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, black->base.native_bits_per_pixel));
-    }
-
     qp_init(driver->red_surface, driver->base.rotation);
-    if (driver->invert_red) {
-        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, red->base.native_bits_per_pixel));
+
+    // Fill with 1's instead, if colors are represented inverted
+    if (driver->invert_mask & 2) {
+        memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, 1));
+    }
+    if (driver->invert_mask & 1) {
+        memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, 1));
     }
 
     return true;
@@ -69,7 +70,7 @@ bool qp_eink_panel_flush(painter_device_t device) {
     eink_panel_dc_reset_painter_driver_vtable_t *vtable  = (eink_panel_dc_reset_painter_driver_vtable_t *)driver->base.driver_vtable;
     surface_painter_device_t *                   black   = (surface_painter_device_t *)driver->black_surface;
     surface_painter_device_t *                   red     = (surface_painter_device_t *)driver->red_surface;
-    uint32_t                                     n_bytes = EINK_BW_BYTES_REQD(driver->base.panel_width, driver->base.panel_height);
+    uint32_t                                     n_bytes = SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, 1);
 
     if (!(black->dirty.is_dirty || red->dirty.is_dirty)) {
         qp_dprintf("qp_eink_panel_flush: done (no changes to be sent)\n");
@@ -84,13 +85,8 @@ bool qp_eink_panel_flush(painter_device_t device) {
     qp_comms_command(device, vtable->opcodes.send_black_data);
     qp_comms_send(device, black->buffer, n_bytes);
 
-    // even if we have a B/W display, ot may need to receive empty red data
-    // to prevent noisy drawing, we check whether this is needed by looking
-    // at bits_per_pixel, should be 0 if we don't need to send and 1 if we do
-    if (red->base.native_bits_per_pixel) {
-        qp_comms_command(device, vtable->opcodes.send_red_data);
-        qp_comms_send(device, red->buffer, n_bytes);
-    }
+    qp_comms_command(device, vtable->opcodes.send_red_data);
+    qp_comms_send(device, red->buffer, n_bytes);
 
     qp_comms_command(device, vtable->opcodes.refresh);
 
@@ -105,8 +101,7 @@ bool qp_eink_panel_viewport(painter_device_t device, uint16_t left, uint16_t top
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     qp_viewport(driver->black_surface, left, top, right, bottom);
-    if (driver->has_3color)
-        qp_viewport(driver->red_surface, left, top, right, bottom);
+    qp_viewport(driver->red_surface, left, top, right, bottom);
 
     return true;
 }
@@ -172,8 +167,7 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
         // stream data to display
         decode_bitmask(pixels, byte, &black_data, &red_data);
         black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, pixels_this_loop);
-        if (driver->has_3color)
-            red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, pixels_this_loop);
+        red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, pixels_this_loop);
 
         // update position
         i += pixels_this_loop;
@@ -184,23 +178,11 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Convert supplied palette entries into their native equivalents
-bool qp_eink_panel_palette_convert_bw(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
-
-    for (int16_t i = 0; i < palette_size; ++i) {
-        HSV     hsv     = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
-        uint8_t output  = (hsv.v > 127) ? 0 : 1;
-        palette[i].mono = output ^ driver->invert_black;
-    }
-
-    return true;
-}
-
 static inline uint32_t hsv_distance(uint8_t h, uint8_t s, uint8_t v, HSV hsv) {
     return (h - hsv.h) * (h - hsv.h) + (s - hsv.s) * (s - hsv.s) + (v - hsv.v) * (v - hsv.v);
 }
 
-bool qp_eink_panel_palette_convert_3c(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
+bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
     eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
 
     for (int16_t i = 0; i < palette_size; ++i) {
@@ -214,29 +196,18 @@ bool qp_eink_panel_palette_convert_3c(painter_device_t device, int16_t palette_s
         bool black = false;
 
         uint32_t min_distance = QP_MIN(black_distance, QP_MIN(red_distance, white_distance));
-
         if (min_distance == black_distance)
             black = true;
         else if (min_distance == red_distance)
             red = true;
 
-        uint8_t output      = (red << 1) | (black << 0);
-        uint8_t invert_mask = (driver->invert_red << 1) | driver->invert_black;
+        uint8_t color = (black << 1) | (red << 0);
 
-        palette[i].mono = output ^ invert_mask;
+        palette[i].mono = color ^ driver->invert_mask;
     }
 
     return true;
-}
 
-bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size, qp_pixel_t *palette) {
-    eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
-
-    if (driver->has_3color) {
-        return qp_eink_panel_palette_convert_3c(device, palette_size, palette);
-    }
-
-    return qp_eink_panel_palette_convert_bw(device, palette_size, palette);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,14 +216,14 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
     // data should end up arranged:
     // B1R1B2R2  B3R3B4R4 | ...
     for (uint32_t i = 0; i < pixel_count; ++i) {
-        uint32_t pixel_num   = pixel_offset + i;
+        uint32_t pixel_num = pixel_offset + i;
 
         // each pixel takes 2 bits, aka each byte holds 4 pixels, offset based on that
         uint32_t byte_offset = pixel_num / 4;
         uint8_t  bit_offset  = 3 - (pixel_num % 4);
 
-        bool black_bit = palette[palette_indices[i]].mono & 1;
-        bool red_bit   = palette[palette_indices[i]].mono & 2;
+        bool black_bit = palette[palette_indices[i]].mono & 2;
+        bool red_bit   = palette[palette_indices[i]].mono & 1;
 
         uint8_t black_mask = 1 << (2 * bit_offset + 1);
         uint8_t red_mask   = 1 << (2 * bit_offset + 0);

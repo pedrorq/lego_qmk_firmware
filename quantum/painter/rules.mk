@@ -170,7 +170,6 @@ define handle_quantum_painter_driver
             $(DRIVER_PATH)/painter/il91874
         SRC += \
             $(DRIVER_PATH)/painter/eink_panel/qp_eink_panel.c \
-            $(DRIVER_PATH)/painter/il91874/sram.c \
             $(DRIVER_PATH)/painter/il91874/qp_il91874.c
 
     else ifeq ($$(strip $$(CURRENT_PAINTER_DRIVER)),ssd1680_spi)
