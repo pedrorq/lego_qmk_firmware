@@ -24,9 +24,9 @@ static inline uint8_t read_rows(void) {
 
 static inline void shift_out(uint18_t value) {
 
-  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
+  writePinLow(SPI_LATCH_PIN);
   spi_write(value);
-  spi_stop();
+  writePinHigh(SPI_LATCH_PIN);
   matrix_output_select_delay();
 }
 
@@ -47,6 +47,8 @@ void matrix_init_custom(void) {
   matrix_io_delay();
 
   setPinOutput(SPI_LATCH_PIN);
+  matrix_io_delay();
+  spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
   matrix_io_delay();
 }
 
