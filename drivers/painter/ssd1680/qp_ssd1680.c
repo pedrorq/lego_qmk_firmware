@@ -70,9 +70,9 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     uint8_t x_lsb = ((x - 1) >> 3) & 0xFF;
     uint8_t y_msb = ((y - 1) >> 8) & 0xFF;
     uint8_t y_lsb = ((y - 1) >> 0) & 0xFF;
-/*
     // clang-format off
-      const uint8_t ssd1680_init_sequence[] = {
+/*
+    const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
         SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
         SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
@@ -143,7 +143,7 @@ bool ssd1680_partial_flush(painter_device_t device) {
     surface_painter_device_t *                   black   = (surface_painter_device_t *)driver->black_surface;
     surface_painter_device_t *                   red     = (surface_painter_device_t *)driver->red_surface;
 
-    qp_dprintf("ssd1680_partial_flush: fail entry\n");
+    qp_dprintf("ssd1680_partial_flush: entry ok\n");
     if (!(black->dirty.is_dirty || red->dirty.is_dirty)) {
         qp_dprintf("ssd1680_partial_flush: done (no changes to be sent)\n");
         return true;
@@ -190,6 +190,7 @@ bool ssd1680_partial_flush(painter_device_t device) {
     // we've send data, dirty has to be reset
     qp_flush(driver->black_surface);
     qp_flush(driver->red_surface); // just in case
+    qp_dprintf("ssd1680_partial_flush: exit ok\n");
 
     return true;
 }
@@ -204,7 +205,7 @@ const eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
             .init            = qp_ssd1680_init,
             .power           = qp_eink_panel_power,
             .clear           = qp_eink_panel_clear,
-            //.flush           = ssd1680_partial_flush,
+ //           .flush           = ssd1680_partial_flush,
             .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = qp_eink_panel_viewport,
@@ -246,7 +247,7 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
 
             // set can_flush = false on start and schedule its reset
-            driver->timeout   = 30 * 1000; // 2 minutes as seen on WeAct
+            driver->timeout   = 15 * 1000; // 2 minutes as seen on WeAct
             qp_eink_update_can_flush((painter_device_t *)driver);
 
             driver->invert_mask = 0b10;
