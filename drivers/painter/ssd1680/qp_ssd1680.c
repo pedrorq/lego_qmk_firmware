@@ -70,19 +70,20 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     uint8_t x_lsb = ((x - 1) >> 3) & 0xFF;
     uint8_t y_msb = ((y - 1) >> 8) & 0xFF;
     uint8_t y_lsb = ((y - 1) >> 0) & 0xFF;
-
+/*
     // clang-format off
       const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
         SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
         SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
         SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
+        SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
+   //     SSD1680_DISPLAY_UPDATE_CONTROL_RAM, 0,2,0x00,0x80,//0x21
+        SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
         SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x_lsb   , //0x44
         SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
         SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
         SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
-        SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
-        SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
         SSD1680_WRITE_LUT_REGISTER            , 250 , LUT_SIZE , PART_UPDATE_LUT, //0x32
         SSD1680_END_OPTION,                        0,    1, 0x22, //0x3f
         SSD1680_GATE_DRIVING_VOLTAGE_CONTROL  , 0   , 1   , 0x17, //0x03
@@ -92,19 +93,22 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         SSD1680_DISPLAY_UPDATE_CONTROL        , 250 , 1   , 0xC0, //0x22
         SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
     };
- /*
+  */
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[N]
-        SSD1680_SOFT_RESET,                 250, 0,
-        SSD1680_DATA_ENTRY_MODE,              0, 1, 0x03,
-        SSD1680_RAM_X_SIZE,                   0, 2, 0x00, x_lsb,
-        SSD1680_RAM_Y_SIZE,                   0, 4, 0x00, 0x00, y_msb, y_lsb,
-        SSD1680_BORDER_CONTROL,               0, 1, 0x80,
-        SSD1680_TEMP_SENSOR,                  0, 1, 0x80,
+        SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
+        SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
+        SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
+        SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
+        SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
+        SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x_lsb   , //0x44
+        SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
+        SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
+        SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
+        SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
     };
-    */
     // clang-format on
-    hw_reset(EINK_RST_PIN);
+    //hw_reset(EINK_RST_PIN);
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
 
@@ -139,6 +143,7 @@ bool ssd1680_partial_flush(painter_device_t device) {
     surface_painter_device_t *                   black   = (surface_painter_device_t *)driver->black_surface;
     surface_painter_device_t *                   red     = (surface_painter_device_t *)driver->red_surface;
 
+    qp_dprintf("ssd1680_partial_flush: fail entry\n");
     if (!(black->dirty.is_dirty || red->dirty.is_dirty)) {
         qp_dprintf("ssd1680_partial_flush: done (no changes to be sent)\n");
         return true;
@@ -199,7 +204,8 @@ const eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable = {
             .init            = qp_ssd1680_init,
             .power           = qp_eink_panel_power,
             .clear           = qp_eink_panel_clear,
-            .flush           = ssd1680_partial_flush,
+            //.flush           = ssd1680_partial_flush,
+            .flush           = qp_eink_panel_flush,
             .pixdata         = qp_eink_panel_pixdata,
             .viewport        = qp_eink_panel_viewport,
             .palette_convert = qp_eink_panel_palette_convert,
@@ -240,7 +246,7 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->red_surface   = qp_make_mono1bpp_surface(panel_width, panel_height, ptr + SURFACE_REQUIRED_BUFFER_BYTE_SIZE(panel_width, panel_height, 1));
 
             // set can_flush = false on start and schedule its reset
-            driver->timeout   = 2 * 60 * 1000; // 2 minutes as seen on WeAct
+            driver->timeout   = 30 * 1000; // 2 minutes as seen on WeAct
             qp_eink_update_can_flush((painter_device_t *)driver);
 
             driver->invert_mask = 0b10;

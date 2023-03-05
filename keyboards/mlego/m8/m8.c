@@ -114,9 +114,9 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #if defined(QUANTUM_PAINTER_ENABLE)
 
 
-  setPinOutput(EINK_RST_PIN);
-  setPinOutput(EINK_CS_PIN);
-  writePinHigh(EINK_CS_PIN);
+//  setPinOutput(EINK_RST_PIN);
+//  setPinOutput(EINK_CS_PIN);
+//  writePinHigh(EINK_CS_PIN);
 
     wait_ms(1500); //Let screens draw some power
     load_qp_resources();
