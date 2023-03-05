@@ -105,8 +105,6 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
        SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
        SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
        SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
-       SSD1680_DISPLAY_UPDATE_CONTROL_RAM,   0, 2, 0x00,0x80, //0x21
-       SSD1680_DISPLAY_UPDATE_CONTROL,0,1,0xf8,              //0x22
        SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
    };
 //};
