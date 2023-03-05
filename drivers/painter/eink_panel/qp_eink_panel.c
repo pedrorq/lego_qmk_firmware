@@ -84,10 +84,10 @@ bool qp_eink_panel_clear(painter_device_t device) {
     qp_init(driver->red_surface, driver->base.rotation);
 
     // Fill with 1's instead, if colors are represented inverted
-    if (driver->invert_mask & 2) {
+    if (driver->invert_mask & 0b10) {
         memset(black->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, 1));
     }
-    if (driver->invert_mask & 1) {
+    if (driver->invert_mask & 0b01) {
         memset(red->buffer, 0xFF, SURFACE_REQUIRED_BUFFER_BYTE_SIZE(driver->base.panel_width, driver->base.panel_height, 1));
     }
 
@@ -168,13 +168,13 @@ bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size
 
     for (int16_t i = 0; i < palette_size; ++i) {
         HSV      hsv            = (HSV){palette[i].hsv888.h, palette[i].hsv888.s, palette[i].hsv888.v};
+        uint32_t white_distance = hsv_distance(HSV_WHITE, hsv);
         uint32_t black_distance = hsv_distance(HSV_BLACK, hsv);
         uint32_t red_distance   = hsv_distance(HSV_RED, hsv);
-        uint32_t white_distance = hsv_distance(HSV_WHITE, hsv);
 
         // Default to white
-        bool red   = false;
         bool black = false;
+        bool red   = false;
 
         uint32_t min_distance = QP_MIN(black_distance, QP_MIN(red_distance, white_distance));
         if (min_distance == black_distance)
@@ -188,7 +188,6 @@ bool qp_eink_panel_palette_convert(painter_device_t device, int16_t palette_size
     }
 
     return true;
-
 }
 
 // Append pixels to the target location, keyed by the pixel index
@@ -202,8 +201,8 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
         uint8_t  bit_offset  = 3 - (pixel_num % 4);
 
         // check each color bit from palette
-        bool black_bit = palette[palette_indices[i]].mono & 2;
-        bool red_bit   = palette[palette_indices[i]].mono & 1;
+        bool black_bit = palette[palette_indices[i]].mono & 0b10;
+        bool red_bit   = palette[palette_indices[i]].mono & 0b01;
 
         // compute where data goes
         uint8_t black_mask = 1 << (2 * bit_offset + 1);
