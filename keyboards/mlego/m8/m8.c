@@ -122,7 +122,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     load_qp_resources();
 
 
-    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, EINK_CS_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR, SPI_MODE, (void *)ssd1680_buffer,false);
+    ssd1680 = qp_ssd1680_bw_make_spi_device(_SSD1680_WIDTH, _SSD1680_HEIGHT, EINK_CS_PIN, EINK_DC_PIN, EINK_RST_PIN, SPI_DIVISOR, SPI_MODE, false,false,(void *)ssd1680_buffer);
     load_display(ssd1680);
     qp_init(ssd1680, SSD1680_ROTATION);
 
@@ -149,8 +149,8 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
     //qp_rect(ssd1680, 0, 0, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, true);
-    qp_drawimage_recolor(ssd1680, 0, SSD1680_HEIGHT/2, qp_images[2], HSV_BLACK, HSV_WHITE);
-    qp_drawimage_recolor(ssd1680, 50, 155, qp_images[7], HSV_BLACK, HSV_WHITE);
+    qp_drawimage_recolor(ssd1680, 0, SSD1680_HEIGHT/2-70, qp_images[2], HSV_BLACK, HSV_WHITE);
+    qp_drawimage_recolor(ssd1680, 40, 110, qp_images[7], HSV_BLACK, HSV_WHITE);
     qp_drawimage_recolor(ssd1680, 70, SSD1680_HEIGHT/2-70, qp_images[6], HSV_BLACK, HSV_WHITE);
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
     char hello[] = "Hello World!";

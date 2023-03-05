@@ -12,6 +12,22 @@
 #    include <qp_comms_spi.h>
 #endif // QUANTUM_PAINTER_SSD1680_SPI_ENABLE
 
+#define LUT_SIZE  153
+
+#define PART_UPDATE_LUT   0x0 , 0x40, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x80, 0x80, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x40, 0x40, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x80, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0A, 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x2, 0x1, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x1 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, \
+  0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common
 
@@ -48,9 +64,12 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
      * - 2 color code based of: https://github.com/ZinggJM/GxEPD2/blob/master/src/epd/GxEPD2_213_BN.cpp
      * - 3 color code based of: https://github.com/adafruit/Adafruit_CircuitPython_SSD1680/blob/main/adafruit_ssd1680.py
      */
-    // clang-format off
-// no partial update
-        const uint8_t ssd1680_init_sequence[] = {
+
+//if (driver->has_partial){
+ // clang-format off
+    // partial update
+  /*
+      const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
         SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
         SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
@@ -61,50 +80,41 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
         SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
         SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
+        SSD1680_WRITE_LUT_REGISTER            , 250 , LUT_SIZE , PART_UPDATE_LUT, //0x32
+        SSD1680_END_OPTION,                        0,    1, 0x22, //0x3f
+        SSD1680_GATE_DRIVING_VOLTAGE_CONTROL  , 0   , 1   , 0x17, //0x03
+        SSD1680_SOURCE_DRIVING_VOLTAGE_CONTROL, 0   , 3   , 0x41, 0x0 , 0x32, //0x04
+        SSD1680_WRITE_VCOM_REGISTER           , 0   , 1   , 0x32, //0x2C
+        SSD1680_WRITE_REGISTER_DISPLAY_OPTION, 0 , 10, 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x40 , 0x0, 0x0, 0x0, 0x0,  //0x37
+        SSD1680_DISPLAY_UPDATE_CONTROL        , 250 , 1   , 0xC0, //0x22
         SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
-
     };
-// partial update
-  //   const uint8_t ssd1680_init_sequence[] = {
-  //       // Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
-  //       SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
-  //       SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
-  //       SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
-  //       SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x   , //0x44
-  //       SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
-  //       SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
-  //       SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
-  //       SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
-  //       SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
-  //       SSD1680_WRITE_LUT_REGISTER            , 250 , 153 ,
-  // 0x0 , 0x40, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x80, 0x80, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x40, 0x40, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x80, 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0A, 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x2, 0x1, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x1 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  // 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0, //0x32
-  //       SSD1680_END_OPTION,                        0,    1, 0x22, //0x3f
-  //       SSD1680_GATE_DRIVING_VOLTAGE_CONTROL  , 0   , 1   , 0x17, //0x03
-  //       SSD1680_SOURCE_DRIVING_VOLTAGE_CONTROL, 0   , 3   , 0x41, 0x0 , 0x32, //0x04
-  //       SSD1680_WRITE_VCOM_REGISTER           , 0   , 1   , 0x32, //0x2C
-  //       SSD1680_WRITE_REGISTER_DISPLAY_OPTION, 0 , 10, 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x40 , 0x0, 0x0, 0x0, 0x0,                                                          //0x37
-  //       SSD1680_DISPLAY_UPDATE_CONTROL        , 250 , 1   , 0xC0, //0x22
-  //       SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
-  //
-  //   };
+    */
     // clang-format on
+//} else{
+        // clang-format off
+// no partial update
+       const uint8_t ssd1680_init_sequence[] = {
+//        Command,                       Delay, N, Data[0],Data[1],...,Data[N-1]
+       SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
+       SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
+       SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
+       SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x   , //0x44
+       SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
+       SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
+       SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
+       SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
+       SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
+       SSD1680_DISPLAY_UPDATE_CONTROL_RAM,   0, 2, 0x00,0x80, //0x21
+       SSD1680_DISPLAY_UPDATE_CONTROL,0,1,0xf8,              //0x22
+       SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
+   };
+//};
+
     // this is hw reset according to the datasheet
     hw_reset(EINK_RST_PIN);
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
     driver->base.rotation = rotation;
-  dprintf("0x%x 0x%x 0x%x\n ", y_lsb,y_msb, x);
 
     // clear gets the buffers correctly set to 0/1
   bool ret  = driver->base.driver_vtable->clear(driver);
@@ -142,7 +152,7 @@ const struct eink_panel_dc_reset_painter_driver_vtable_t ssd1680_driver_vtable =
 #ifdef QUANTUM_PAINTER_SSD1680_SPI_ENABLE
 
 // Factory function for creating a handle to the SSD1680 device
-painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr, bool has_color) {
+painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_color, bool has_partial, void *ptr) {
     for (uint32_t i = 0; i < SSD1680_NUM_DEVICES; ++i) {
         eink_panel_dc_reset_painter_device_t *driver = &ssd1680_drivers[i];
         if (!driver->base.driver_vtable) {
@@ -161,6 +171,7 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
             // 0bpp needs changes to not ask for a pointer, so far we'll just set it to NULL
 
             driver->has_3color = has_color;
+            driver->has_partial = has_partial;
             //driver->has_ram    = false;
 
             driver->timeout   = 6000; // 2 minutes as seen on WeAct
@@ -184,8 +195,8 @@ painter_device_t qp_ssd1680_bw_make_spi_device(uint16_t panel_width, uint16_t pa
     return NULL;
 }
 
-painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, void *ptr) {
-    painter_device_t device = qp_ssd1680_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, ptr, true);
+painter_device_t qp_ssd1680_3c_make_spi_device(uint16_t panel_width, uint16_t panel_height, pin_t chip_select_pin, pin_t dc_pin, pin_t reset_pin, uint16_t spi_divisor, int spi_mode, bool has_partial, void *ptr) {
+    painter_device_t device = qp_ssd1680_bw_make_spi_device(panel_width, panel_height, chip_select_pin, dc_pin, reset_pin, spi_divisor, spi_mode, false, has_partial, ptr);
     if (device) {
         eink_panel_dc_reset_painter_device_t *driver = (eink_panel_dc_reset_painter_device_t *)device;
         driver->has_3color                           = true;

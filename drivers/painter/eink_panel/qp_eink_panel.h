@@ -49,6 +49,7 @@ typedef struct eink_panel_dc_reset_painter_device_t {
      * Red bit: 0 for white or black / 1 for red
      */
     bool has_3color;
+    bool has_partial;
     bool invert_black;
     bool invert_red;
 
