@@ -55,7 +55,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
         SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
         SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x   , //0x44
-        SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, 0x00, (driver->base.panel_height) &0xFF, //0x45
+        SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
         SSD1680_BORDER_CONTROL                , 0   , 1   , 0x05, //0x3C
         SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
         SSD1680_WRITE_VCOM_REGISTER           , 0   , 1   , 0x70, //0x2C
