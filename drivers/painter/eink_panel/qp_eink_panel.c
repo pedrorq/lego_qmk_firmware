@@ -144,18 +144,17 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
 
     uint32_t i = 0;
     uint8_t black_data, red_data;
-    while (i < native_pixel_count) {
+    uint8_t pixels_this_loop;
+    qp_dprintf("pixdata %ld\n",native_pixel_count);
+    for (i = 0; i<native_pixel_count/4;i+=2){
         // at most, 8 pixels per cycle
-        uint8_t pixels_this_loop = QP_MIN(native_pixel_count - i, 8);
-        uint8_t byte = i / 4;
+        pixels_this_loop = QP_MIN(native_pixel_count - i*4, 8);
 
         // stream data to display
-        decode_masked_pixels(pixels, byte, &black_data, &red_data);
+        decode_masked_pixels(pixels, i, &black_data, &red_data);
         black->driver_vtable->pixdata(driver->black_surface, (const void *)&black_data, pixels_this_loop);
         red->driver_vtable->pixdata(driver->red_surface, (const void *)&red_data, pixels_this_loop);
 
-        // update position
-        i += pixels_this_loop;
     }
 
     return true;
@@ -218,6 +217,7 @@ bool qp_eink_panel_append_pixels(painter_device_t device, uint8_t *target_buffer
             target_buffer[byte_offset] |= red_mask;
         else
             target_buffer[byte_offset] &= ~red_mask;
+
     }
 
     return true;

@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "qp_surface.h"
 #include "version.h"
 painter_device_t ssd1680;
-uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)];
+uint8_t ssd1680_buffer[EINK_BYTES_REQD(SSD1680_WIDTH, SSD1680_HEIGHT)] = {0};
 
 uint32_t flush_display(uint32_t trigger_time, void *device) {
     qp_flush((painter_device_t *)device);
@@ -142,7 +142,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 
 
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
-    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, true);
+    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH/2, SSD1680_HEIGHT/2, HSV_BLACK, false);
     qp_drawimage_recolor(ssd1680, 0, SSD1680_HEIGHT/2-70, qp_images[3], HSV_BLACK, HSV_WHITE);
     qp_drawimage_recolor(ssd1680, 40, 110, qp_images[8], HSV_BLACK, HSV_WHITE);
     qp_drawimage_recolor(ssd1680, 70, SSD1680_HEIGHT/2-70, qp_images[7], HSV_BLACK, HSV_WHITE);

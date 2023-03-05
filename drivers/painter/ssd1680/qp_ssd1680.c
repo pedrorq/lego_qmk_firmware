@@ -115,7 +115,7 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     // clear gets the buffers correctly set to 0/1
     return driver->base.driver_vtable->clear(driver);
 }
-
+/*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen-specific patched functions
 static inline void send_dirty_area(painter_device_t eink, surface_painter_device_t *surface) {
@@ -129,12 +129,47 @@ static inline void send_dirty_area(painter_device_t eink, surface_painter_device
     // FIXME: cases where n_pixels is not a multiple of 8
     uint32_t             n_pixels = (r - l);
     uint32_t             n_bytes  = n_pixels / 8;
+    uint8_t              n_bits   = n_pixels % 8;
+    if (n_bits) {
+        n_bytes++;
+    }
 
     // send data by indexing the correct places in the buffer
     for (uint16_t row = t; row < b; ++row) {
         uint32_t offset  = (row * w) + l;
         qp_comms_send(eink, surface->buffer + offset, n_bytes);
     }
+}
+
+bool set_ram_area(painter_device_t device,uint16_t x, uint16_t y, uint16_t w, uint16_t h){
+
+    uint8_t data[4]={0};
+ // set ram mode to normal
+    qp_comms_command(device, (uint8_t) SSD1680_DATA_ENTRY_MODE);
+    qp_comms_send(device, (const void *)0x03, 1);
+
+    qp_comms_command(device, (uint8_t) SSD1680_RAM_X_SIZE);
+    data[0] = x/8;
+    data[1] = (x+w-1)/8;
+    qp_comms_send(device, (const void *) data, 2);
+
+    qp_comms_command(device, (uint8_t) SSD1680_RAM_Y_SIZE);
+    data[0] = y%256;
+    data[1] = y/256;
+    data[2] = (y + h - 1)%256;
+    data[3] = (y + h - 1)/256;
+    qp_comms_send(device, (const void *) data, 4);
+
+    qp_comms_command(device, (uint8_t) SSD1680_RAM_X_COUNTER);
+    qp_comms_send(device, (const void *) ((uint8_t) x/8), 1);
+
+    qp_comms_command(device, (uint8_t) SSD1680_RAM_Y_SIZE);
+    data[0] = y%256;
+    data[1] = y/256;
+    qp_comms_send(device, (const void *) data, 2);
+
+    return true;
+
 }
 
 bool ssd1680_partial_flush(painter_device_t device) {
@@ -154,13 +189,16 @@ bool ssd1680_partial_flush(painter_device_t device) {
         return false;
     }
 
-    /* ----------------------------------------------------------------------------------------------------------------
-     * Code from: <https://discord.com/channels/440868230475677696/1059874295297347694/1081866413758742538>
-     *
-     * No idea whether it works or if it contains messages that aren't needed
-     *
-     * Edited logic to also send red buffer
-     */
+    // ----------------------------------------------------------------------------------------------------------------
+    // Code from: <https://discord.com/channels/440868230475677696/1059874295297347694/1081866413758742538>
+    //
+    // No idea whether it works or if it contains messages that aren't needed
+    //
+    // Edited logic to also send red buffer
+    //
+
+
+
     // send data
     qp_comms_command(device, vtable->opcodes.send_black_data); // is this what `start_data_` does??
     send_dirty_area(device, black);
@@ -194,7 +232,7 @@ bool ssd1680_partial_flush(painter_device_t device) {
 
     return true;
 }
-
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Driver vtable
@@ -256,7 +294,7 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.comms_config                              = &driver->spi_dc_reset_config;
             driver->spi_dc_reset_config.spi_config.chip_select_pin = chip_select_pin;
             driver->spi_dc_reset_config.spi_config.divisor         = spi_divisor;
-            driver->spi_dc_reset_config.spi_config.lsb_first       = false;
+            driver->spi_dc_reset_config.spi_config.lsb_first       = true;
             driver->spi_dc_reset_config.spi_config.mode            = spi_mode;
             driver->spi_dc_reset_config.dc_pin                     = dc_pin;
             driver->spi_dc_reset_config.reset_pin                  = reset_pin;
