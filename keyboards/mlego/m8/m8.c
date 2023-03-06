@@ -147,7 +147,7 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
     char hello[] = "QMK";
     int16_t               hello_width = qp_textwidth(qp_fonts[0], hello);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,HSV_BLACK,HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,HSV_RED,HSV_WHITE);
     int16_t               hash_width = qp_textwidth(qp_fonts[0], commit_hash);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, SSD1680_HEIGHT-1.25*qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, 5+qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);

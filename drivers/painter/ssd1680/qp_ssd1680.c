@@ -97,7 +97,8 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
     const uint8_t ssd1680_init_sequence[] = {
         // Command,                       Delay, N, Data[N]
         SSD1680_SOFT_RESET                    , 250 , 0   , //0x12
-        SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01
+        //SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01 bw
+        SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0xf9, 0x00, 0x00, //0x01 bwr
         SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
         SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
         SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
