@@ -100,17 +100,20 @@ bool qp_ssd1680_init(painter_device_t device, painter_rotation_t rotation) {
         //SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0x27, 0x01, 0x00, //0x01 bw
         SSD1680_DRIVER_OUTPUT_CONTROL         , 250 , 3   , 0xf9, 0x00, 0x00, //0x01 bwr
         SSD1680_DATA_ENTRY_MODE               , 0   , 1   , 0x03, //0x11
+        SSD1680_DISPLAY_UPDATE_CONTROL_RAM,  0, 2,0x0,0x80,//0x21
         SSD1680_BORDER_CONTROL                , 0   , 1   , 0x80, //0x3C
         SSD1680_TEMP_SENSOR                   , 0   , 1   , 0x80, //0x18
         SSD1680_RAM_X_SIZE                    , 0   , 2   , 0x00, x_lsb   , //0x44
         SSD1680_RAM_Y_SIZE                    , 0   , 4   , 0x00, 0x00, y_msb, y_lsb, //0x45
         SSD1680_RAM_X_COUNTER                 , 0   , 1   , 0x00, //0x4E
         SSD1680_RAM_Y_COUNTER                 , 0   , 2   , 0x00, 0x00, //0x4F
-        SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
+        SSD1680_DISPLAY_UPDATE_CONTROL        , 250 , 1   , 0xf7, //0x22
+     //   SSD1680_ACTIVATE_DISPLAY_UPDATE       , 250 , 0   , //0x20
     };
     // clang-format on
     //hw_reset(EINK_RST_PIN);
     qp_comms_bulk_command_sequence(device, ssd1680_init_sequence, sizeof(ssd1680_init_sequence));
+    wait_for_busy(EINK_BUSY_PIN);
     driver->base.rotation = rotation;
 
     // clear gets the buffers correctly set to 0/1
