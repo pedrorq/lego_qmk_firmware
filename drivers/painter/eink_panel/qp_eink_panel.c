@@ -145,7 +145,6 @@ bool qp_eink_panel_pixdata(painter_device_t device, const void *pixel_data, uint
     uint32_t i = 0;
     uint8_t black_data, red_data;
     uint8_t pixels_this_loop;
-    qp_dprintf("pixdata %ld\n",native_pixel_count);
     for (i = 0; i<native_pixel_count/4;i+=2){
         // at most, 8 pixels per cycle
         pixels_this_loop = QP_MIN(native_pixel_count - i*4, 8);
