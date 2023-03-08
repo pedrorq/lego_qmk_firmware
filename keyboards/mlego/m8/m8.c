@@ -138,22 +138,26 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #    endif // CUSTOM_EEPROM_ENABLE
 
     dprint("Quantum painter devices initialised\n");
-
+#ifdef EINK_BWR
+#define color HSV_RED
+#else
+#define color HSV_BLACK
+#endif
 
 
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
-    qp_drawimage_recolor(ssd1680, 40, SSD1680_HEIGHT/2-70, qp_images[8], HSV_BLACK, HSV_WHITE);
-    qp_drawimage_recolor(ssd1680, 0, 110, qp_images[9], HSV_WHITE, HSV_RED);
+    qp_drawimage_recolor(ssd1680, 40, SSD1680_HEIGHT/2-70, qp_images[8], color, HSV_WHITE);
+    qp_drawimage_recolor(ssd1680, 0, 110, qp_images[9], HSV_WHITE, color);
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
     char hello[] = "QMK";
     int16_t               hello_width = qp_textwidth(qp_fonts[0], hello);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,HSV_RED,HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,color,HSV_WHITE);
     int16_t               hash_width = qp_textwidth(qp_fonts[0], commit_hash);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, SSD1680_HEIGHT-1.25*qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, 5+qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     int16_t               build_width = qp_textwidth(qp_fonts[1], build_date);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, SSD1680_HEIGHT-2.5*qp_fonts[1]->line_height,qp_fonts[1], build_date, HSV_RED, HSV_WHITE);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, 5+2.25*qp_fonts[0]->line_height,qp_fonts[1], build_date, HSV_RED, HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, SSD1680_HEIGHT-2.5*qp_fonts[1]->line_height,qp_fonts[1], build_date, color, HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, 5+2.25*qp_fonts[0]->line_height,qp_fonts[1], build_date, color, HSV_WHITE);
     eink_panel_dc_reset_painter_device_t *eink = (eink_panel_dc_reset_painter_device_t *)ssd1680;
     defer_exec(eink->timeout, flush_display, (void *)ssd1680);
 

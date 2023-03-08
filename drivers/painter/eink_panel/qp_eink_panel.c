@@ -114,10 +114,10 @@ bool qp_eink_panel_flush(painter_device_t device) {
 
     qp_comms_command(device, vtable->opcodes.send_black_data);
     qp_comms_send(device, black->buffer, n_bytes);
-
+#ifdef EINK_BWR
     qp_comms_command(device, vtable->opcodes.send_red_data);
     qp_comms_send(device, red->buffer, n_bytes);
-
+#endif
     qp_comms_command(device, vtable->opcodes.refresh);
 
     qp_eink_update_can_flush(device);
