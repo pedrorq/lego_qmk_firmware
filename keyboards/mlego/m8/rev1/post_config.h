@@ -3,13 +3,7 @@
 
 #pragma once
 
-#define SPI_DRIVERS SPI_DRIVER
-#define SPI_SCK_PINS SPI_SCK_PIN
-#define SPI_MOSI_PINS SPI_MOSI_PIN
-#define SPI_MISO_PINS SPI_MISO_PIN
-
-
-#define SSD1680_ROTATION 0
+#define SSD1680_ROTATION 1
 #define _SSD1680_WIDTH 128
 #define _SSD1680_HEIGHT 250
 
@@ -17,13 +11,13 @@
 #    error SSD1680_ROTATION has to be within 0-3 (both included)
 #endif
 
-#if (SSD1680_ROTATION % 2 == 0)
+//#if (SSD1680_ROTATION % 2 == 0)
 #    define SSD1680_WIDTH  _SSD1680_WIDTH
 #    define SSD1680_HEIGHT _SSD1680_HEIGHT
-#else
-#    define SSD1680_WIDTH  _SSD1680_HEIGHT
-#    define SSD1680_HEIGHT _SSD1680_WIDTH
-#endif
+//#else
+//#    define SSD1680_WIDTH  _SSD1680_HEIGHT
+//#    define SSD1680_HEIGHT _SSD1680_WIDTH
+//#endif
 
 // =======
 // - Default values

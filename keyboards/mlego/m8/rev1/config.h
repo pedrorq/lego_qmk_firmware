@@ -87,7 +87,7 @@ It uses four pins from the MCU to provide 16 output pins */
 #define EINK_CS_PIN GP0
 #define EINK_DC_PIN GP29
 #define EINK_BUSY_PIN GP28
-//#define EINK_BWR
+#define EINK_BWR
 
 /* Double tap reset button to enter bootloader */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET

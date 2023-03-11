@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Alin M Elena <alinm.elena@gmail.com>
+Copyright 2021-2023 Alin M Elena <alinm.elena@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -103,8 +103,10 @@ void toggle_leds(void){
 
 #if defined(QUANTUM_PAINTER_ENABLE)
 
+#define QMK_BH  QMK_BUILDDATE "-" QMK_GIT_HASH
 char build_date[] = QMK_BUILDDATE;
 char commit_hash[] = QMK_GIT_HASH;
+char bh[] = QMK_BH;
 
 #endif
 
@@ -144,23 +146,33 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
 #define color HSV_BLACK
 #endif
 
+#if (SSD1680_ROTATION == 0 || SSD1680_ROTATION == 2)
 
-    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH, SSD1680_HEIGHT, HSV_WHITE, true);
+    qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_WHITE, true);
     qp_drawimage_recolor(ssd1680, 40, SSD1680_HEIGHT/2-70, qp_images[8], color, HSV_WHITE);
-    qp_drawimage_recolor(ssd1680, 0, 110, qp_images[9], HSV_WHITE, color);
+    qp_drawimage_recolor(ssd1680, 0, 110, qp_images[9], HSV_WHITE, HSV_BLACK);
     qp_rect(ssd1680, 0, 0, SSD1680_WIDTH-7, SSD1680_HEIGHT-1, HSV_BLACK, false);
     char hello[] = "QMK";
     int16_t               hello_width = qp_textwidth(qp_fonts[0], hello);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hello_width-10, 5, qp_fonts[0],hello,color,HSV_WHITE);
     int16_t               hash_width = qp_textwidth(qp_fonts[0], commit_hash);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, SSD1680_HEIGHT-1.25*qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-hash_width-10, 5+qp_fonts[0]->line_height, qp_fonts[0], commit_hash, HSV_BLACK, HSV_WHITE);
     int16_t               build_width = qp_textwidth(qp_fonts[1], build_date);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, SSD1680_HEIGHT-2.5*qp_fonts[1]->line_height,qp_fonts[1], build_date, color, HSV_WHITE);
-    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, 5+2.25*qp_fonts[0]->line_height,qp_fonts[1], build_date, color, HSV_WHITE);
+    qp_drawtext_recolor(ssd1680, SSD1680_WIDTH-build_width-10, 5+2.25*qp_fonts[1]->line_height,qp_fonts[1], build_date, color, HSV_WHITE);
+#else
+    qp_rect(ssd1680, 0, 6, SSD1680_WIDTH-1, SSD1680_HEIGHT-1, HSV_WHITE, true);
+    qp_rect(ssd1680, 0, 6, SSD1680_HEIGHT-1, SSD1680_WIDTH-1, HSV_BLACK, false);
+    qp_rect(ssd1680, 2, 8, SSD1680_HEIGHT-3, SSD1680_WIDTH-3, color, false);
+    char hello[] = "QMK";
+    int16_t               hello_width = qp_textwidth(qp_fonts[0], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-hello_width-10, qp_fonts[0]->line_height, qp_fonts[0],hello,color,HSV_WHITE);
+    qp_drawimage_recolor(ssd1680, 40, 20, qp_images[8], color, HSV_WHITE);
+    qp_drawimage_recolor(ssd1680, 110, 30, qp_images[9], HSV_WHITE, HSV_BLACK);
+    int16_t               bh_width = qp_textwidth(qp_fonts[1], bh);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-bh_width-10, SSD1680_WIDTH-1.25*qp_fonts[1]->line_height , qp_fonts[1], bh, HSV_BLACK, HSV_WHITE);
+#endif
     eink_panel_dc_reset_painter_device_t *eink = (eink_panel_dc_reset_painter_device_t *)ssd1680;
     defer_exec(eink->timeout, flush_display, (void *)ssd1680);
-
     dprint("Quantum painter ready\n");
 #endif // QUANTUM_PAINTER_ENABLE
 
