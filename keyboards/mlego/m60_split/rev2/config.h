@@ -2,16 +2,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
 
-#include "config_common.h"
-
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_LED_STATE_ENABLE
-
 
 #define SPLIT_HAND_PIN B9
 #define SERIAL_USART_TX_PIN B6
 #define SERIAL_USART_SPEED 921600
-
 
 /* Bootmagic Lite key configuration */
 #define BOOTMAGIC_LITE_ROW 0
