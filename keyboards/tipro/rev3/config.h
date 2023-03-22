@@ -15,8 +15,6 @@
  */
 #pragma once
 
-#include "config_common.h"
-
 /*
 ShiftRegister SN74HC595N
 
