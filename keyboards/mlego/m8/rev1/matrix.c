@@ -8,7 +8,7 @@
 #endif
 
 static const uint16_t col_values[MATRIX_COLS] = COLS;
-static const uint8_t rows_values[MATRIX_ROWS] = ROWS;
+static const pin_t rows_values[MATRIX_ROWS] = ROWS;
 static const int msize = MATRIX_ROWS * sizeof(matrix_row_t);
 static matrix_row_t prev_matrix[MATRIX_ROWS];
 
