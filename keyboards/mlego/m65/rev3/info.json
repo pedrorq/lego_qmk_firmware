@@ -33,11 +33,6 @@
             {"pin_a": "A0", "pin_b": "B6"}
         ]
     },
-    "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
-    },
     "ws2812": {
         "pin": "B15"
     },
