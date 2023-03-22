@@ -58,20 +58,19 @@ for a version with a simpler 74HC165 check mlego/m65/rev9
 https://gitlab.com/m-lego/m65/-/tags/rev9
 
 3
-nPL |1    16| VCC
- CP |2    15| nCE
- D4 |3    14| D3
- D5 |4    13| D2
- D6 |5    12| D1
- D7 |6    11| D0
-nQ7 |7    10| DS
-  G |8    9 | Q7
+  B |1    16| VCC
+  C |2    15| A
+  D |3    14| SA
+  E |4    13| SS/PL
+  F |5    12| CS - latch
+  G |6    11| SCK - clock
+  H |7    10| OE
+GND |8    9 | QH
 
-nCE - G
-nPL - Latch (same as 595)
-CP - Serial Clock (same as 595)
-Q7 - SPI Data in - MISO
-
+SA - PL - check diagram
+CS - Latch (same as 595)
+SCK - Serial Clock (same as 595)
+QH - SPI Data in - MISO
 */
 
 #define SPI_DRIVER SPID0
