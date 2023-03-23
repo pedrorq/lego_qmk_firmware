@@ -29,9 +29,7 @@
         "wpm": true
     },
     "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "caps_lock": "C13"
     },
     "matrix_pins": {
         "cols": ["B14", "A8", "A10", "A15", "B3", "B4", "B5", "B7", "A1", "A2", "A3", "A4", "B1"],
