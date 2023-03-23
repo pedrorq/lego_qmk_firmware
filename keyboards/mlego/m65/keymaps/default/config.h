@@ -16,3 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
+
+#define TAPPING_TOGGLE 2
+
+#ifdef WPM_ENABLE
+#define WPM_SAMPLE_SECONDS 10
+#define WPM_SAMPLE_PERIODS 100
+#define WPM_ALLOW_COUNT_REGRESSION
+#endif

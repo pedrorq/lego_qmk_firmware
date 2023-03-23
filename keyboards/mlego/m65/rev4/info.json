@@ -30,9 +30,7 @@
         ]
     },
     "indicators": {
-        "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "caps_lock": "C13"
     },
     "ws2812": {
         "pin": "B15"
@@ -59,10 +57,7 @@
         "pin": "B15",
         "saturation_steps": 8
     },
-    "tapping": {
-        "toggle": 2
-    },
-    "url": "https://gitlab.com/m-lego/m65",
+    "url": "https://mlego.elena.space/m65",
     "usb": {
         "device_version": "0.0.2",
         "pid": "0x6062",
