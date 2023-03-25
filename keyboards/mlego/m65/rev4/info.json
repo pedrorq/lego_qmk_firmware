@@ -30,7 +30,8 @@
         ]
     },
     "indicators": {
-        "caps_lock": "C13"
+        "caps_lock": "C13",
+        "on_state": 0
     },
     "ws2812": {
         "pin": "B15"
