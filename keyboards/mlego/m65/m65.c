@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "m65.h"
+#include QMK_KEYBOARD_H
 
 void toggle_leds(const bool toggle_lwr, const bool toggle_rse) {
     led_lwr(toggle_lwr);
