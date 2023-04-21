@@ -40,6 +40,9 @@
     "tapping": {
         "toggle": 2
     },
+    "ws2812": {
+        "pin": "GP0"
+    },
     "rgblight": {
         "hue_steps": 10,
         "saturation_steps": 17,
@@ -51,7 +54,6 @@
             "enabled": true
         },
         "led_count": 20,
-        "pin": "GP0",
         "max_brightness": 128
 
     },

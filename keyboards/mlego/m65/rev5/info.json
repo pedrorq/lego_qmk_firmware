@@ -39,6 +39,9 @@
         "rows": ["GP22", "GP16", "GP18", "GP19", "GP20"]
     },
     "processor": "RP2040",
+    "ws2812": {
+        "pin": "GP0"
+    },
     "rgblight": {
         "animations": {
             "alternating": true,
@@ -57,7 +60,6 @@
             "enabled": true
         },
         "led_count": 20,
-        "pin": "GP0",
         "saturation_steps": 8
     },
     "url": "https://gitlab.com/m-lego/m65",
