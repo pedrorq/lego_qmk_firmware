@@ -25,3 +25,9 @@ void toggle_leds(const bool toggle_lwr, const bool toggle_rse) {
         led_rse(true);
     }
 }
+
+void keyboard_post_init_kb(void) {
+    init_lwr_rse_led();
+
+    keyboard_post_init_user();
+}
