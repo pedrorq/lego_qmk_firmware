@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "keymap_uk.h"
-
+#include "alinelena.h"
+/*
 const uint32_t PROGMEM unicode_map[] = {
     [la]  = 0x03B1 , // α
     [lA]  = 0x0307 , //
@@ -108,7 +109,7 @@ const uint32_t PROGMEM unicode_map[] = {
     [rn] = 0x2228, //∨
     [rN] = 0x22BB, //⊻
 };
-
+*/
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QW]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
