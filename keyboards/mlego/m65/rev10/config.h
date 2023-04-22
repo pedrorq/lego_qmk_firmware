@@ -73,16 +73,15 @@ SCK - Serial Clock (same as 595)
 QH - SPI Data in - MISO
 */
 
+
 #define SPI_DRIVER SPID0
-#define SPI_LATCH_PIN GP1
+#define SPI_CS_PIN GP1
 #define SPI_SCK_PIN GP2
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
-
-#define SPI_DIVISOR 16
-#define SPI_MODE 3
-#define SPI_lsbFirst true
-
+#define SPI_LSBFIRST true
+#define SPI_DIVISOR 8
+#define SPI_MODE 2
 #define DEBUG_MATRIX_SCAN_RATE
 
 // 00000001
@@ -98,10 +97,12 @@ QH - SPI Data in - MISO
 
 //              C0       C1        C2   C3      C4    C5      C6    C7     C8    C9    C10    C11     C12     C13
 //              1QD     2QB       2QC  2QD     2QE   2QF     2QH   2QA    1QH   1QG    1QF    1QE     1QA     1QC
-#define COLS { 0x0008, 0x0200, 0x0400,0x0800,0x1000,0x2000,0x8000,0x0100,0x0080,0x0040,0x0020,0x0010,0x0001,0x0004}
-#define ROWS {4, 3, 2, 1, 0}
+#define COLS { 0x0008, 0x0200,0x0400,0x0800,0x1000,0x2000,0x8000,0x0100,0x0080,0x0040,0x0020,0x0010,0x0001,0x0004}
+
+#define ROWS {0, 1, 2, 3, 4}
 
 #define   RGB_ENABLE_PIN GP11
+#define POWER_LED_PIN GP25
 
 /* Double tap reset button to enter bootloader */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
@@ -117,3 +118,6 @@ QH - SPI Data in - MISO
 #define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #define OLED_UPDATE_INTERVAL 10
 #endif
+
+#define LED_LWR_PIN GP16
+#define LED_RSE_PIN GP17

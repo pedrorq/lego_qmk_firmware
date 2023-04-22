@@ -8,7 +8,7 @@
 #endif
 
 static const uint16_t col_values[MATRIX_COLS] = COLS;
-static const uint8_t rows_values[MATRIX_ROWS] = ROWS;
+static const pin_t rows_values[MATRIX_ROWS] = ROWS;
 static const int msize = MATRIX_ROWS * sizeof(matrix_row_t);
 static matrix_row_t prev_matrix[MATRIX_ROWS];
 
@@ -18,9 +18,9 @@ static inline uint8_t read_rows(void) {
 //    matrix_output_select_delay();
 //    writePinHigh(SPI_LATCH_PIN);
 
-    spi_start(SPI_LATCH_PIN, SPI_lsbFirst, SPI_MODE, SPI_DIVISOR);
+  spi_start(SPI_CS_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
     spi_status_t read_result = spi_read();
-    spi_stop();
+spi_stop();
      if (read_result > 0) {
        uprintf("rows %u\n",(uint8_t) read_result);
      }
@@ -36,7 +36,7 @@ static inline void shift_out(uint16_t value) {
   uint8_t message[2]  = {(value >> 8) & 0xFF ,(uint8_t)(value & 0xFF) };
 
  // writePinLow(SPI_LATCH_PIN);
-  spi_start(SPI_LATCH_PIN, SPI_lsbFirst, SPI_MODE, SPI_DIVISOR);
+  spi_start(SPI_CS_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
   spi_transmit(message,2);
   spi_stop();
   //writePinHigh(SPI_LATCH_PIN);
@@ -57,7 +57,8 @@ void matrix_init_custom(void) {
   spi_init();
   matrix_io_delay();
 
-  setPinOutput(SPI_LATCH_PIN);
+  setPinOutput(SPI_CS_PIN);
+  writePinHigh(SPI_CS_PIN);
   matrix_io_delay();
  // spi_start(SPI_LATCH_PIN, true, 3, SPI_DIVISOR);
 }
