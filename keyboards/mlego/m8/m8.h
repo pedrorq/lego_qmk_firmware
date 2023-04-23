@@ -19,6 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "quantum.h"
 
+#if defined(QUANTUM_PAINTER_ENABLE)
+#include "qp.h"
+extern painter_device_t ssd1680;
+#endif // QUANTUM_PAINTER_ENABLE
+
 enum layer_names {
     _QW = 0,
     _LWR,
