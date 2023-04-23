@@ -45,12 +45,20 @@ static inline void init_lwr_rse_led(void) {
 
 static inline void led_lwr(const bool on) {
 #ifdef LED_LWR_PIN
-    writePin(LED_LWR_PIN, !on);
+    if ((PRODUCT_ID == 0x6069) || (PRODUCT_ID == 0x6070)) {
+        writePin(LED_LWR_PIN, !on);
+    }else{
+        writePin(LED_LWR_PIN, on);
+    }
 #endif
 }
 
 static inline void led_rse(const bool on) {
 #ifdef LED_RSE_PIN
-    writePin(LED_RSE_PIN, !on);
+    if ((PRODUCT_ID == 0x6069) || (PRODUCT_ID == 0x6070)) {
+        writePin(LED_RSE_PIN, !on);
+    }else{
+        writePin(LED_RSE_PIN, on);
+    }
 #endif
 }

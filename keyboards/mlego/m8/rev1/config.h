@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Alin M Elena <alinm.elena@gmail.com>
+Copyright 2021-2023 Alin M Elena <alinm.elena@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,43 +46,20 @@ SRCLR - 10 to VCC - 16
 1QH* - 9 (on first) to 2SER - 14 (on second)
 common 1SRCLK-2SRCLK, 1RCLK-2RCLK between the two
 OE - G
-It uses four pins from the MCU to provide 16 output pins
-Shift Register Clock/Latch configuration (MCU to ShiftRegister.RCLK - 12)
-Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER - 14)
-Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK - 11)
+It uses four pins from the MCU to provide 16 output pins */
+/* Shift Register Clock/Latch configuration (MCU to ShiftRegister.RCLK - 12) */
+/* Shift Register SPI Data Out configuration (MCU to ShiftRegister.SER - 14) */
+/* Shift Register SPI Serial Clock configuration (MCU to ShiftRegister.SRCLK - 11) */
 
-shift register 74HC589ag (this is much more powerful than this... see the usage in ghoul)
-https://github.com/tzarc/ghoul
-
-for a version with a simpler 74HC165 check mlego/m65/rev9
-https://gitlab.com/m-lego/m65/-/tags/rev9
-
-3
-  B |1    16| VCC
-  C |2    15| A
-  D |3    14| SA
-  E |4    13| SS/PL
-  F |5    12| CS - latch
-  G |6    11| SCK - clock
-  H |7    10| OE
-GND |8    9 | QH
-
-SA - PL - check diagram
-CS - Latch (same as 595)
-SCK - Serial Clock (same as 595)
-QH - SPI Data in - MISO
-*/
 
 #define SPI_DRIVER SPID0
-#define SPI_LATCH_PIN GP1
+#define SPI_CS_PIN GP1
 #define SPI_SCK_PIN GP2
 #define SPI_MISO_PIN GP4
 #define SPI_MOSI_PIN GP3
-
-#define SPI_DIVISOR 16
+#define SPI_LSBFIRST true
+#define SPI_DIVISOR 8
 #define SPI_MODE 3
-#define SPI_lsbFirst true
-
 #define DEBUG_MATRIX_SCAN_RATE
 
 // 00000001
@@ -102,6 +79,18 @@ QH - SPI Data in - MISO
 #define ROWS {3,2,1,0}
 
 #define   RGB_ENABLE_PIN GP11
+#define POWER_LED_PIN GP25
+
+#if defined(QUANTUM_PAINTER_ENABLE)
+#define INIT_DELAY 3000
+#define QUANTUM_PAINTER_DEBUG
+
+#define EINK_RST_PIN GP6
+#define EINK_CS_PIN GP0
+#define EINK_DC_PIN GP29
+#define EINK_BUSY_PIN GP28
+#define EINK_BWR
+#endif
 
 /* Double tap reset button to enter bootloader */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
