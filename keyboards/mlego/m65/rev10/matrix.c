@@ -21,9 +21,6 @@ static inline uint8_t read_rows(void) {
   spi_start(SPI_CS_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
     spi_status_t read_result = spi_read();
 spi_stop();
-     if (read_result > 0) {
-       uprintf("rows %u\n",(uint8_t) read_result);
-     }
     if (read_result >= 0) {
        return (uint8_t) read_result;
      } else{
@@ -40,7 +37,7 @@ static inline void shift_out(uint16_t value) {
   spi_transmit(message,2);
   spi_stop();
   //writePinHigh(SPI_LATCH_PIN);
-  //matrix_output_select_delay();
+  matrix_output_select_delay();
 
 }
 
