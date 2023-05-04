@@ -77,26 +77,26 @@ void user_oled_magic(void) {
 #    ifdef UNICODE_COMMON_ENABLE
     oled_write_P(PSTR("\nunicode: "), false);
     switch (get_unicode_input_mode()) {
-        case UNICODE_MODE_LINUX:
-            oled_write_P(PSTR("Linux"), false);
-            break;
-        case UNICODE_MODE_MACOS:
-            oled_write_P(PSTR("apple"), false);
-            break;
-        case UNICODE_MODE_WINDOWS:
-            oled_write_P(PSTR("windows"), false);
-            break;
-        case UNICODE_MODE_WINCOMPOSE:
-            oled_write_P(PSTR("windows c"), false);
-            break;
-        case UNICODE_MODE_BSD:
-            oled_write_P(PSTR("bsd"), false);
-            break;
-        case UNICODE_MODE_EMACS:
-            oled_write_P(PSTR("emacs"), false);
-            break;
-        default:
-            oled_write_ln_P(PSTR("not supported"), false);
+      case UNICODE_MODE_LINUX:
+        oled_write_P(PSTR("Linux"), false);
+        break;
+      case UNICODE_MODE_MACOS:
+        oled_write_P(PSTR("apple"), false);
+        break;
+      case UNICODE_MODE_WINDOWS:
+        oled_write_P(PSTR("windows"), false);
+        break;
+      case UNICODE_MODE_WINCOMPOSE:
+        oled_write_P(PSTR("windows c"), false);
+        break;
+      case UNICODE_MODE_BSD:
+        oled_write_P(PSTR("bsd"), false);
+        break;
+      case UNICODE_MODE_EMACS:
+        oled_write_P(PSTR("emacs"), false);
+        break;
+      default:
+        oled_write_ln_P(PSTR("not supported"), false);
     }
 #    endif
 
