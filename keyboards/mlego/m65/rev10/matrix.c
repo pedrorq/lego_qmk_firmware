@@ -37,12 +37,8 @@ static inline void shift_out(uint16_t value) {
   spi_transmit(message,2);
   spi_stop();
   //writePinHigh(SPI_LATCH_PIN);
-  matrix_output_select_delay();
+ // matrix_output_select_delay();
 
-}
-
-static inline void select_col(uint8_t col) {
-    shift_out(col_values[col]);
 }
 
 void matrix_init_custom(void) {
@@ -67,7 +63,10 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 
 
     for (uint8_t col = 0; col < MATRIX_COLS; col++) {
-        select_col(col);
+#ifdef CONSOLE_ENABLE
+ //   uprintf("col: %u, code: %u \n",col,col_values[col]);
+#endif
+        shift_out(col_values[col]);
 
         uint8_t rows = read_rows();
         for (uint8_t row = 0; row < MATRIX_ROWS; row++) {

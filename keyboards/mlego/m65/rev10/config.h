@@ -114,12 +114,10 @@ QH - SPI Data in - MISO
  2QH 10000000 00000000
  */
 
-//              C0       C1        C2   C3      C4    C5      C6    C7     C8    C9    C10    C11     C12     C13
-//
-//              1QD     2QB       2QC  2QD     2QE   2QF     2QH   2QA    1QH   1QG    1QF    1QE     1QA     1QC
-//#define COLS { 0x0008, 0x0200,0x0400,0x0800,0x1000,0x2000,0x0001,0x0100,0x0080,0x0040,0x0020,0x0010,0x8000,0x0004}
-#define COLS { 0x0008}
-
+//                 C0     C1     C2     C3     C4     C5     C6     C7     C8     C9    C10    C11    C12    C13
+//                1QD    2QB    2QC    2QD    2QE    2QF    2QH    2QA    1QH    1QG    1QF    1QE    1QA    1QC
+//#define COLS { 0x0008,0x0200,0x0400,0x0800,0x1000,0x2000,0x8000,0x0100,0x0080,0x0040,0x0020,0x0010,0x0001,0x0004}
+#define COLS { 0x0800,0x0004,0x0400,0x0008,0x1000,0x2000,0x8000,0x0100,0x0080,0x0040,0x0020,0x0010,0x0001,0x0200}
 #define ROWS {0, 1, 2, 3, 4}
 
 #define   RGB_ENABLE_PIN GP11
