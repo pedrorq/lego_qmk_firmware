@@ -1,8 +1,9 @@
 {
     "manufacturer": "Alin Elena",
-    "keyboard_name": "mlego/m65 rev1",
+    "keyboard_name": "mlego/m65 rev11",
     "maintainer": "alin elena",
-    "bootloader": "stm32duino",
+    "bootloader": "stm32-dfu",
+    "board":"GENERIC_STM32_G431XB",
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "features": {
@@ -15,26 +16,27 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "rgblight": false
+        "oled": false,
+        "rgblight": false,
+        "wpm": false
     },
     "matrix_pins": {
-        "cols": ["A10", "A15", "B3", "B4", "B5", "B9", "B8", "B7", "B6", "C15", "A0", "A7", "B10"],
-        "rows": ["B11", "B0", "B1", "A2", "A3"]
+        "cols": ["B14", "A8", "A10", "A15", "B3", "B4", "B5", "B7", "A1", "A2", "A3", "A4", "B1"],
+        "rows": ["B10", "A5", "A6", "A7", "B0"]
     },
     "encoder": {
         "rotary": [
-            {"pin_a": "A8", "pin_b": "A9"}
+            {"pin_a": "A0", "pin_b": "B6"}
         ]
     },
     "indicators": {
         "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "on_state": 0
     },
     "ws2812": {
         "pin": "B15"
     },
-    "processor": "STM32F103",
+    "processor": "STM32G431",
     "rgblight": {
         "animations": {
             "alternating": true,
@@ -56,13 +58,10 @@
         "pin": "B15",
         "saturation_steps": 8
     },
-    "tapping": {
-        "toggle": 2
-    },
-    "url": "https://gitlab.com/m-lego/m65",
+    "url": "https://mlego.elena.space/m65",
     "usb": {
-        "device_version": "0.0.1",
-        "pid": "0x6061",
+        "device_version": "0.0.2",
+        "pid": "0x6062",
         "vid": "0xBABA"
     },
     "layouts": {
