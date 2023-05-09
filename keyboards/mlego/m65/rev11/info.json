@@ -11,30 +11,30 @@
         "backlight": false,
         "bootmagic": true,
         "command": false,
-        "console": false,
+        "console": true,
         "encoder": true,
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "oled": false,
+        "oled": true,
         "rgblight": false,
         "wpm": false
     },
     "matrix_pins": {
-        "cols": ["B14", "A8", "A10", "A15", "B3", "B4", "B5", "B7", "A1", "A2", "A3", "A4", "B1"],
-        "rows": ["B10", "A5", "A6", "A7", "B0"]
+        "cols": ["B12", "B13", "B14", "B15", "A10", "A11", "A12", "C10", "C11", "B3","B4","B5","B6"],
+        "rows": ["B10", "B11", "B2", "B0", "B1"]
     },
     "encoder": {
         "rotary": [
-            {"pin_a": "A0", "pin_b": "B6"}
+            {"pin_a": "C4", "pin_b": "A7"}
         ]
     },
     "indicators": {
-        "caps_lock": "C13",
-        "on_state": 0
+        "caps_lock": "C6",
+        "on_state": 1
     },
     "ws2812": {
-        "pin": "B15"
+        "pin": "C13"
     },
     "processor": "STM32G431",
     "rgblight": {
@@ -55,13 +55,12 @@
             "enabled": true
         },
         "led_count": 20,
-        "pin": "B15",
         "saturation_steps": 8
     },
     "url": "https://mlego.elena.space/m65",
     "usb": {
-        "device_version": "0.0.2",
-        "pid": "0x6062",
+        "device_version": "0.0.1",
+        "pid": "0x6063",
         "vid": "0xBABA"
     },
     "layouts": {
