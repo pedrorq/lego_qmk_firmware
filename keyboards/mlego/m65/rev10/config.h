@@ -73,7 +73,6 @@ SCK - Serial Clock (same as 595)
 QH - SPI Data in - MISO
 */
 
-
 #define SPI_DRIVER SPID0
 #define SPI_CS_PIN GP1
 #define SPI_SCK_PIN GP2
@@ -82,6 +81,7 @@ QH - SPI Data in - MISO
 #define SPI_LSBFIRST true
 #define SPI_DIVISOR 8
 #define SPI_MODE 3
+
 #define DEBUG_MATRIX_SCAN_RATE
 
 // 00000001

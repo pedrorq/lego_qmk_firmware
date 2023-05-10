@@ -11,14 +11,14 @@
         "backlight": false,
         "bootmagic": true,
         "command": false,
-        "console": false,
+        "console": true,
         "encoder": true,
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
         "oled": true,
         "rgblight": true,
-        "wpm": false
+        "wpm": true
     },
     "matrix_pins": {
         "cols": ["B12", "B13", "B14", "B15", "A10", "A11", "A12", "C10", "C11", "B3","B4","B5","B6"],
