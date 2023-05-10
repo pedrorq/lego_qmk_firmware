@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_LWR_PIN C15
 #define LED_RSE_PIN C13
 
+#ifdef RGBLIGHT_ENABLE
+#        define NOP_FUDGE 0.4
+#endif
 
 #ifdef OLED_ENABLE
 #define I2C_DRIVER I2CD1
@@ -29,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define I2C1_SCL_PAL_MODE 4
 #define I2C1_SDA_PIN        B7
 #define I2C1_SDA_PAL_MODE 4
-
 #define OLED_BRIGHTNESS 128
 #define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #if defined(USE_I2C1_400KHZ) || defined(USE_I2C2_400KHZ) || defined(USE_I2C3_400KHZ)
