@@ -25,13 +25,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #ifdef OLED_ENABLE
-#define I2C_DRIVER I2CD1
-#define USE_I2C2_100KHZ
+#define I2C_DRIVER I2CD2
+//#define USE_I2C2_100KHZ
+#define USE_I2C2_400KHZ
 #    define OLED_DISPLAY_128X32
-#define I2C1_SCL_PIN        A15
-#define I2C1_SCL_PAL_MODE 4
-#define I2C1_SDA_PIN        B7
-#define I2C1_SDA_PAL_MODE 4
+#define I2C1_SCL_PIN        A9
+#define I2C1_SDA_PIN        A8
+//#define I2C1_SCL_PIN        A15
+//#define I2C1_SDA_PIN        B7
 #define OLED_BRIGHTNESS 128
 #define OLED_FONT_H "keyboards/mlego/m65/lib/glcdfont.c"
 #if defined(USE_I2C1_400KHZ) || defined(USE_I2C2_400KHZ) || defined(USE_I2C3_400KHZ)
