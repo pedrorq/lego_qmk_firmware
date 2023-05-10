@@ -240,8 +240,6 @@ void keyboard_post_init_user(void) {
     init_rgb_layers();
 #endif
 
-    init_lwr_rse_led();
-
 #ifdef OLED_ENABLE
     init_timer();
 #endif
