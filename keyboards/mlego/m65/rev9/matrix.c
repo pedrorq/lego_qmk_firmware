@@ -15,7 +15,6 @@ static matrix_row_t prev_matrix[MATRIX_ROWS];
 static inline uint8_t read_rows(void) {
 
     writePinLow(SPI_LATCH_PIN);
-//    matrix_output_select_delay();
     writePinHigh(SPI_LATCH_PIN);
 
     spi_status_t read_result = spi_read();
