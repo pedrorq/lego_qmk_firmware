@@ -46,7 +46,22 @@ jobs:
             keymap: default
           - keyboard: mlego/m20/rev1
             keymap: default_adv
-                      
+          - keyboard: mlego/m78/rev1
+            keymap: default
+          - keyboard: mlego/m8/rev1
+            keymap: default
+          - keyboard: tipro/rev3
+            keymap: default_120
+          - keyboard: tipro/rev2
+            keymap: default_96
+          - keyboard: tipro/rev1
+            keymap: default
+          - keyboard: tipro/rev1
+            keymap: default_ansiortho
+          - keyboard: tipro/rev1
+            keymap: default_orthoansi
+
+
 
     steps:
     - name: Checkout QMK Firmware
@@ -68,7 +83,7 @@ jobs:
           TARGET="$(echo "${{ matrix.keyboard }}" | sed 's#/#_#g')_${{matrix.keymap}}"
           echo "artifact-name=${TARGET}" >> $GITHUB_OUTPUT
           echo "artifact-name: ${{ steps.build.outputs.artifact-name }}"
-        #fi 
+        #fi
 
     - name: Archive artifacts
       uses: actions/upload-artifact@v3
