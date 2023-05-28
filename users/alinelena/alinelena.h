@@ -8,6 +8,13 @@
 #    include "alinelena_unicode.h"
 #endif
 
+enum layer_names {
+    _QW = 0,
+    _LWR,
+    _RSE,
+    _ADJ
+};
+
 #ifdef OLED_ENABLE
 void user_oled_magic(void);
 void render_logo(void);
