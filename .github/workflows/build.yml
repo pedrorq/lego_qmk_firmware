@@ -55,7 +55,7 @@ jobs:
         git config --global --add safe.directory '*'
         python3 -m pip install -r requirements-dev.txt
         make git-submodule
-        if [ -d keyboards/${{ matrix.keyboard}}/keymap/${{ matrix.keymap }} ]; then
+        if [ -d keyboards/${{ matrix.keyboard}}/keymaps/${{ matrix.keymap }} ]; then
           qmk compile -kb ${{ matrix.keyboard}} -km ${{ matrix.keymap }}
 
           TARGET="$(echo "${{ matrix.keyboard }}" | sed 's#/#_#g')_${{matrix.keymap}}"
