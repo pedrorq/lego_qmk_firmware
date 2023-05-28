@@ -19,14 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "quantum.h"
 
-
-enum layer_names {
-    _QW = 0,
-    _LWR,
-    _RSE,
-    _ADJ
-};
-
 void toggle_leds(const bool, const bool);
 void set_led_toggle(const uint8_t, const bool);
 
