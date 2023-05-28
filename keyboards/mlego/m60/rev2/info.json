@@ -6,6 +6,7 @@
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "encoder": {
+        "enabled": true,
         "rotary": [
             {
                 "pin_a": "GP4",
@@ -29,14 +30,16 @@
     },
     "indicators": {
         "caps_lock": "GP25",
-        "num_lock": "GP22",
-        "scroll_lock": "GP27"
+        "on_state": 1
     },
     "matrix_pins": {
         "cols": ["GP1", "GP6", "GP7", "GP8", "GP9", "GP15", "GP14", "GP13", "GP12", "GP11", "GP10", "GP21"],
         "rows": ["GP19", "GP16", "GP17", "GP18", "GP20"]
     },
     "processor": "RP2040",
+    "ws2812": {
+        "pin": "GP0"
+    },
     "rgblight": {
         "animations": {
             "alternating": true,
@@ -55,7 +58,6 @@
             "enabled": true
         },
         "led_count": 16,
-        "pin": "GP0",
         "saturation_steps": 8
     },
     "url": "https://gitlab.com/m-lego/m60",

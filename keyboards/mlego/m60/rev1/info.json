@@ -7,6 +7,7 @@
     "debounce": 5,
     "diode_direction": "COL2ROW",
      "encoder": {
+        "enabled": true,
         "rotary": [
             {
                 "pin_a": "A0",
@@ -28,14 +29,16 @@
     },
     "indicators": {
         "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "on_state": 1
     },
     "matrix_pins": {
         "cols": ["A10", "A15", "B3", "B4", "B5", "B7", "B6", "A1", "A2", "A3", "A4", "A5"],
         "rows": ["A6", "A7", "B0", "B1", "B10"]
     },
     "processor": "STM32F401",
+    "ws2812": {
+        "pin": "B15"
+    },
     "rgblight": {
         "animations": {
             "alternating": true,
@@ -52,8 +55,7 @@
         "layers": {
             "enabled": true
         },
-        "led_count": 20,
-        "pin": "B15"
+        "led_count": 20
     },
     "url": "https://gitlab.com/m-lego/m60",
     "usb": {

@@ -41,9 +41,6 @@
         "caps_lock": "GP25",
         "on_state": 0
     },
-    "tapping": {
-        "toggle": 2
-    },
     "ws2812": {
         "pin": "GP12"
     },

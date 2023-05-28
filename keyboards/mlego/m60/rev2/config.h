@@ -7,6 +7,9 @@
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED_MASK 0U
 
+#define LED_LWR_PIN GP22
+#define LED_RSE_PIN GP27
+
 #ifdef OLED_ENABLE
 #    define OLED_DISPLAY_128X32
 #    define I2C1_SCL_PIN GP3
