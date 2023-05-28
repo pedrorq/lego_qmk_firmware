@@ -20,15 +20,8 @@ jobs:
           - mlego/m65/rev5
           - mlego/m65/rev6
           - mlego/m65/rev7
-          - mlego/m60/rev1
-          - mlego/m60/rev2
-          - mlego/m48/rev1
-          - mlego/m20/rev1
-          - mlego/m60_split/rev1
-          - mlego/m60_split/rev2
         keymap:
           - default
-          - default_adv
           - uk
         include:
           - keyboard: mlego/m65/rev9
@@ -39,6 +32,20 @@ jobs:
             keymap: default_knob
           - keyboard: mlego/m65/rev10
             keymap: uk_knob
+          - keyboard: mlego/m60/rev1
+            keymap: default
+          - keyboard: mlego/m60/rev2
+            keymap: default
+          - keyboard: mlego/m48/rev1
+            keymap: default
+          - keyboard: mlego/m60_split/rev1
+            keymap: default
+          - keyboard: mlego/m60_split/rev2
+            keymap: default
+          - keyboard: mlego/m20/rev1
+            keymap: default
+          - keyboard: mlego/m20/rev1
+            keymap: default_adv
                       
 
     steps:
