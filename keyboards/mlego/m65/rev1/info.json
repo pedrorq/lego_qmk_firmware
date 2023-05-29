@@ -16,7 +16,7 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "rgblight": false
+        "rgblight": true
     },
     "matrix_pins": {
         "cols": ["A10", "A15", "B3", "B4", "B5", "B9", "B8", "B7", "B6", "C15", "A0", "A7", "B10"],
@@ -32,7 +32,6 @@
         "on_state": 0
     },
     "ws2812": {
-        "driver": "vendor",
         "pin": "B15"
     },
     "rgblight": {
