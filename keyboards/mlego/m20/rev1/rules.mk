@@ -1,1 +1,1 @@
-WS2812_DRIVER = vendor
+# intentionally left blank
