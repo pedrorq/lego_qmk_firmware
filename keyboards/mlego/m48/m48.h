@@ -8,6 +8,7 @@
 enum layer_names { _QW = 0, _LWR, _RSE, _ADJ };
 
 void toggle_leds(const bool, const bool);
+void set_led_toggle(const uint8_t, const bool);
 
 static inline void init_lwr_rse_led(void) {
 #ifdef LED_LWR_PIN

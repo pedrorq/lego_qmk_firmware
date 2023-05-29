@@ -1,4 +1,4 @@
-// Copyright 2022 alin m elena (@alinelena, @drFaustroll)
+// Copyright 2023 alin m elena (@alinelena, @drFaustroll)
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "progmem.h"
