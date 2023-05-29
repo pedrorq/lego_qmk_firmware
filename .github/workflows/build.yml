@@ -39,8 +39,12 @@ jobs:
             keymap: uk_knob
           - keyboard: mlego/m60/rev1
             keymap: default
+          - keyboard: mlego/m60/rev1
+            keymap: default_adv
           - keyboard: mlego/m60/rev2
             keymap: default
+          - keyboard: mlego/m60/rev2
+            keymap: default_adv
           - keyboard: mlego/m48/rev1
             keymap: default
           - keyboard: mlego/m48/rev1
