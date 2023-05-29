@@ -4,6 +4,7 @@
     "maintainer": "alin elena",
     "bootloader": "tinyuf2",
     "board": "BLACKPILL_STM32_F401",
+    "processor": "STM32F401",
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "features": {
@@ -37,7 +38,6 @@
         "driver": "vendor",
         "pin": "B15"
     },
-    "processor": "STM32F401",
     "rgblight": {
         "animations": {
             "alternating": true,
