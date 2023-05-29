@@ -81,3 +81,6 @@ It uses four pins from the MCU to provide 16 output pins */
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED GP17
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 500U
 
+#define LED_LWR_PIN GP16
+#define LED_RSE_PIN GP17
+

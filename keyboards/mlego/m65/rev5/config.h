@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED_MASK 0U
 
+#define LED_LWR_PIN GP28
+#define LED_RSE_PIN GP27
+
 #ifdef OLED_ENABLE
-#    define OLED_DISPLAY_128X32
 #define I2C1_SCL_PIN        GP3
 #define I2C1_SDA_PIN        GP2
 #define I2C_DRIVER I2CD1
