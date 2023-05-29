@@ -72,17 +72,15 @@ jobs:
           - keyboard: tipro/rev1
             keymap: default_orthoansi
 
-
-
     steps:
-    - name: Checkout QMK Firmware
+    - name: checkout qmk
       uses: actions/checkout@v3
       with:
         fetch-depth: 1
         persist-credentials: false
         submodules: true
 
-    - name: Build
+    - name: build
       id: build
       run: |
         git config --global --add safe.directory '*'
