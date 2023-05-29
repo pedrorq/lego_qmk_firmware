@@ -22,14 +22,19 @@ jobs:
           - mlego/m65/rev7
         keymap:
           - default
+          - default_adv
           - uk
         include:
           - keyboard: mlego/m65/rev9
             keymap: default_knob
           - keyboard: mlego/m65/rev9
+            keymap: default_knob_adv
+          - keyboard: mlego/m65/rev9
             keymap: uk_knob
           - keyboard: mlego/m65/rev10
             keymap: default_knob
+          - keyboard: mlego/m65/rev10
+            keymap: default_knob_adv
           - keyboard: mlego/m65/rev10
             keymap: uk_knob
           - keyboard: mlego/m60/rev1
