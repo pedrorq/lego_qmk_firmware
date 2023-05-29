@@ -10,7 +10,7 @@
     "diode_direction": "COL2ROW",
     "usb": {
         "device_version": "0.0.1",
-        "pid": "0x6069",
+        "pid": "0x6065",
         "vid": "0xBABA"
     },
     "encoder": {
@@ -38,7 +38,8 @@
         "wpm":true
     },
     "indicators": {
-        "caps_lock": "GP25"
+        "caps_lock": "GP25",
+        "on_state": 0
     },
     "ws2812": {
         "driver": "vendor",
