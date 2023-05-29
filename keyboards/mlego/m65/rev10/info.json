@@ -10,7 +10,7 @@
     "diode_direction": "COL2ROW",
     "usb": {
         "device_version": "0.0.1",
-        "pid": "0x6070",
+        "pid": "0x6066",
         "vid": "0xBABA"
     },
     "encoder": {

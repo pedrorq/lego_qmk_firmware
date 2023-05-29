@@ -38,7 +38,8 @@
         "wpm": false
     },
     "indicators": {
-        "caps_lock": "GP25"
+        "caps_lock": "GP25",
+        "on_state": 0
     },
     "ws2812": {
         "driver": "vendor",
