@@ -20,8 +20,7 @@
     },
     "indicators": {
         "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "on_state": 0
     },
     "matrix_pins": {
         "cols": ["A10", "A15", "B3", "B4", "B5", "B9", "B8", "B7", "A1", "A2", "A3", "A4", "B1"],
@@ -33,6 +32,7 @@
         ]
     },
     "ws2812": {
+        "driver": "vendor",
         "pin": "B15"
     },
     "processor": "STM32F401",
@@ -54,11 +54,7 @@
             "enabled": true
         },
         "led_count": 20,
-        "pin": "B15",
         "saturation_steps": 8
-    },
-    "tapping": {
-        "toggle": 2
     },
     "url": "https://gitlab.com/m-lego/m65",
     "usb": {
