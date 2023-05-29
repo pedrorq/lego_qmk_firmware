@@ -3,10 +3,10 @@
     "keyboard_name": "m60 rev2 with rp2040 ",
     "maintainer": "alin elena",
     "bootloader": "rp2040",
+    "processor": "RP2040",
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "encoder": {
-        "enabled": true,
         "rotary": [
             {
                 "pin_a": "GP4",
@@ -30,14 +30,14 @@
     },
     "indicators": {
         "caps_lock": "GP25",
-        "on_state": 1
+        "on_state": 0
     },
     "matrix_pins": {
         "cols": ["GP1", "GP6", "GP7", "GP8", "GP9", "GP15", "GP14", "GP13", "GP12", "GP11", "GP10", "GP21"],
         "rows": ["GP19", "GP16", "GP17", "GP18", "GP20"]
     },
-    "processor": "RP2040",
     "ws2812": {
+        "driver": "vendor",
         "pin": "GP0"
     },
     "rgblight": {

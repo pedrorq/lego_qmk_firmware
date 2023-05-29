@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Alin M Elena (@alinelena)
+// Copyright 2023-2023 Alin M Elena (@alinelena)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
