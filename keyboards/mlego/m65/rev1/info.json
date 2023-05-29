@@ -3,6 +3,7 @@
     "keyboard_name": "mlego/m65 rev1",
     "maintainer": "alin elena",
     "bootloader": "stm32duino",
+    "processor": "STM32F103",
     "debounce": 5,
     "diode_direction": "COL2ROW",
     "features": {
@@ -28,13 +29,12 @@
     },
     "indicators": {
         "caps_lock": "C13",
-        "num_lock": "B12",
-        "scroll_lock": "B13"
+        "on_state": 0
     },
     "ws2812": {
+        "driver": "vendor",
         "pin": "B15"
     },
-    "processor": "STM32F103",
     "rgblight": {
         "animations": {
             "alternating": true,
@@ -53,11 +53,7 @@
             "enabled": true
         },
         "led_count": 20,
-        "pin": "B15",
         "saturation_steps": 8
-    },
-    "tapping": {
-        "toggle": 2
     },
     "url": "https://gitlab.com/m-lego/m65",
     "usb": {

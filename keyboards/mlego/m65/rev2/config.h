@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#define LED_LWR_PIN B12
+#define LED_RSE_PIN B13
+
 #define EEPROM_PAGE_SIZE
 #define FEE_PAGE_SIZE 0x800
 #define FEE_PAGE_COUNT 4
