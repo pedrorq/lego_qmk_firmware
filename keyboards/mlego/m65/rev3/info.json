@@ -32,7 +32,6 @@
         ]
     },
     "ws2812": {
-        "driver": "vendor",
         "pin": "B15"
     },
     "processor": "STM32F401",

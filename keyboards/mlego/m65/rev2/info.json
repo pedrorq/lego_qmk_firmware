@@ -32,7 +32,6 @@
         "on_state": 0
     },
     "ws2812": {
-        "driver": "vendor",
         "pin": "B15"
     },
     "rgblight": {
