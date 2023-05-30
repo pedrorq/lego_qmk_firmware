@@ -62,53 +62,50 @@ void user_oled_magic(void) {
 
     switch (get_highest_layer(layer_state)) {
         case _QW:
-            oled_write_P(PSTR("Default\n"), false);
+            oled_write_ln_P(PSTR("Default"), false);
             break;
         case _LWR:
-            oled_write_P(PSTR("Lower\n"), false);
+            oled_write_ln_P(PSTR("Lower"), false);
             break;
         case _RSE:
-            oled_write_P(PSTR("Raise\n"), false);
+            oled_write_ln_P(PSTR("Raise"), false);
             break;
         case _ADJ:
-            oled_write_P(PSTR("ADJ\n"), false);
+            oled_write_ln_P(PSTR("ADJ"), false);
             break;
         default:
-            // Or use the write_ln shortcut over adding '\n' to the end of your string
             oled_write_ln_P(PSTR("Undefined"), false);
     }
 #    ifdef UNICODE_COMMON_ENABLE
-    oled_write_P(PSTR("\nunicode: "), false);
+    oled_write_P(PSTR("unicode: "), false);
     switch (get_unicode_input_mode()) {
       case UNICODE_MODE_LINUX:
-        oled_write_P(PSTR("Linux"), false);
+        oled_write_ln_P(PSTR("Linux"), false);
         break;
       case UNICODE_MODE_MACOS:
-        oled_write_P(PSTR("apple"), false);
+        oled_write_ln_P(PSTR("apple"), false);
         break;
       case UNICODE_MODE_WINDOWS:
-        oled_write_P(PSTR("windows"), false);
+        oled_write_ln_P(PSTR("windows"), false);
         break;
       case UNICODE_MODE_WINCOMPOSE:
-        oled_write_P(PSTR("windows c"), false);
+        oled_write_ln_P(PSTR("windows c"), false);
         break;
       case UNICODE_MODE_BSD:
-        oled_write_P(PSTR("bsd"), false);
+        oled_write_ln_P(PSTR("bsd"), false);
         break;
       case UNICODE_MODE_EMACS:
-        oled_write_P(PSTR("emacs"), false);
+        oled_write_ln_P(PSTR("emacs"), false);
         break;
       default:
         oled_write_ln_P(PSTR("not supported"), false);
     }
 #    endif
-
 #    ifdef WPM_ENABLE
-    oled_write_P(PSTR("\nwpm: "), false);
+    oled_write_P(PSTR("wpm: "), false);
     uint8_t wpm = get_current_wpm();
-    oled_write_P(wpm != 0 ? get_u8_str(wpm, ' ') : PSTR("   "), false);
+    oled_write_ln_P(wpm != 0 ? get_u8_str(wpm, ' ') : PSTR("   "), false);
 #    endif
-    oled_write_P(PSTR(bdate), false);
     oled_write_P(PSTR(hash), false);
 }
 
@@ -118,6 +115,7 @@ void init_timer(void) {
 
 void render_logo(void) {
     oled_write_P(m65_logo, false);
+    oled_write_ln_P(PSTR(bdate), false);
 }
 
 void clear_screen(void) {
