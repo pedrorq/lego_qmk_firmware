@@ -50,6 +50,11 @@ const rgblight_segment_t* const* my_rgb(void) {
 
 void init_rgb_layers(void) {
     // Enable the LED layers
+    //
+#ifdef RGB_ENABLE_PIN
+  setPinOutput(RGB_ENABLE_PIN);
+  writePinHigh(RGB_ENABLE_PIN);
+#endif
     rgblight_layers = my_rgb();
 }
 #endif
