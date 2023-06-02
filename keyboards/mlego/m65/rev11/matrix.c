@@ -17,16 +17,10 @@ static matrix_row_t prev_matrix[MATRIX_ROWS];
 
 static inline uint8_t read_rows(void) {
 
- //   matrix_output_select_delay();
-
-
-  spi_start(SPI_CS_ROW_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
+    spi_start(SPI_CS_ROW_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
     spi_status_t read_result = spi_read();
     spi_stop();
     if (read_result >= 0) {
-    //   if (read_result > 0) {
-    //   uprintf("row code: %u \n",read_result);
-    //   }
        return (uint8_t) read_result;
      } else{
        return 0;
@@ -40,8 +34,6 @@ static inline void shift_out(uint16_t value) {
   spi_start(SPI_CS_COL_PIN, SPI_LSBFIRST, SPI_MODE, SPI_DIVISOR);
   spi_transmit(message,2);
   spi_stop();
-
-
 }
 
 void matrix_init_custom(void) {
@@ -64,7 +56,6 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 
     uint8_t crow;
     memset(current_matrix, 0, msize);
-
 
     for (uint8_t col = 0; col < MATRIX_COLS; col++) {
 #ifdef CONSOLE_ENABLE

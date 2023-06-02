@@ -1,6 +1,8 @@
 // Copyright 2020-2023 alin m elena (@alinelena, @drFaustroll)
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
+#include "qp_config.h"
+
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 14
 

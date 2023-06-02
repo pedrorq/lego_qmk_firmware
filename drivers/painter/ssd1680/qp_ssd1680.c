@@ -284,7 +284,7 @@ painter_device_t qp_ssd1680_make_spi_device(uint16_t panel_width, uint16_t panel
             driver->base.native_bits_per_pixel = 1;
             driver->base.panel_width           = panel_width;
             driver->base.panel_height          = panel_height;
-            driver->base.rotation              = QP_ROTATION_0;
+            driver->base.rotation              = QP_ROTATION_180;
             driver->base.offset_x              = 0;
             driver->base.offset_y              = 0;
 

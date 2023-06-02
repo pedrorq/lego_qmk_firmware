@@ -32,6 +32,7 @@ static inline void init_lwr_rse_led(void) {
     writePin(LED_RSE_PIN, false);
     wait_ms(30);
 #endif
+
 }
 
 static inline void led_lwr(const bool on) {
