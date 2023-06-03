@@ -26,7 +26,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,  KC_DEL, _______
     ),
     [_RSE] = LAYOUT_ortho_5x4(
-        XP(la,lA), XP(lb,lB), XP(lc,lC), XP(rn,rN),
+        UP(la,lA), UP(lb,lB), UP(lc,lC), UP(rn,rN),
         KC_HOME,   KC_UP, KC_PGUP, _______,
         KC_LEFT, _______, KC_RGHT, _______,
          KC_END, KC_DOWN, KC_PGDN, _______,
