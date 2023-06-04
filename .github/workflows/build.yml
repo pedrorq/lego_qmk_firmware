@@ -1,4 +1,4 @@
-name: Build firmware for keyboards
+name: Build firmware for mlego
 on:
   push:
     paths-ignore:
@@ -25,6 +25,12 @@ jobs:
           - default_adv
           - uk
         include:
+          - keyboard: mlego/m65/rev11
+            keymap: default_knob
+          - keyboard: mlego/m65/rev11
+            keymap: default_knob_adv
+          - keyboard: mlego/m65/rev11
+            keymap: uk_knob
           - keyboard: mlego/m65/rev9
             keymap: default_knob
           - keyboard: mlego/m65/rev9
