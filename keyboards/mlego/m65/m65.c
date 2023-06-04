@@ -107,6 +107,43 @@ uint32_t deferred_init(uint32_t trigger_time, void *cb_arg) {
     return 0;
 }
 void toggle_leds(const bool toggle_lwr, const bool toggle_rse) {
+#if defined(QUANTUM_PAINTER_ENABLE)
+    static uint32_t last_draw = 0;
+    if (timer_elapsed32(last_draw) > 10000) { // Throttle to 30fps
+        last_draw = timer_read32();
+    switch (get_highest_layer(layer_state)) {
+        case _QW:
+          {
+    char hello[] = "Layer: default";
+    int16_t               hello_width = qp_textwidth(qp_fonts[1], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-hello_width-10, SSD1680_WIDTH-5*qp_fonts[1]->line_height , qp_fonts[1], hello, HSV_BLACK, HSV_WHITE);
+                 }
+    break;
+        case _LWR:
+            {
+    char hello[] = "Layer: lower";
+    int16_t               hello_width = qp_textwidth(qp_fonts[1], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-hello_width-10, SSD1680_WIDTH-5*qp_fonts[1]->line_height , qp_fonts[1], hello, HSV_BLACK, HSV_WHITE);
+            }
+    break;
+        case _RSE:{
+    char hello[] = "Layer:raise";
+    int16_t               hello_width = qp_textwidth(qp_fonts[1], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-hello_width-10, SSD1680_WIDTH-5*qp_fonts[1]->line_height , qp_fonts[1], hello, HSV_BLACK, HSV_WHITE);
+    }
+    break;
+        case _ADJ:
+            {
+    char hello[] = "Layer: adjust";
+    int16_t               hello_width = qp_textwidth(qp_fonts[1], hello);
+    qp_drawtext_recolor(ssd1680, SSD1680_HEIGHT-hello_width-10, SSD1680_WIDTH-5*qp_fonts[1]->line_height , qp_fonts[1], hello, HSV_BLACK, HSV_WHITE);
+   }
+    break;
+        default:
+    }
+    }
+
+#endif
     led_lwr(toggle_lwr);
     led_rse(toggle_rse);
     if (layer_state_is(_ADJ)) {
@@ -118,8 +155,8 @@ void toggle_leds(const bool toggle_lwr, const bool toggle_rse) {
 void keyboard_post_init_kb(void) {
     init_lwr_rse_led();
 
-    #if defined(QUANTUM_PAINTER_ENABLE)
+#if defined(QUANTUM_PAINTER_ENABLE)
     defer_exec(INIT_DELAY, deferred_init, NULL);
-   #endif
+#endif
     keyboard_post_init_user();
 }

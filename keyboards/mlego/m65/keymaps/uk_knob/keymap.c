@@ -225,6 +225,7 @@ void set_led_toggle(const uint8_t layer, const bool state) {
     }
 }
 
+
 void keyboard_post_init_user(void) {
 #ifdef RGBLIGHT_ENABLE
     init_rgb_layers();

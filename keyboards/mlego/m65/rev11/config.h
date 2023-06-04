@@ -106,7 +106,6 @@ QH - SPI Data in - MISO
 //                1QC     2QB    2QC    2QD    2QE    2QF    2QG    2QH    2QA    1QD    1QE    1QF    1QG    1QB
 #define COLS {  0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000,0x0100,0x0008,0x0010,0x0020,0x0040,0x0002,0x0004}
 #define ROWS {0, 1, 2, 3, 4}
-
 #define RGB_ENABLE_PIN GP11
 #define POWER_LED_PIN GP25
 #define LED_LWR_PIN GP16
@@ -133,4 +132,4 @@ QH - SPI Data in - MISO
 #define EINK_CS_PIN GP6
 #define EINK_DC_PIN GP7
 #define EINK_BUSY_PIN GP0
-#define EINK_BWR
+//#define EINK_BWR
