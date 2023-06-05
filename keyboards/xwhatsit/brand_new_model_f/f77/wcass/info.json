@@ -1,0 +1,10 @@
+{
+
+    "manufacturer": "Tom Wong-Cornall/Ellipse/wcass/Purdea Andrei",
+    "keyboard_name": "modelfkeyboards.com Brand New F62/F77 Model F Keyboard by Model F Labs",
+    "usb": {
+        "device_version": "0.0.1",
+        "pid": "0x0002",
+        "vid": "0x0481"
+    }
+}
