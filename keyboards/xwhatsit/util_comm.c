@@ -19,7 +19,7 @@
 #include "util_comm.h"
 #include "matrix_manipulate.h"
 #include <string.h>
-#include <tmk_core/common/eeprom.h>
+#include <eeprom.h>
 
 #if defined(KEYBOARD_SHARED_EP) && defined(RAW_ENABLE)
 #error "Enabling the KEYBOARD_SHARED_EP will make the util be unable to communicate with the firmware, because due to hidapi limiations, the util can't figure out which interface to talk to, so it hardcodes interface zero."
