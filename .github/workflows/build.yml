@@ -80,7 +80,7 @@ jobs:
           - keyboard: tipro/rev1
             keymap: default_orthoansi
           - keyboard: tipro32
-            keymap: default_61
+            keymap: default
 
     steps:
     - name: checkout qmk
