@@ -25,6 +25,8 @@ jobs:
           - default_adv
           - uk
         include:
+          - keyboard: mlego/m65/rev7
+            keymap: default_61
           - keyboard: mlego/m65/rev11
             keymap: default_knob
           - keyboard: mlego/m65/rev11
@@ -77,6 +79,8 @@ jobs:
             keymap: default_ansiortho
           - keyboard: tipro/rev1
             keymap: default_orthoansi
+          - keyboard: tipro32
+            keymap: default_61
 
     steps:
     - name: checkout qmk
