@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
-#include "keymap_uk.h"
 #include "alinelena.h"
 
 // let us assume we start with both layers off
